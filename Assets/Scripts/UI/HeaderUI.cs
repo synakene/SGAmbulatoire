@@ -173,7 +173,7 @@ public class HeaderUI : MonoBehaviour
 
         if (canvasDialogue)
         {
-            canvasDialogue.SetActive(false);
+            canvasDialogue.GetComponent<Canvas>().enabled = false;
         }
 
         //quitButton.enabled = false;
@@ -238,6 +238,8 @@ public class HeaderUI : MonoBehaviour
 
     public void CloseWindow()
     {
+        StartCarousel sc = GameObject.Find("ContextPanel").GetComponent<StartCarousel>();
+        sc.ReinitPosition();
         contextPanel.SetActive(false);
         Pause(false);
         //if (DialogueManager.IsConversationActive)
@@ -262,7 +264,7 @@ public class HeaderUI : MonoBehaviour
 
         if (canvasDialogue)
         {
-            canvasDialogue.SetActive(true);
+            canvasDialogue.GetComponent<Canvas>().enabled = true;
         }
     }
 

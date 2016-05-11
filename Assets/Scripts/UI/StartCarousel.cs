@@ -22,7 +22,7 @@ public class StartCarousel : MonoBehaviour {
         if (contextRemainder)
         {
             headerPanel = GameObject.Find("HeaderPanel");
-            canvasDialogue = GameObject.Find("Canvas v2");
+            canvasDialogue = GameObject.Find("Dialogue Canvas");
         }
     }
 
@@ -55,7 +55,7 @@ public class StartCarousel : MonoBehaviour {
             "ignoretimescale", true));
     }
 
-    private void ReinitPosition()
+    public void ReinitPosition()
     {
         foreach (Image im in images)
         {
@@ -96,10 +96,8 @@ public class StartCarousel : MonoBehaviour {
 
             if (canvasDialogue)
             {
-                canvasDialogue.SetActive(true);
+                canvasDialogue.GetComponent<Canvas>().enabled = true;
             }
-            if (DialogueManager.IsConversationActive)
-                DialogueManager.ConversationController.GotoState(DialogueManager.CurrentConversationState);
         }
     }
 
