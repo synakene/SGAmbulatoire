@@ -22,17 +22,15 @@ public static class Data {
     public static int sec = 0;
 
     //Score :
-    //public static int scoreObj1 = 0;
-    //public static int scoreObj2 = 0;
-    //public static int scoreObj3 = 0;
-    //public static int scoreObj4 = 0;
+    public static int scoreObj1 = 0;
+    public static int scoreObj2 = 0;
+    public static int scoreObj3 = 0;
 
-    //public static int MaxScoreObj1 = 0;
-    //public static int MaxScoreObj2 = 0;
-    //public static int MaxScoreObj3 = 0;
-    //public static int MaxScoreObj4 = 0;
+    public static int MaxScoreObj1 = 0;
+    public static int MaxScoreObj2 = 0;
+    public static int MaxScoreObj3 = 0;
 
-    //public static int MaxTotal = 23;
+    public static int MaxTotal = 23;
     //public static float jaugeValue = 0;
 
     //public static void reinitFeedback()
@@ -40,17 +38,15 @@ public static class Data {
     //    CompleteFeedback = new CompleteFeedback();
     //}
 
-    //public static void reinitScore()
-    //{
-    //    scoreObj1 = 0;
-    //    scoreObj2 = 0;
-    //    scoreObj3 = 0;
-    //    scoreObj4 = 0;
+    public static void reinitScore()
+    {
+        scoreObj1 = 0;
+        scoreObj2 = 0;
+        scoreObj3 = 0;
 
-    //    MaxScoreObj1 = 0;
-    //    MaxScoreObj2 = 0;
-    //    MaxScoreObj3 = 0;
-    //    MaxScoreObj4 = 0;
-    //    jaugeValue = 0;
-    //}
+        MaxScoreObj1 = 0;
+        MaxScoreObj2 = 0;
+        MaxScoreObj3 = 0;
+        //jaugeValue = 0;
+    }
 }

@@ -60,10 +60,9 @@ public class HeaderUI : MonoBehaviour
         min = Data.min;
         sec = Data.sec;
 
-        //GameObject.Find("count1").GetComponent<Text>().text = (Data.scoreObj1).ToString() + "/" + (Data.MaxScoreObj1).ToString();
-        //GameObject.Find("count2").GetComponent<Text>().text = (Data.scoreObj2).ToString() + "/" + (Data.MaxScoreObj2).ToString();
-        //GameObject.Find("count3").GetComponent<Text>().text = (Data.scoreObj3).ToString() + "/" + (Data.MaxScoreObj3).ToString();
-        //GameObject.Find("count4").GetComponent<Text>().text = (Data.scoreObj4).ToString() + "/" + (Data.MaxScoreObj4).ToString();
+        GameObject.Find("count1").GetComponent<Text>().text = (Data.scoreObj1).ToString() + "/" + (Data.MaxScoreObj1).ToString();
+        GameObject.Find("count2").GetComponent<Text>().text = (Data.scoreObj2).ToString() + "/" + (Data.MaxScoreObj2).ToString();
+        GameObject.Find("count3").GetComponent<Text>().text = (Data.scoreObj3).ToString() + "/" + (Data.MaxScoreObj3).ToString();
 
         //jaugeCanvas.GetComponentInChildren<Slider>().value = Data.jaugeValue;
     }
@@ -193,7 +192,7 @@ public class HeaderUI : MonoBehaviour
             Data.min = 0;
             Data.sec = 0;
             DialogueManager.Unpause();
-            //Data.reinitScore();
+            Data.reinitScore();
             Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
         }
@@ -204,7 +203,7 @@ public class HeaderUI : MonoBehaviour
             Data.min = 0;
             Data.sec = 0;
             DialogueManager.Unpause();
-            //Data.reinitScore();
+            Data.reinitScore();
             Application.Quit();
         }
 
@@ -214,7 +213,7 @@ public class HeaderUI : MonoBehaviour
             Data.min = 0;
             Data.sec = 0;
             DialogueManager.Unpause();
-            //Data.reinitScore();
+            Data.reinitScore();
             Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
         }
@@ -228,7 +227,7 @@ public class HeaderUI : MonoBehaviour
         DialogueManager.Unpause();
         DialogueManager.StopConversation();
         Data.ReinitLuaVar();
-        //Data.reinitScore();
+        Data.reinitScore();
         SceneManager.LoadScene(0);
     }
 
