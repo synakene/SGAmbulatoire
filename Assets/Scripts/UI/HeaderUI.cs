@@ -190,14 +190,19 @@ public class HeaderUI : MonoBehaviour
         if (Application.isWebPlayer)
         {
             Time.timeScale = 1;
+            Data.min = 0;
+            Data.sec = 0;
             DialogueManager.Unpause();
             //Data.reinitScore();
+            Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
         }
 
         if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXPlayer)
         {
             Time.timeScale = 1;
+            Data.min = 0;
+            Data.sec = 0;
             DialogueManager.Unpause();
             //Data.reinitScore();
             Application.Quit();
@@ -206,8 +211,11 @@ public class HeaderUI : MonoBehaviour
         else
         {
             Time.timeScale = 1;
+            Data.min = 0;
+            Data.sec = 0;
             DialogueManager.Unpause();
             //Data.reinitScore();
+            Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
         }
     }
@@ -215,13 +223,14 @@ public class HeaderUI : MonoBehaviour
     public void ConfirmReturnToHome()
     {
         Time.timeScale = 1;
+        Data.min = 0;
+        Data.sec = 0;
         DialogueManager.Unpause();
         DialogueManager.StopConversation();
+        Data.ReinitLuaVar();
         //Data.reinitScore();
         SceneManager.LoadScene(0);
     }
-
-
 
     public void NoPress()
     {

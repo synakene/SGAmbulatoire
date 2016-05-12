@@ -57,6 +57,7 @@ public class EndCarousel : MonoBehaviour {
 
     public void Demarrer()
     {
+        Data.ReinitLuaVar();
         SceneManager.LoadScene(0);
     }
 
@@ -65,6 +66,7 @@ public class EndCarousel : MonoBehaviour {
         if (Application.isWebPlayer)
         {
             Time.timeScale = 1;
+            Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
         }
 
@@ -77,6 +79,7 @@ public class EndCarousel : MonoBehaviour {
         else
         {
             Time.timeScale = 1;
+            Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
         }
     }

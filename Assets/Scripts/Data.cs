@@ -1,8 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using PixelCrushers.DialogueSystem;
 
 public static class Data {
+
+    public static void ReinitLuaVar()
+    {
+        DialogueLua.SetVariable("choix1", true);
+        DialogueLua.SetVariable("choix2", true);
+        DialogueLua.SetVariable("choix3", true);
+    }
 
     //Feedback
     //public static List<Feedback> allFeedback;
