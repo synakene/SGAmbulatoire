@@ -13,9 +13,9 @@ public static class Data {
     }
 
     //Feedback
-    //public static List<Feedback> allFeedback;
-    //public static CompleteFeedback CompleteFeedback;
-    //public static string playerName = "";
+    public static List<Feedback> allFeedback;
+    public static CompleteFeedback CompleteFeedback;
+    public static string playerName = "";
 
     //time :
     public static int min = 0;
@@ -30,13 +30,13 @@ public static class Data {
     public static int MaxScoreObj2 = 0;
     public static int MaxScoreObj3 = 0;
 
-    public static int MaxTotal = 23;
+    public static float MaxTotal = 23f;
     //public static float jaugeValue = 0;
 
-    //public static void reinitFeedback()
-    //{
-    //    CompleteFeedback = new CompleteFeedback();
-    //}
+    public static void reinitFeedback()
+    {
+        CompleteFeedback = new CompleteFeedback();
+    }
 
     public static void reinitScore()
     {

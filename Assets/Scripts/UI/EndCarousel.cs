@@ -9,6 +9,7 @@ public class EndCarousel : MonoBehaviour {
     public List<Image> images;
     public GameObject endPanel;
     private Vector3 initPos;
+    public InputField nameInputField;
 
     void Awake()
     {
@@ -53,6 +54,24 @@ public class EndCarousel : MonoBehaviour {
     void Start()
     {
 
+    }
+
+    public void OnValueChange()
+    {
+        Button butt = GameObject.Find("ContinueButton").GetComponent<Button>();
+        if (nameInputField.text.Length == 0)
+        {
+            butt.interactable = false;
+        }
+        else
+        {
+            butt.interactable = true;
+        }
+    }
+
+    public void OnEndEdit()
+    {
+        Data.playerName = nameInputField.text;
     }
 
     public void Demarrer()

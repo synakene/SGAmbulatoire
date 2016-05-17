@@ -1,0 +1,81 @@
+﻿{
+  "feedback": [
+    {
+      "idConv": 1,
+      "idNode": 2,
+      "idGoodAnswer": 2,
+      "text": "- Instaure la relation de confiance. \n \n- Rassure le patient car il identifie le soignant."
+    },
+
+    {
+      "idConv": 1,
+      "idNode": 1,
+      "idGoodAnswer": 2,
+      "text": "- Vocabulaire inadapté. \n \n- Ne pas se présenter engendre une situation anxiogène pour le patient."
+    },
+
+    {
+      "idConv": 1,
+      "idNode": 21,
+      "idGoodAnswer": 21,
+      "text": "- Vocabulaire adapté. \n \n- Expliquer le but de l’entretien (patient plus attentif, il comprend mieux l’entretien)."
+    },
+
+    {
+      "idConv": 1,
+      "idNode": 8,
+      "idGoodAnswer": 21,
+      "text": "- N’explique pas le but de l’entretien, le patient sera moins attentif."
+    },
+
+    {
+      "idConv": 1,
+      "idNode": 15,
+      "idGoodAnswer": 15,
+      "text": "- Instaure la relation de confiance. \n \n- Rassure le patient."
+    },
+
+    {
+      "idConv": 1,
+      "idNode": 4,
+      "idGoodAnswer": 15,
+      "text": "- Vocabulaire adapté. \n \n- Tient compte des demandes du patient, écoute active. \n \n- Expliquer le but de l’entretien (patient plus attentif, il comprend mieux l’entretien). \n \n- MAIS ne s’est pas présenté !"
+    },
+
+    {
+      "idConv": 1,
+      "idNode": 23,
+      "idGoodAnswer": 15,
+      "text": "- Ne tient pas compte du ressenti du patient (le patient se sent ignoré).\n \n- Manque d'écoute active."
+    },
+
+    {
+      "idConv": 1,
+      "idNode": 12,
+      "idGoodAnswer": 11,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 1,
+      "idNode": 11,
+      "idGoodAnswer": 11,
+      "text": "- Respect des effets personnels. \n \n- Installation propice à une bonne communication (hauteur, distance des interlocuteurs)."
+    },
+
+    {
+      "idConv": 1,
+      "idNode": 13,
+      "idGoodAnswer": 11,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 1,
+      "idNode": 14,
+      "idGoodAnswer": 11,
+      "text": "A remplir."
+    }
+
+  ]
+}

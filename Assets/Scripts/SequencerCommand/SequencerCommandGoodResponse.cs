@@ -34,6 +34,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
             Data.MaxScoreObj3 += Mathf.Abs(score3);
             GameObject.Find("HeaderPanel").GetComponent<Animation>().Play("AddScore");
             GameObject.Find("count3").GetComponent<Text>().text = (Data.scoreObj3).ToString() + "/" + (Data.MaxScoreObj3).ToString();
+            Stop();
         }
     }
 }
