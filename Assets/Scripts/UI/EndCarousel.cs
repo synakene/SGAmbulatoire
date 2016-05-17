@@ -77,6 +77,9 @@ public class EndCarousel : MonoBehaviour {
     public void Demarrer()
     {
         Data.ReinitLuaVar();
+        Data.reinitScore();
+        Data.min = 0;
+        Data.sec = 0;
         SceneManager.LoadScene(0);
     }
 
@@ -86,6 +89,9 @@ public class EndCarousel : MonoBehaviour {
         {
             Time.timeScale = 1;
             Data.ReinitLuaVar();
+            Data.reinitScore();
+            Data.min = 0;
+            Data.sec = 0;
             SceneManager.LoadScene(0);
         }
 
@@ -99,6 +105,9 @@ public class EndCarousel : MonoBehaviour {
         {
             Time.timeScale = 1;
             Data.ReinitLuaVar();
+            Data.reinitScore();
+            Data.min = 0;
+            Data.sec = 0;
             SceneManager.LoadScene(0);
         }
     }
