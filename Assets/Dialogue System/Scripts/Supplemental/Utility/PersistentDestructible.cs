@@ -12,13 +12,14 @@ namespace PixelCrushers.DialogueSystem {
 	[AddComponentMenu("Dialogue System/Save System/Persistent Destructible")]
 	public class PersistentDestructible : MonoBehaviour {
 
-		/// <summary>
-		/// Assign a Lua variable name to keep track of whether the GameObject
-		/// has been destroyed. If this is blank, it uses the name of the
-		/// GameObject for the variable name. If the variable is <c>true</c>,
-		/// the GameObject has been destroyed.
-		/// </summary>
-		public string variableName = string.Empty;
+        /// <summary>
+        /// Assign a Lua variable name to keep track of whether the GameObject
+        /// has been destroyed. If this is blank, it uses the name of the
+        /// GameObject for the variable name. If the variable is <c>true</c>,
+        /// the GameObject has been destroyed.
+        /// </summary>
+        [Tooltip("Unique Dialogue System variable (Boolean) to record whether the GameObject has been destroyed.")]
+        public string variableName = string.Empty;
 
 		protected string ActualVariableName { 
 			get { return string.IsNullOrEmpty(variableName) ? OverrideActorName.GetInternalName(transform) : variableName; }
@@ -55,6 +56,14 @@ namespace PixelCrushers.DialogueSystem {
 		public void OnLevelWillBeUnloaded() {
 			listenForOnDestroy = false;
 		}
+
+        /// <summary>
+        /// If the application is ending, don't listen, as this can log errors
+        /// in the console.
+        /// </summary>
+        public void OnApplicationQuit() {
+            listenForOnDestroy = false;
+        }
 		
 		/// <summary>
 		/// If the GameObject is destroyed, set its Lua variable <c>true</c>.

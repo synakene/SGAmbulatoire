@@ -5273,9 +5273,11 @@ MonoBehaviour:
   charactersPerSecond: 50
   audioClip: {fileID: 0}
   audioSource: {fileID: 0}
+  interruptAudioClip: 0
   fullPauseDuration: 1
   quarterPauseDuration: .25
   removeDuplicateTypewriterEffects: 1
+  waitOneFrameBeforeStarting: 0
   onBegin:
     m_PersistentCalls:
       m_Calls: []
@@ -5947,9 +5949,11 @@ MonoBehaviour:
   charactersPerSecond: 50
   audioClip: {fileID: 0}
   audioSource: {fileID: 0}
+  interruptAudioClip: 0
   fullPauseDuration: 1
   quarterPauseDuration: .25
   removeDuplicateTypewriterEffects: 1
+  waitOneFrameBeforeStarting: 0
   onBegin:
     m_PersistentCalls:
       m_Calls: []
@@ -6574,6 +6578,7 @@ MonoBehaviour:
       portraitImage: {fileID: 11426024}
       portraitName: {fileID: 11426020}
       continueButton: {fileID: 11426002}
+      ignorePauseCodes: 0
       animationTransitions:
         showTrigger: 
         hideTrigger: 
@@ -6584,6 +6589,7 @@ MonoBehaviour:
       portraitImage: {fileID: 11425958}
       portraitName: {fileID: 11425954}
       continueButton: {fileID: 11425936}
+      ignorePauseCodes: 0
       animationTransitions:
         showTrigger: 
         hideTrigger: 
@@ -6600,6 +6606,7 @@ MonoBehaviour:
         portraitImage: {fileID: 11425982}
         portraitName: {fileID: 11425978}
         continueButton: {fileID: 0}
+        ignorePauseCodes: 1
         animationTransitions:
           showTrigger: 
           hideTrigger: 
@@ -6651,6 +6658,7 @@ MonoBehaviour:
       hideTrigger: Hide
   autoFocus: 0
   findActorOverrides: 0
+  addEventSystemIfNeeded: 1
 --- !u!114 &11426068
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -217,8 +217,6 @@ GameObject:
   - 224: {fileID: 22430858}
   - 222: {fileID: 22230850}
   - 114: {fileID: 11430872}
-  - 225: {fileID: 22530834}
-  - 95: {fileID: 9530834}
   m_Layer: 5
   m_Name: Quest Log Window Main Panel
   m_TagString: Untagged
@@ -599,21 +597,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!95 &9530834
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 130858}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 1c072b8381d780743a547dcff149603c, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
 --- !u!95 &9530836
 Animator:
   serializedVersion: 3
@@ -958,7 +941,7 @@ MonoBehaviour:
   abandonQuestState: 1
   pauseWhileOpen: 1
   unlockCursorWhileOpen: 1
-  useGroups: 0
+  useGroups: 1
   mainPanel: {fileID: 11430872}
   activeQuestsButton: {fileID: 11430878}
   completedQuestsButton: {fileID: 11430920}
@@ -2796,17 +2779,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: .5, y: .5}
---- !u!225 &22530834
-CanvasGroup:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 130858}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!225 &22540754
 CanvasGroup:
   m_ObjectHideFlags: 1

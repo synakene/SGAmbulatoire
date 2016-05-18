@@ -89,7 +89,7 @@ namespace PixelCrushers.DialogueSystem
             EditorWindowTools.DrawHorizontalLine();
         }
 
-        private Texture2D FindIcon()
+        public static Texture2D FindIcon()
         {
             // Search default location:
             var iconFilepath = EditorGUIUtility.isProSkin ? DefaultDarkSkinIconFilepath : DefaultLightSkinIconFilepath;

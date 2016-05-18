@@ -12,27 +12,32 @@ namespace PixelCrushers.DialogueSystem {
 	[AddComponentMenu("Dialogue System/Actor/Increment On Destroy")]
 	public class IncrementOnDestroy : MonoBehaviour {
 
-		/// <summary>
-		/// The variable to increment.
-		/// </summary>
-		public string variable = string.Empty;
+        /// <summary>
+        /// The variable to increment.
+        /// </summary>
+        [Tooltip("Increment this Dialogue System variable when the GameObject is destroyed.")]
+        public string variable = string.Empty;
 
-		/// <summary>
-		/// The increment amount. To decrement, use a negative number.
-		/// </summary>
-		public int increment = 1;
+        /// <summary>
+        /// The increment amount. To decrement, use a negative number.
+        /// </summary>
+        [Tooltip("Increment the variable by this amount. Use a negative value to decrement.")]
+        public int increment = 1;
 
-		/// <summary>
-		/// The minimum value.
-		/// </summary>
-		public int min = 0;
+        /// <summary>
+        /// The minimum value.
+        /// </summary>
+        [Tooltip("After incrementing, ensure that the variable is at least this value.")]
+        public int min = 0;
 
-		/// <summary>
-		/// The maximum value.
-		/// </summary>
-		public int max = 100;
+        /// <summary>
+        /// The maximum value.
+        /// </summary>
+        [Tooltip("After incrementing, ensure that the variable is no more than this value.")]
+        public int max = 100;
 
-		public string alertMessage = string.Empty;
+        [Tooltip("Optional alert message to show when incrementing.")]
+        public string alertMessage = string.Empty;
 
 		private bool listenForOnDestroy = false;
 
@@ -54,11 +59,19 @@ namespace PixelCrushers.DialogueSystem {
 		public void OnLevelWillBeUnloaded() {
 			listenForOnDestroy = false;
 		}
-		
-		/// <summary>
-		/// When this object is destroyed, increment the counter and update the quest tracker.
-		/// </summary>
-		public void OnDestroy() {
+
+        /// <summary>
+        /// If the application is ending, don't listen, as this can log errors
+        /// in the console.
+        /// </summary>
+        public void OnApplicationQuit() {
+            listenForOnDestroy = false;
+        }
+
+        /// <summary>
+        /// When this object is destroyed, increment the counter and update the quest tracker.
+        /// </summary>
+        public void OnDestroy() {
 			if (!listenForOnDestroy) return;
 			int oldValue = DialogueLua.GetVariable(ActualVariableName).AsInt;
 			int newValue = Mathf.Clamp(oldValue + increment, min, max);

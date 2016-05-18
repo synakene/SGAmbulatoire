@@ -64,6 +64,17 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     titre.text = "Aide";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
+                case "diagConsigne":
+                    helpText.text = "Vous allez devoir élaborer un diagnostic. Posez les questions les plus pertinentes au patient avant de poser un diagnostic. Quand vous avez terminé cliquez sur \"Posez un diagnostic\".";
+                    titre.text = "Consigne";
+                    helpText.alignment = TextAnchor.MiddleLeft;
+                    break;
+                case "gratz1":
+                    helpText.text = "Vous avez élaboré le bon diagnostic";
+                    titre.text = "Bravo !";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                    
             }
 
             Stop();

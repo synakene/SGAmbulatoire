@@ -43,6 +43,9 @@ namespace PixelCrushers.DialogueSystem {
 		/// </summary>
 		[Tooltip("Optional continue button; configure OnClick to invoke dialogue UI's OnContinue method")]
 		public UnityEngine.UI.Button continueButton;
+
+        [Tooltip("Ignore RPGMaker-style pause codes")]
+        public bool ignorePauseCodes = false;
 		
 		[Serializable]
 		public class AnimationTransitions {
@@ -164,7 +167,9 @@ namespace PixelCrushers.DialogueSystem {
 		private void SetFormattedText(UnityEngine.UI.Text label, FormattedText formattedText) {
 			if (label != null) {
 				if (formattedText != null) {
-					label.text = UITools.GetUIFormattedText(formattedText);
+                    var text = UITools.GetUIFormattedText(formattedText);
+                    if (ignorePauseCodes) text = UnityUITypewriterEffect.StripRPGMakerCodes(text);
+                    label.text = text;
 					if (!haveSavedOriginalColor) {
 						originalColor = label.color;
 						haveSavedOriginalColor = true;
