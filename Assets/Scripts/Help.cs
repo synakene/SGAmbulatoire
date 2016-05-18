@@ -30,7 +30,5 @@ public class Help : MonoBehaviour {
         GameObject canvasDialogue = GameObject.Find("Dialogue Canvas");
         canvasDialogue.GetComponent<Canvas>().enabled = true;
         DialogueManager.ConversationView.OnConversationContinue();
-
-        GameObject.Find("HeaderCanvas").GetComponent<Canvas>().enabled = true;
     }
 }

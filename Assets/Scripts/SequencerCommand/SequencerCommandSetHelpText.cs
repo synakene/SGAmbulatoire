@@ -10,27 +10,59 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
     {
         public void Start()
         {
-            int num = int.Parse(GetParameter(0));
+            string var = GetParameter(0);
             Transform helpTransform = GameObject.Find("HelpCanvas").transform;
             Text[] helpTextTab = helpTransform.gameObject.GetComponentsInChildren<Text>(true);
 
             Text helpText = helpTextTab[0];
+            Text titre = helpTextTab[0];
             foreach (Text t in helpTextTab)
             {
                 if (t.name == "Text")
                     helpText = t;
+                if (t.name == "Titre")
+                    titre = t;
             }
 
-            switch (num)
+            switch (var)
             {
-                case 0:
+                case "choix1":
                     helpText.text = "Attention à votre ergonomie, rester debout pendant tout l’entretien va vous fatiguer. De plus, vous n’êtes pas à la même hauteur que le patient pour communiquer.";
+                    titre.text = "Aide";
                     break;
-                case 1:
+                case "choix2":
                     helpText.text = "Ce sont les affaires du patient !";
+                    titre.text = "Aide";
+                    helpText.alignment = TextAnchor.MiddleCenter;
                     break;
-                case 2:
+                case "choix3":
                     helpText.text = "Attention à l’hygiène, ce n’est pas votre lit ! De plus, le patient peut ressentir votre geste comme une intrusion dans son espace personnel.";
+                    titre.text = "Aide";
+                    break;
+                case "param1":
+                    helpText.text = "Tension artérielle : 150/100mmHg";
+                    titre.text = "Résultat";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "param2":
+                    helpText.text = "Fréquence cardiaque : 95 batt/min";
+                    titre.text = "Résultat";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "param3":
+                    helpText.text = "Saturation : 99 %";
+                    titre.text = "Résultat";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "param4":
+                    helpText.text = "Fréquence cardiaque : 95 batt/min";
+                    titre.text = "Résultat";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "diag":
+                    helpText.text = "Revoyez les normes des paramètres vitaux !";
+                    titre.text = "Aide";
+                    helpText.alignment = TextAnchor.MiddleCenter;
                     break;
             }
 

@@ -232,7 +232,8 @@ namespace sharpPDF
             string[] strings = Regex.Split(sentence, @"(\s|\n)");
             foreach (string s in strings)
             {
-                wordList.Add(s);
+                if (!Regex.IsMatch(s, @"\[(.*?)\]")) //Don't take [f] or [pic=2]
+                    wordList.Add(s);
             }
             return wordList;
         }

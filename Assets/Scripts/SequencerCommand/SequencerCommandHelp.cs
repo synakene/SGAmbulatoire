@@ -11,7 +11,6 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
 		public void Start() {
             GameObject canvasDialogue = GameObject.Find("Dialogue Canvas");
             canvasDialogue.GetComponent<Canvas>().enabled = false;
-            GameObject.Find("HeaderCanvas").GetComponent<Canvas>().enabled = false;
 
             GameObject HelpCanvas = GameObject.Find("HelpCanvas");
             GameObject HelpSheet = HelpCanvas.gameObject.transform.FindChild("HelpSheet").gameObject;
