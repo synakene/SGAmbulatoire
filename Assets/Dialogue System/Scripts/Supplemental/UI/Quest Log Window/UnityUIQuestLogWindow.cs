@@ -75,8 +75,6 @@ namespace PixelCrushers.DialogueSystem {
 
 		private UIShowHideController showHideController = null;
 
-        private List<string> collapsedGroups = new List<string>();
-
 		public override void Awake() {
 			showHideController = new UIShowHideController(this.gameObject, mainPanel);
 		}
@@ -119,7 +117,7 @@ namespace PixelCrushers.DialogueSystem {
 		/// </summary>
 		/// <param name="openedWindowHandler">Opened window handler.</param>
 		public override void OpenWindow(Action openedWindowHandler) {
-			showHideController.Show(animationTransitions.showTrigger, pauseWhileOpen, openedWindowHandler, false);
+			showHideController.Show(animationTransitions.showTrigger, pauseWhileOpen, openedWindowHandler);
 			IsOpen = true;
 		}
 
@@ -128,6 +126,7 @@ namespace PixelCrushers.DialogueSystem {
 		/// </summary>
 		/// <param name="closedWindowHandler">Closed window handler.</param>
 		public override void CloseWindow(Action closedWindowHandler) {
+			if (pauseWhileOpen) Time.timeScale = 1;
 			showHideController.Hide(animationTransitions.hideTrigger, closedWindowHandler);
 			IsOpen = false;
 		}
@@ -175,22 +174,18 @@ namespace PixelCrushers.DialogueSystem {
 		private void AddQuestsToTable() {
 			if (questTable == null) return;
 			string currentGroup = null;
-            var isCurrentGroupCollapsed = false;
 			for (int i = 0; i < Quests.Length; i++) {
 				if (!string.Equals(Quests[i].Group, currentGroup)) {
 					currentGroup = Quests[i].Group;
 					AddQuestGroupToTable(currentGroup);
-                    isCurrentGroupCollapsed = collapsedGroups.Contains(currentGroup);
 				}
-                if (!isCurrentGroupCollapsed) {
-                    AddQuestToTable(Quests[i], i);
-                }
+				AddQuestToTable(Quests[i], i);
 			}
 			NotifyContentChanged();
 		}
 
 		/// <summary>
-		/// Adds a quest group to the table using the template.
+		/// Adds a quest to the table using the template.
 		/// </summary>
 		/// <param name="questInfo">Quest info.</param>
 		private void AddQuestGroupToTable(string group) {
@@ -207,13 +202,7 @@ namespace PixelCrushers.DialogueSystem {
 			if (template == null) return;
 			template.Initialize();
 			template.heading.text = group;
-
-            // Set up the collapse/expand button:
-            var button = questGroupGameObject.GetComponentInChildren<UnityEngine.UI.Button>();
-            if (button != null) {
-                button.onClick.AddListener(() => ClickQuestGroupFoldout(group));
-            }
-        }
+		}
 
 		/// <summary>
 		/// Adds a quest to the table using the template.
@@ -292,15 +281,6 @@ namespace PixelCrushers.DialogueSystem {
 		public void ClickQuestFoldout(string questTitle) {
 			ClickQuest(questTitle);
 		}
-
-        public void ClickQuestGroupFoldout(string group) {
-            if (collapsedGroups.Contains(group)) {
-                collapsedGroups.Remove(group);
-            } else {
-                collapsedGroups.Add(group);
-            }
-            OnQuestListUpdated();
-        }
 
 		/// <summary>
 		/// Track button clicked event that sets SelectedQuest first.

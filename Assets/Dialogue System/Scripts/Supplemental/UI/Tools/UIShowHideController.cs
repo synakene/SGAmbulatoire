@@ -21,46 +21,38 @@ namespace PixelCrushers.DialogueSystem {
 			this.animCoroutine = null;
 		}
 
-		public void Show(string showTrigger, bool pause, System.Action callback, bool wait = true) {
+		public void Show(string showTrigger, bool pause, System.Action callback) {
 			var newTimeScale = pause ? 0 : Time.timeScale;
 			CancelCurrentAnim();
-			animCoroutine = DialogueManager.Instance.StartCoroutine(WaitForAnimation(showTrigger, newTimeScale, true, wait, callback));
+			animCoroutine = DialogueManager.Instance.StartCoroutine(WaitForAnimation(showTrigger, newTimeScale, true, callback));
 		}
 
 		public void Hide(string hideTrigger, System.Action callback) {
 			CancelCurrentAnim();
-			animCoroutine = DialogueManager.Instance.StartCoroutine(WaitForAnimation(hideTrigger, Time.timeScale, false, true, callback));
+			animCoroutine = DialogueManager.Instance.StartCoroutine(WaitForAnimation(hideTrigger, Time.timeScale, false, callback));
 		}
 
-		private IEnumerator WaitForAnimation(string triggerName, float newTimeScale, bool panelActive, bool wait, System.Action callback) {
+		private IEnumerator WaitForAnimation(string triggerName, float newTimeScale, bool panelActive, System.Action callback) {
 			if (panelActive) Tools.SetGameObjectActive(panel, true);
 			if (CanTriggerAnimation(triggerName)) {
-                CheckAnimatorModeAndTimescale(triggerName); //---Was: Time.timeScale = 1; // Can't guarantee animator is set to Unscaled, so unpause to play.
-                animator.SetTrigger(triggerName);
+				Time.timeScale = 1; // Can't guarantee animator is set to Unscaled, so unpause to play.
+				animator.SetTrigger(triggerName);
 				const float maxWaitDuration = 10;
 				float timeout = Time.realtimeSinceStartup + maxWaitDuration;
 				var goalHashID = Animator.StringToHash(triggerName);
 				var oldHashId = UITools.GetAnimatorNameHash(animator.GetCurrentAnimatorStateInfo(0));
 				var currentHashID = oldHashId;
-                if (wait && !Mathf.Approximately(0, Time.timeScale)) {
-                    while ((currentHashID != goalHashID) && (currentHashID == oldHashId) && (Time.realtimeSinceStartup < timeout)) {
-                        yield return null;
-                        currentHashID = UITools.GetAnimatorNameHash(animator.GetCurrentAnimatorStateInfo(0));
-                    }
-                    yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
-                }
-            }
+				while ((currentHashID != goalHashID) && (currentHashID == oldHashId) && (Time.realtimeSinceStartup < timeout)) {
+					yield return null;
+					currentHashID = UITools.GetAnimatorNameHash(animator.GetCurrentAnimatorStateInfo(0));
+				}
+				yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
+			}
 			if (!panelActive) Tools.SetGameObjectActive(panel, false);
 			Time.timeScale = newTimeScale;
 			animCoroutine = null;
 			if (callback != null) callback.Invoke();
 		}		
-
-        private void CheckAnimatorModeAndTimescale(string triggerName) {
-            if (Mathf.Approximately(0, Time.timeScale) && (animator.updateMode != AnimatorUpdateMode.UnscaledTime) && DialogueDebug.LogWarnings) {
-                Debug.LogWarning("Dialogue System: Time is paused but animator mode isn't set to Unscaled Time; the animation triggered by " + triggerName + " won't play.", animator);
-            }
-        }
 		
 		private void CancelCurrentAnim() {
 			if (animCoroutine != null) {

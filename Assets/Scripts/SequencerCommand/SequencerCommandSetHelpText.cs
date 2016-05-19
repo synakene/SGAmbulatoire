@@ -65,13 +65,38 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case "diagConsigne":
-                    helpText.text = "Vous allez devoir élaborer un diagnostic. Posez les questions les plus pertinentes au patient avant de poser un diagnostic. Quand vous avez terminé cliquez sur \"Posez un diagnostic\".";
+                    helpText.text = "Vous allez devoir élaborer un diagnostic. Posez les questions les plus pertinentes au patient avant de poser un diagnostic. Quand vous avez terminé cliquez sur \"Poser un diagnostic\".";
                     titre.text = "Consigne";
                     helpText.alignment = TextAnchor.MiddleLeft;
                     break;
                 case "gratz1":
                     helpText.text = "Vous avez élaboré le bon diagnostic";
                     titre.text = "Bravo !";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "diag1":
+                    helpText.text = "Constipation avérée = 72h sans selles";
+                    titre.text = "Aide";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "diag2":
+                    helpText.text = "Bonne idée car le patient a des sueurs, est à jeun mais glycémie correcte et absence de vertiges.";
+                    titre.text = "Aide";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "diag3":
+                    helpText.text = "36°C < température normale < 38°C";
+                    titre.text = "Aide";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "diag0":
+                    helpText.text = "Bravo ! Vous avez bien repéré les signes de l’anxiété chez Mr Sainte-Marie, tremblements, se ronge les ongles, sueurs, douleurs abdominales, troubles du sommeil, tachycardie et hypertension.";
+                    titre.text = "Bon diagnostic !";
+                    helpText.alignment = TextAnchor.MiddleLeft;
+                    break;
+                case "infoGlycemie":
+                    helpText.text = "Résultat : 4.1 mmol/L";
+                    titre.text = "Information";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
                     

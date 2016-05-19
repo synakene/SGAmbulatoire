@@ -52,17 +52,8 @@ namespace PixelCrushers.DialogueSystem {
 		[Tooltip("Always keep a control focused; useful for gamepads")]
 		public bool autoFocus = false;
 
-        /// <summary>
-        /// Set <c>true</c> to look for OverrideUnityUIDialogueControls on actors.
-        /// </summary>
 		[Tooltip("Look for OverrideUnityUIDialogueControls on actors")]
 		public bool findActorOverrides = false;
-
-        /// <summary>
-        /// Set <c>true</c> to add an EventSystem if one isn't in the scene.
-        /// </summary>
-        [Tooltip("Add an EventSystem if one isn't in the scene")]
-        public bool addEventSystemIfNeeded = true;
 
 		private UnityUIQTEControls qteControls;
 		
@@ -131,7 +122,6 @@ namespace PixelCrushers.DialogueSystem {
 		}
 
 		private OverrideUnityUIDialogueControls FindActorOverride(Transform actor) {
-            if (actor == null) return null;
 			if (!overrideCache.ContainsKey(actor)) {
 				overrideCache.Add(actor, (actor != null) ? actor.GetComponentInChildren<OverrideUnityUIDialogueControls>() : null);
 			}
@@ -190,9 +180,9 @@ namespace PixelCrushers.DialogueSystem {
 		#region Subtitles
 		
 		public override void ShowSubtitle(Subtitle subtitle) {
-			if (findActorOverrides && subtitle != null) {
-				var overrideControls = (subtitle.speakerInfo != null) ? FindActorOverride(subtitle.speakerInfo.transform) : null;
-				if (subtitle.speakerInfo == null || subtitle.speakerInfo.characterType == CharacterType.NPC) {
+			if (findActorOverrides) {
+				var overrideControls = FindActorOverride(subtitle.speakerInfo.transform);
+				if (subtitle.speakerInfo.characterType == CharacterType.NPC) {
 					dialogue.npcSubtitle = (overrideControls != null) ? overrideControls.subtitle : originalNPCSubtitle;
 				} else {
 					dialogue.pcSubtitle = (overrideControls != null) ? overrideControls.subtitle : originalPCSubtitle;
@@ -220,13 +210,13 @@ namespace PixelCrushers.DialogueSystem {
 		public override void ShowResponses (Subtitle subtitle, Response[] responses, float timeout) {
 			if (findActorOverrides) {
 				// Use speaker's (NPC's) world space canvas for subtitle reminder, and for menu if set:
-				var overrideControls = (subtitle != null && subtitle.speakerInfo != null) ? FindActorOverride(subtitle.speakerInfo.transform) : null;
+				var overrideControls = FindActorOverride(subtitle.speakerInfo.transform);
 				var subtitleReminder = (overrideControls != null) ? overrideControls.subtitleReminder : originalResponseMenu.subtitleReminder;
 				if (overrideControls != null && overrideControls.responseMenu.panel != null) {
 					dialogue.responseMenu = (overrideControls != null && overrideControls.responseMenu.panel != null) ? overrideControls.responseMenu : originalResponseMenu;
 				} else {
 					// Otherwise use PC's world space canvas for menu if set:
-					overrideControls = (subtitle != null && subtitle.listenerInfo != null) ? FindActorOverride(subtitle.listenerInfo.transform) : null;
+					overrideControls = FindActorOverride(subtitle.listenerInfo.transform);
 					dialogue.responseMenu = (overrideControls != null && overrideControls.responseMenu.panel != null) ? overrideControls.responseMenu : originalResponseMenu;
 				}
 				// Either way, use speaker's (NPC's) subtitle reminder:

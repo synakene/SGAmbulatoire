@@ -78,18 +78,18 @@ namespace PixelCrushers.DialogueSystem {
 				gameObject.SetActive(value);
 			}
 			foreach (var component in components) {
-                if (component is Collider) {
-                    (component as Collider).enabled = value;
-                } else if (component is Renderer) {
-                    (component as Renderer).enabled = value;
-                } else if (component is Animation) {
-                    (component as Animation).enabled = value;
-                } else if (component is Animator) {
-                    (component as Animator).enabled = value;
-                } else if (component is UnityEngine.Behaviour) {
-                    (component as UnityEngine.Behaviour).enabled = value;
-                } else {
-                    if (DialogueDebug.LogWarnings) Debug.LogWarning(string.Format("{0}: Internal error - Range Trigger doesn't know how to handle {1} of type {2}", new object[] { DialogueDebug.Prefix, component, component.GetType().Name }));
+				if (component is Collider) {
+					(component as Collider).enabled = value;
+				} else if (component is Renderer) {
+					(component as Renderer).enabled = value;
+				} else if (component is Animation) {
+					(component as Animation).enabled = value;
+				} else if (component is Animator) {
+					(component as Animator).enabled = value;
+				} else if (component is MonoBehaviour) {
+					(component as MonoBehaviour).enabled = value;
+				} else {
+					if (DialogueDebug.LogWarnings) Debug.LogWarning(string.Format("{0}: Internal error - Range Trigger doesn't know how to handle {1} of type {2}",	DialogueDebug.Prefix, component, component.GetType().Name));
 				}
 			}
 		}

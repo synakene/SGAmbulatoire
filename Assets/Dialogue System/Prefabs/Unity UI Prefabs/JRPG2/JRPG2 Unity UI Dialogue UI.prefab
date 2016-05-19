@@ -636,7 +636,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: b3fa0fe5e93106c4ab262395c9ca1493, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 2
+  m_UpdateMode: 0
   m_ApplyRootMotion: 1
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -651,7 +651,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: b3fa0fe5e93106c4ab262395c9ca1493, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 2
+  m_UpdateMode: 0
   m_ApplyRootMotion: 1
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -1150,10 +1150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   charactersPerSecond: 50
   audioClip: {fileID: 0}
-  audioSource: {fileID: 0}
-  fullPauseDuration: 1
-  quarterPauseDuration: .25
-  removeDuplicateTypewriterEffects: 1
+  paused: 0
 --- !u!114 &11463036
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1217,7 +1214,6 @@ MonoBehaviour:
           hideTrigger: 
         alwaysVisible: 0
       timer: {fileID: 11463066}
-      selectCurrentOnTimeout: 0
       buttons:
       - {fileID: 11463048}
       - {fileID: 11463024}
@@ -1227,9 +1223,6 @@ MonoBehaviour:
       buttonTemplateHolder: {fileID: 0}
       buttonTemplateScrollbar: {fileID: 0}
       buttonTemplateScrollbarResetValue: 1
-      autonumber:
-        enabled: 0
-        format: '{0}. {1}'
       animationTransitions:
         showTrigger: 
         hideTrigger: 
@@ -1249,12 +1242,10 @@ MonoBehaviour:
     panel: {fileID: 11463096}
     line: {fileID: 11463104}
     continueButton: {fileID: 11463070}
-    queueAlerts: 0
     animationTransitions:
       showTrigger: Show
       hideTrigger: Hide
   autoFocus: 1
-  findActorOverrides: 0
 --- !u!114 &11463042
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2246,10 +2237,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   charactersPerSecond: 50
   audioClip: {fileID: 0}
-  audioSource: {fileID: 0}
-  fullPauseDuration: 1
-  quarterPauseDuration: .25
-  removeDuplicateTypewriterEffects: 1
+  paused: 0
 --- !u!114 &11463124
 MonoBehaviour:
   m_ObjectHideFlags: 1

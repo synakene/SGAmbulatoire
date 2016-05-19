@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
-using UnityEngine.Events;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace PixelCrushers.DialogueSystem
 {
@@ -12,7 +12,6 @@ namespace PixelCrushers.DialogueSystem
 	/// color rich text tags and certain RPGMaker-style tags. It also works with any text alignment.
 	/// </summary>
 	[AddComponentMenu("Dialogue System/UI/Unity UI/Effects/Unity UI Typewriter Effect")]
-    [DisallowMultipleComponent]
 	public class UnityUITypewriterEffect : MonoBehaviour
     {
 
@@ -34,46 +33,12 @@ namespace PixelCrushers.DialogueSystem
         /// </summary>
         [Tooltip("Optional audio source through which to play the clip")]
         public AudioSource audioSource = null;
-
-        /// <summary>
-        /// If audio clip is still playing from previous character, stop and restart it when typing next character.
-        /// </summary>
-        [Tooltip("If audio clip is still playing from previous character, stop and restart it when typing next character")]
-        public bool interruptAudioClip = false;
-
-        /// <summary>
-        /// Duration to pause on when text contains '\\.'
-        /// </summary>
-        [Tooltip("Duration to pause on when text contains '\\.'")]
-        public float fullPauseDuration = 1f;
-
-        /// <summary>
-        /// Duration to pause when text contains '\\,'
-        /// </summary>
-        [Tooltip("Duration to pause when text contains '\\,'")]
-        public float quarterPauseDuration = 0.25f;
-
-        /// <summary>
-        /// Ensures this GameObject has only one typewriter effect.
-        /// </summary>
-        [Tooltip("Ensure this GameObject has only one typewriter effect")]
-        public bool removeDuplicateTypewriterEffects = true;
-
-        /// <summary>
-        /// Wait one frame to allow layout elements to setup first.
-        /// </summary>
-        [Tooltip("Wait one frame to allow layout elements to setup first")]
-        public bool waitOneFrameBeforeStarting = false;
-
-        public UnityEvent onBegin = new UnityEvent();
-        public UnityEvent onCharacter = new UnityEvent();
-        public UnityEvent onEnd = new UnityEvent();
-
-        /// <summary>
-        /// Indicates whether the effect is playing.
-        /// </summary>
-        /// <value><c>true</c> if this instance is playing; otherwise, <c>false</c>.</value>
-        public bool IsPlaying { get; private set; }
+		
+		/// <summary>
+		/// Indicates whether the effect is playing.
+		/// </summary>
+		/// <value><c>true</c> if this instance is playing; otherwise, <c>false</c>.</value>
+		public bool IsPlaying { get; private set; }
 
         private const string RichTextBoldOpen = "<b>";
         private const string RichTextBoldClose = "</b>";
@@ -86,6 +51,8 @@ namespace PixelCrushers.DialogueSystem
         private const string RPGMakerCodeSkipToEnd = @"\^";
         private const string RPGMakerCodeInstantOpen = @"\>";
         private const string RPGMakerCodeInstantClose = @"\<";
+        private const float FullPauseDuration = 1f;
+        private const float QuarterPauseDuration = 0.25f;
 
         private enum TokenType
         {
@@ -128,31 +95,7 @@ namespace PixelCrushers.DialogueSystem
         {
 			control = GetComponent<UnityEngine.UI.Text>();
 			if (audioSource == null) audioSource = GetComponent<AudioSource>();
-            if (removeDuplicateTypewriterEffects) RemoveIfDuplicate();
 		}
-
-        private void RemoveIfDuplicate()
-        {
-            var effects = GetComponents<UnityUITypewriterEffect>();
-            if (effects.Length > 1)
-            {
-                UnityUITypewriterEffect keep = effects[0];
-                for (int i = 1; i < effects.Length; i++)
-                {
-                    if (effects[i].GetInstanceID() < keep.GetInstanceID())
-                    {
-                        keep = effects[i];
-                    }
-                }
-                for (int i = 0; i < effects.Length; i++)
-                {
-                    if (effects[i] != keep)
-                    {
-                        Destroy(effects[i]);
-                    }
-                }
-            }
-        }
 		
 		public void Start()
         {
@@ -203,9 +146,6 @@ namespace PixelCrushers.DialogueSystem
         {
             if ((control != null) && (charactersPerSecond > 0))
             {
-                if (waitOneFrameBeforeStarting) yield return null;
-                if (audioSource != null) audioSource.clip = audioClip;
-                onBegin.Invoke();
                 IsPlaying = true;
                 paused = false;
                 float delay = 1 / charactersPerSecond;
@@ -232,7 +172,6 @@ namespace PixelCrushers.DialogueSystem
                                 case TokenType.Character:
                                     current.Append(token.character);
                                     PlayCharacterAudio();
-                                    onCharacter.Invoke();
                                     charactersTyped++;
                                     break;
                                 case TokenType.BoldOpen:
@@ -248,13 +187,7 @@ namespace PixelCrushers.DialogueSystem
                                 case TokenType.Pause:
                                     control.text = GetCurrentText(current, openTokenTypes, tokens);
                                     paused = true;
-                                    var continueTime = DialogueTime.time + token.duration;
-                                    int pauseSafeguard = 0;
-                                    while (DialogueTime.time < continueTime && pauseSafeguard < 999)
-                                    {
-                                        pauseSafeguard++;
-                                        yield return null;
-                                    }
+                                    yield return new WaitForSeconds(token.duration);
                                     paused = false;
                                     break;
                                 case TokenType.InstantOpen:
@@ -268,13 +201,7 @@ namespace PixelCrushers.DialogueSystem
                     //---Uncomment the line below to debug: 
                     // Debug.Log(control.text.Replace("<", "[").Replace(">", "]"));
                     lastTime = DialogueTime.time;
-                    var delayTime = DialogueTime.time + delay;
-                    int delaySafeguard = 0;
-                    while (DialogueTime.time < delayTime && delaySafeguard < 999)
-                    {
-                        delaySafeguard++;
-                        yield return null;
-                    }
+                    yield return new WaitForSeconds(delay);
                 }
             }
             Stop();
@@ -282,16 +209,7 @@ namespace PixelCrushers.DialogueSystem
 
         private void PlayCharacterAudio()
         {
-            if (audioClip == null || audioSource == null) return;
-            if (interruptAudioClip)
-            {
-                if (audioSource.isPlaying) audioSource.Stop();
-                audioSource.Play();
-            }
-            else
-            {
-                if (!audioSource.isPlaying) audioSource.Play();
-            }
+            if (audioClip != null && audioSource != null && !audioSource.isPlaying) audioSource.PlayOneShot(audioClip);
         }
 
         private Token GetNextToken(List<Token> tokens)
@@ -463,8 +381,8 @@ namespace PixelCrushers.DialogueSystem
                 else if (remainder.StartsWith(@"\"))
                 {
                     // Check for RPGMaker-style codes:
-                    token = TryTokenize(RPGMakerCodeFullPause, TokenType.Pause, fullPauseDuration, ref remainder);
-                    if (token == null) token = TryTokenize(RPGMakerCodeQuarterPause, TokenType.Pause, quarterPauseDuration, ref remainder);
+                    token = TryTokenize(RPGMakerCodeFullPause, TokenType.Pause, FullPauseDuration, ref remainder);
+                    if (token == null) token = TryTokenize(RPGMakerCodeQuarterPause, TokenType.Pause, QuarterPauseDuration, ref remainder);
                     if (token == null) token = TryTokenize(RPGMakerCodeInstantOpen, TokenType.InstantOpen, 0, ref remainder);
                     if (token == null) token = TryTokenize(RPGMakerCodeInstantClose, TokenType.InstantClose, 0, ref remainder);
                     if (token == null) token = TryTokenize(RPGMakerCodeSkipToEnd, TokenType.InstantOpen, 0, ref remainder);
@@ -507,7 +425,7 @@ namespace PixelCrushers.DialogueSystem
             }
         }
 
-        public static string StripRPGMakerCodes(string s)
+        private string StripRPGMakerCodes(string s)
         {
             return s.Contains(@"\") ? s.Replace(RPGMakerCodeQuarterPause, string.Empty).
                 Replace(RPGMakerCodeFullPause, string.Empty).
@@ -522,7 +440,6 @@ namespace PixelCrushers.DialogueSystem
         /// </summary>
         public void Stop() {
 			StopAllCoroutines();
-            if (IsPlaying) onEnd.Invoke();
 			IsPlaying = false;
 			if (control != null) control.text = StripRPGMakerCodes(original);
 			original = string.Empty;

@@ -289,7 +289,7 @@ namespace PixelCrushers.DialogueSystem {
 			if (buttons != null) {
 				int position = start;
 				while ((0 <= position) && (position < buttons.Length)) {
-					if (buttons[position].visible && buttons[position].response != null) {
+					if (buttons[position].clickable) {
 						position += direction;
 					} else {
 						return position;
@@ -394,7 +394,7 @@ namespace PixelCrushers.DialogueSystem {
 				while ((UITools.GetAnimatorNameHash(animator.GetCurrentAnimatorStateInfo(0)) == oldHashId) && (Time.realtimeSinceStartup < timeout)) {
 					yield return null;
 				}
-				yield return DialogueManager.Instance.StartCoroutine(DialogueTime.WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length));
+				yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
 			}
 			isHiding = false;
 			if (panel != null) Tools.SetGameObjectActive(panel, false);

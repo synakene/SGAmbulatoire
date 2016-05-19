@@ -204,10 +204,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   charactersPerSecond: 50
   audioClip: {fileID: 0}
-  audioSource: {fileID: 0}
-  fullPauseDuration: 1
-  quarterPauseDuration: .25
-  removeDuplicateTypewriterEffects: 1
 --- !u!114 &11421916
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -349,17 +345,13 @@ MonoBehaviour:
         hideTrigger: 
       alwaysVisible: 0
     timer: {fileID: 0}
-    selectCurrentOnTimeout: 0
     buttons: []
     buttonTemplate: {fileID: 11421956}
     buttonTemplateHolder: {fileID: 11421942}
     buttonTemplateScrollbar: {fileID: 0}
     buttonTemplateScrollbarResetValue: 1
-    autonumber:
-      enabled: 0
-      format: '{0}. {1}'
     animationTransitions:
-      showTrigger: Show
+      showTrigger: 
       hideTrigger: 
     onContentChanged:
       m_PersistentCalls:
