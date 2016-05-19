@@ -17,7 +17,7 @@ public class EndCarousel : MonoBehaviour {
         initPos.x = (Screen.width);
 
         Text text = GameObject.Find("TextResultat").GetComponent<Text>();
-        if (Application.isWebPlayer)
+        if (Application.isWebPlayer || Application.platform == RuntimePlatform.WebGLPlayer)
         {
             text.text = "Vos résultats détaillés sont visibles en cliquant sur le bouton\nsitué en haut de la fenêtre du jeu";
         }
