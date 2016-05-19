@@ -30,15 +30,14 @@ public class SimplePDF : MonoBehaviour {
         page.addText(Data.playerName, 16, 735, predefinedFont.csHelvetica, 14, new pdfColor(predefinedColor.csBlack));
         page.addText("L’accueil et la préparation du patient dans le cadre de chirurgie ambulatoire.", 16, 710, predefinedFont.csHelvetica, 16, new pdfColor(predefinedColor.csRaspberry));
 
-        page.addText("Être centré sur le patient : " + Data.scoreObj1 + "/" + Data.MaxScoreObj1, 26, 690, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
-        page.addText("Réaliser les phases critiques dans l'ordre : " + Data.scoreObj2 + "/" + Data.MaxScoreObj2, 26, 675, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
-        page.addText("Utiliser le raisonnement clinique : " + Data.scoreObj3 + "/" + Data.MaxScoreObj3, 26, 660, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
+        page.addText("Être centré sur le patient : " + Data.scoreObj1 + "/" + Data.MaxScoreObj1, 26, 685, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
+        page.addText("Utiliser le raisonnement clinique : " + Data.scoreObj2 + "/" + Data.MaxScoreObj2, 26, 670, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
 
 
-        float score = ((Data.scoreObj1 + Data.scoreObj2 + Data.scoreObj3) / Data.MaxTotal) * 100f;
+        float score = ((Data.scoreObj1 + Data.scoreObj2) / Data.MaxTotal) * 100f;
         int scoreTotal = Mathf.FloorToInt(score);
 
-        page.addText("Score Total : " + scoreTotal + "%", 26, 630, predefinedFont.csHelveticaBold, 14, new pdfColor(predefinedColor.csRaspberry));
+        page.addText("Score Total : " + scoreTotal + "%", 26, 645, predefinedFont.csHelveticaBold, 14, new pdfColor(predefinedColor.csRaspberry));
 
 
         pdfTable myTable = new pdfTable();
@@ -90,8 +89,8 @@ public class SimplePDF : MonoBehaviour {
         /*Set Cellpadding*/
         myTable.cellpadding = 5;
 
-        page.addTable(myDoc, pages, myTable, 16, 610, 680);
-        page.addSuccessTable(myDoc, pages, SuccessTable, 8, 610, 680, myTable);
+        page.addTable(myDoc, pages, myTable, 16, 625, 680);
+        page.addSuccessTable(myDoc, pages, SuccessTable, 8, 625, 680, myTable);
 
         /* Add header to each pages */
         for (int i = 1; i < pages.Count; i++)

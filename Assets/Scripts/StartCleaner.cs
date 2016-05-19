@@ -4,9 +4,10 @@ using System.Collections;
 public class StartCleaner : MonoBehaviour {
 
 	void Awake () {
+
         GameObject DialogueManager = GameObject.FindGameObjectWithTag("DialogueManager");
         GameObject GameManager = GameObject.FindGameObjectWithTag("GameManager");
-        //GameObject CameraAngles = GameObject.FindGameObjectWithTag("CameraAngles");
+
         if (DialogueManager != null)
         {
             Destroy(DialogueManager);
@@ -16,11 +17,5 @@ public class StartCleaner : MonoBehaviour {
         {
             Destroy(GameManager);
         }
-
-        //if (CameraAngles != null)
-        //{
-        //    Destroy(CameraAngles);
-        //}
-
     }
 }

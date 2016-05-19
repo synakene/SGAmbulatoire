@@ -36,19 +36,7 @@ public class HeaderUI : MonoBehaviour
 
     void Awake()
     {
-        //audiosList = new List<AudioSource>();
-        //GameObject npc = GameObject.FindGameObjectWithTag("Louis");
-        //GameObject player = GameObject.FindGameObjectWithTag("Margaux");
-
-        //AudioSource[] audios = npc.transform.GetComponentsInChildren<AudioSource>(true);
-        //foreach (AudioSource audio in audios)
-        //{
-        //    audiosList.Add(audio);
-        //}
-        //audiosList.Add(player.GetComponent<AudioSource>());
-
         canvasDialogue = GameObject.Find("Dialogue Canvas");
-        //jaugeCanvas = GameObject.Find("JaugeCanvas");
     }
 
     void Start()
@@ -62,9 +50,6 @@ public class HeaderUI : MonoBehaviour
 
         GameObject.Find("count1").GetComponent<Text>().text = (Data.scoreObj1).ToString() + "/" + (Data.MaxScoreObj1).ToString();
         GameObject.Find("count2").GetComponent<Text>().text = (Data.scoreObj2).ToString() + "/" + (Data.MaxScoreObj2).ToString();
-        GameObject.Find("count3").GetComponent<Text>().text = (Data.scoreObj3).ToString() + "/" + (Data.MaxScoreObj3).ToString();
-
-        //jaugeCanvas.GetComponentInChildren<Slider>().value = Data.jaugeValue;
     }
 
     void OnDestroy()
@@ -149,7 +134,6 @@ public class HeaderUI : MonoBehaviour
         helpButton.enabled = false;
         profileButton.enabled = false;
         homeButton.enabled = false;
-        //jaugeCanvas.SetActive(false);
         Pause(true);
     }
 
@@ -160,7 +144,6 @@ public class HeaderUI : MonoBehaviour
         helpButton.enabled = false;
         profileButton.enabled = false;
         homeButton.enabled = false;
-        //jaugeCanvas.SetActive(false);
         Pause(true);
     }
 
@@ -175,13 +158,7 @@ public class HeaderUI : MonoBehaviour
             canvasDialogue.GetComponent<Canvas>().enabled = false;
         }
 
-        //quitButton.enabled = false;
-        //helpButton.enabled = false;
-        //profileButton.enabled = false;
-        //homeButton.enabled = false;
-
         headerPanel.SetActive(false);
-        //jaugeCanvas.SetActive(false);
     }
 
     public void ConfirmExit()
@@ -240,7 +217,6 @@ public class HeaderUI : MonoBehaviour
         helpButton.enabled = true;
         profileButton.enabled = true;
         homeButton.enabled = true;
-        //jaugeCanvas.SetActive(true);
     }
 
 
@@ -250,24 +226,11 @@ public class HeaderUI : MonoBehaviour
         sc.ReinitPosition();
         contextPanel.SetActive(false);
         Pause(false);
-        //if (DialogueManager.IsConversationActive)
-        //{
-        //    if (DialogueManager.CurrentConversationState.HasNPCResponse)
-        //    {
-        //        GameObject player = GameObject.FindGameObjectWithTag("Margaux");
-        //        player.GetComponent<AudioSource>().Play();
-        //    }
-        //    else
-        //    {
-        //        GameObject npc = GameObject.FindGameObjectWithTag("Louis");
-        //        npc.GetComponentInChildren<AudioSource>().Play();
-        //    }
-        //}
+
         quitButton.enabled = true;
         helpButton.enabled = true;
         profileButton.enabled = true;
         homeButton.enabled = true;
-        //jaugeCanvas.SetActive(true);
         headerPanel.SetActive(true);
 
         if (canvasDialogue)
@@ -280,11 +243,6 @@ public class HeaderUI : MonoBehaviour
     {
         if (pause)
         {
-            //foreach (AudioSource audio in audiosList)
-            //{
-            //    audio.Pause();
-            //}
-
             Time.timeScale = 0;
             DialogueManager.Pause();
         }
@@ -292,49 +250,6 @@ public class HeaderUI : MonoBehaviour
         {
             Time.timeScale = 1;
             DialogueManager.Unpause();
-            //foreach (AudioSource audio in audiosList)
-            //{
-            //    audio.UnPause();
-            //}
-            //if (DialogueManager.IsConversationActive && GameObject.Find("Dialogue Manager/Canvas v2/Dialogue UI/Dialogue Panel/NPC Subtitle Reminder Panel"))
-            //{
-            //    if (!GameObject.Find("Dialogue Manager/Canvas v2/Dialogue UI/Dialogue Panel/NPC Subtitle Reminder Panel").activeSelf)
-            //    {
-            //        GameObject npc = GameObject.FindGameObjectWithTag("NPC");
-            //        GameObject player = GameObject.FindGameObjectWithTag("Player");
-            //        if (DialogueManager.CurrentConversationState.subtitle.speakerInfo.IsPlayer)
-            //        {
-            //            string seq = "SALSA(Audio/" + player.GetComponent<Salsa3D>().audioClip.name + ");";
-            //            DialogueManager.PlaySequence(seq, player.transform, npc.transform);
-            //            StartCoroutine(PlaySeq(player.GetComponent<Salsa3D>().audioSrc));
-            //        }
-            //        else
-            //        {
-            //            string seq = "SALSA(Audio/" + npc.GetComponentInChildren<Salsa3D>().audioClip.name + ");";
-            //            DialogueManager.PlaySequence(seq, npc.GetComponentInChildren<Salsa3D>().transform, player.transform);
-            //            StartCoroutine(PlaySeq(npc.GetComponentInChildren<Salsa3D>().audioSrc));
-            //        }
-            //    }
-            //}
-        }
-    }
-
-    private IEnumerator PlaySeq(AudioSource clip)
-    {
-        bool isPlaying = true;
-
-        while (isPlaying && !(clip.time == clip.clip.length))
-        {
-            //foreach (AudioSource source in audiosList)
-            //{
-            //    if (source.name != clip.name && source.isPlaying)
-            //    {
-            //        clip.Stop();
-            //        isPlaying = false;
-            //        break;
-            //    }
-            //}
-            yield return null;
         }
     }
 }

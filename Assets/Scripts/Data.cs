@@ -24,11 +24,9 @@ public static class Data {
     //Score :
     public static int scoreObj1 = 0;
     public static int scoreObj2 = 0;
-    public static int scoreObj3 = 0;
 
     public static int MaxScoreObj1 = 0;
     public static int MaxScoreObj2 = 0;
-    public static int MaxScoreObj3 = 0;
 
     public static float MaxTotal = 23f;
     //public static float jaugeValue = 0;
@@ -42,11 +40,8 @@ public static class Data {
     {
         scoreObj1 = 0;
         scoreObj2 = 0;
-        scoreObj3 = 0;
 
         MaxScoreObj1 = 0;
         MaxScoreObj2 = 0;
-        MaxScoreObj3 = 0;
-        //jaugeValue = 0;
     }
 }
