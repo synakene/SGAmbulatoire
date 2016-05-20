@@ -10,6 +10,20 @@ public static class Data {
         DialogueLua.SetVariable("choix1", true);
         DialogueLua.SetVariable("choix2", true);
         DialogueLua.SetVariable("choix3", true);
+
+        DialogueLua.SetVariable("param1", false);
+        DialogueLua.SetVariable("param2", false);
+        DialogueLua.SetVariable("param3", false);
+        DialogueLua.SetVariable("param4", false);
+        DialogueLua.SetVariable("diag1", false);
+        DialogueLua.SetVariable("diag2", false);
+        DialogueLua.SetVariable("diag3", false);
+        DialogueLua.SetVariable("diag4", false);
+        DialogueLua.SetVariable("diag5", false);
+        DialogueLua.SetVariable("diag6", false);
+        DialogueLua.SetVariable("diag7", false);
+        DialogueLua.SetVariable("diag8", false);
+        DialogueLua.SetVariable("diag9", false);
     }
 
     //Feedback
