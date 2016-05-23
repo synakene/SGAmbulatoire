@@ -16,13 +16,8 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
             GameObject HelpSheet = HelpCanvas.gameObject.transform.FindChild("HelpSheet").gameObject;
             HelpSheet.SetActive(true);
 
-            Vector3 posInit = new Vector3(0f, -(Screen.height), 0f);
-            HelpSheet.gameObject.transform.localPosition = posInit;
-
-            iTween.MoveTo(HelpSheet.gameObject, iTween.Hash("y", 0,
-                "time", 1.5,
-                "islocal", true
-            ));
+            iTween.PunchScale(HelpSheet.gameObject, new Vector3(0.3f, 0.3f), 1.2f);
+            
             Stop();
 		}
 	}

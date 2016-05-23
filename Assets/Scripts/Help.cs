@@ -16,16 +16,23 @@ public class Help : MonoBehaviour {
 
     public void Continue()
     {
-        iTween.MoveTo(HelpSheet.gameObject, iTween.Hash("y", (Screen.height),
-            "time", 1.5,
-            "islocal", true,
-            "oncompletetarget", gameObject,
+        iTween.ValueTo(HelpSheet.gameObject, iTween.Hash(
+            "from", 1.0f,
+            "to", 0f,
+            "time", 0.5f,
+            "onupdate", "Fade",
             "oncomplete", "Finish"
         ));
     }
 
+    private void Fade(float fade)
+    {
+        HelpSheet.GetComponent<CanvasGroup>().alpha = fade;
+    }
+
     private void Finish()
     {
+        HelpSheet.GetComponent<CanvasGroup>().alpha = 1.0f;
         HelpSheet.SetActive(false);
         GameObject canvasDialogue = GameObject.Find("Dialogue Canvas");
         canvasDialogue.GetComponent<Canvas>().enabled = true;
