@@ -1,0 +1,168 @@
+fileFormatVersion: 2
+guid: 384575ec1a5a92044b87c2bbe1f2b805
+timeCreated: 1464103158
+licenseType: Pro
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: ChaiseLit1
+    100002: //RootNode
+    100004: Couverture_Blanche
+    100006: Couverture_Bleue
+    100008: Draps
+    100010: HolderL_1
+    100012: HolderL_2
+    100014: HolderR_1
+    100016: HolderR_2
+    100018: Infos_Back
+    100020: Infos_Front
+    100022: Jacket_Ctrl
+    100024: Jacket_MAIN
+    100026: Lit_1
+    100028: Matelat
+    100030: Oreiller_2
+    100032: Oreiller_3
+    100034: PRBED
+    100036: PRoom
+    100038: Roues
+    100040: Structure
+    100042: Wood_Front
+    100044: World
+    400000: ChaiseLit1
+    400002: //RootNode
+    400004: Couverture_Blanche
+    400006: Couverture_Bleue
+    400008: Draps
+    400010: HolderL_1
+    400012: HolderL_2
+    400014: HolderR_1
+    400016: HolderR_2
+    400018: Infos_Back
+    400020: Infos_Front
+    400022: Jacket_Ctrl
+    400024: Jacket_MAIN
+    400026: Lit_1
+    400028: Matelat
+    400030: Oreiller_2
+    400032: Oreiller_3
+    400034: PRBED
+    400036: PRoom
+    400038: Roues
+    400040: Structure
+    400042: Wood_Front
+    400044: World
+    2300000: ChaiseLit1
+    2300002: Couverture_Blanche
+    2300004: Couverture_Bleue
+    2300006: Draps
+    2300008: HolderL_1
+    2300010: HolderL_2
+    2300012: HolderR_1
+    2300014: HolderR_2
+    2300016: Infos_Back
+    2300018: Infos_Front
+    2300020: Jacket_MAIN
+    2300022: Matelat
+    2300024: Oreiller_2
+    2300026: Oreiller_3
+    2300028: Roues
+    2300030: Structure
+    2300032: Wood_Front
+    3300000: ChaiseLit1
+    3300002: Couverture_Blanche
+    3300004: Couverture_Bleue
+    3300006: Draps
+    3300008: HolderL_1
+    3300010: HolderL_2
+    3300012: HolderR_1
+    3300014: HolderR_2
+    3300016: Infos_Back
+    3300018: Infos_Front
+    3300020: Jacket_MAIN
+    3300022: Matelat
+    3300024: Oreiller_2
+    3300026: Oreiller_3
+    3300028: Roues
+    3300030: Structure
+    3300032: Wood_Front
+    4300000: Oreiller_3
+    4300002: Couverture_Blanche
+    4300004: Matelat
+    4300006: Couverture_Bleue
+    4300008: Oreiller_2
+    4300010: Draps
+    4300012: Roues
+    4300014: Structure
+    4300016: HolderL_1
+    4300018: HolderR_1
+    4300020: HolderR_2
+    4300022: HolderL_2
+    4300024: Infos_Back
+    4300026: Infos_Front
+    4300028: Wood_Front
+    4300030: ChaiseLit1
+    4300032: Jacket_MAIN
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

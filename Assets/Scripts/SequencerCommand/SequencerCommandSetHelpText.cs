@@ -101,7 +101,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     break;
                 case "echecDiag":
                     helpText.text = "Dans ce cas il est necessaire d'effectuer les examens suivant :\n - Prise de la tension artérielle \n - Prise de la température \n - Prise de la saturation \n - Prise de la fréquence cardiaque";
-                    titre.text = "Mauvaise réponse";
+                    titre.text = "Examen incomplet";
                     helpText.alignment = TextAnchor.MiddleLeft;
                     break;
                 case "comingSoon":
