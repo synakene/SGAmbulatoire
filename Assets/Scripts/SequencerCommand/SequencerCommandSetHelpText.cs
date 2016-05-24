@@ -70,7 +70,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     helpText.alignment = TextAnchor.MiddleLeft;
                     break;
                 case "gratz1":
-                    helpText.text = "Vous avez élaboré le bon diagnostic";
+                    helpText.text = "Vous avez poser le bon diagnostic";
                     titre.text = "Bravo !";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
@@ -99,9 +99,17 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     titre.text = "Information";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
-                    
+                case "echecDiag":
+                    helpText.text = "Dans ce cas il est necessaire d'effectuer les examens suivant :\n - Prise de la tension artérielle \n - Prise de la température \n - Prise de la saturation \n - Prise de la fréquence cardiaque";
+                    titre.text = "Mauvaise réponse";
+                    helpText.alignment = TextAnchor.MiddleLeft;
+                    break;
+                case "comingSoon":
+                    helpText.text = "Vous avez fini l'étape de présentation.\nL'étape d'identito-vigilance et d'examen somatique sont réalisés par l'infirmière. Nous allons maintenant commencer l'étape de prise de paramètres vitaux";
+                    titre.text = "Information";
+                    helpText.alignment = TextAnchor.MiddleLeft;
+                    break;
             }
-
             Stop();
         }
     }

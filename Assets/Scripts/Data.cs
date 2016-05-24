@@ -15,6 +15,7 @@ public static class Data {
         DialogueLua.SetVariable("param2", false);
         DialogueLua.SetVariable("param3", false);
         DialogueLua.SetVariable("param4", false);
+        DialogueLua.SetVariable("param5", false);
         DialogueLua.SetVariable("diag1", false);
         DialogueLua.SetVariable("diag2", false);
         DialogueLua.SetVariable("diag3", false);
@@ -43,7 +44,6 @@ public static class Data {
     public static int MaxScoreObj2 = 0;
 
     public static float MaxTotal = 23f;
-    //public static float jaugeValue = 0;
 
     public static void reinitFeedback()
     {

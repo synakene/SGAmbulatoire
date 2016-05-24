@@ -23,7 +23,6 @@ public class HeaderUI : MonoBehaviour
     public GameObject contextPanel;
 
     private GameObject canvasDialogue;
-    //private GameObject jaugeCanvas;
 
     public GameObject headerPanel;
 
@@ -31,8 +30,6 @@ public class HeaderUI : MonoBehaviour
     private float cpt;
     private int min = 0;
     private int sec = 0;
-
-    //private List<AudioSource> audiosList;
 
     void Awake()
     {
@@ -45,6 +42,7 @@ public class HeaderUI : MonoBehaviour
         quitPanel.SetActive(false);
         returnToHomePanel.SetActive(false);
         contextPanel.SetActive(false);
+
         min = Data.min;
         sec = Data.sec;
 

@@ -14,6 +14,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
 
             GameObject HelpCanvas = GameObject.Find("HelpCanvas");
             GameObject HelpSheet = HelpCanvas.gameObject.transform.FindChild("HelpSheet").gameObject;
+            HelpSheet.GetComponentInChildren<Button>().enabled = true;
             HelpSheet.SetActive(true);
 
             iTween.PunchScale(HelpSheet.gameObject, new Vector3(0.3f, 0.3f), 1.2f);

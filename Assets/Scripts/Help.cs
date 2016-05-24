@@ -16,6 +16,7 @@ public class Help : MonoBehaviour {
 
     public void Continue()
     {
+        HelpSheet.GetComponentInChildren<Button>().enabled = false;
         iTween.ValueTo(HelpSheet.gameObject, iTween.Hash(
             "from", 1.0f,
             "to", 0f,

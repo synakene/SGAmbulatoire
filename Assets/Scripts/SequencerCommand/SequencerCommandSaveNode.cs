@@ -17,7 +17,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
             int idGoodAnswer = 0;
 
             List<Link> outgoingLinks = DialogueManager.CurrentConversationState.subtitle.dialogueEntry.outgoingLinks;
-            Link firstChild = DialogueManager.CurrentConversationState.subtitle.dialogueEntry.outgoingLinks[0]; ;
+            Link firstChild = DialogueManager.CurrentConversationState.subtitle.dialogueEntry.outgoingLinks[0];
             DialogueEntry LinkedEntry = DialogueManager.Instance.DatabaseManager.MasterDatabase.GetDialogueEntry(idConv, firstChild.destinationDialogueID);
 
             for (int i = 0; i < level; i++)
