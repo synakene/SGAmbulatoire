@@ -4,41 +4,43 @@ using UnityEngine.UI;
 
 public class BlockNote : MonoBehaviour {
 
-    public Button noteBookButton;
-    public GameObject noteBookPanel;
+    //public Button noteBookButton;
+    public GameObject blockNote;
 
     bool inScreen;
 
     void Start () {
-        RectTransform noteBookRT = noteBookPanel.gameObject.GetComponent<RectTransform>();
-        noteBookPanel.gameObject.SetActive(true);
-        Vector3 posOut = new Vector3(-noteBookRT.sizeDelta.x - 512f, 242f);
+        RectTransform noteBookRT = blockNote.gameObject.GetComponent<RectTransform>();
+        blockNote.gameObject.SetActive(true);
+        
+        Vector3 posOut = new Vector3(-noteBookRT.rect.width - (Screen.width / 2), noteBookRT.localPosition.y);
+
         noteBookRT.localPosition = posOut;
-        noteBookPanel.GetComponentInChildren<Text>().text = "";
+        blockNote.GetComponentInChildren<Text>().text = "";
         inScreen = false;
     }
 
     public void BlockNotePress()
     {
-        RectTransform noteBookRT = noteBookPanel.gameObject.GetComponent<RectTransform>();
-        Vector3 posIn = new Vector3(-330f, noteBookRT.position.y);
-        Vector3 posOut = new Vector3(-noteBookRT.sizeDelta.x, noteBookRT.position.y);
+        RectTransform noteBookRT = blockNote.gameObject.GetComponent<RectTransform>();
+        Vector3 posIn = new Vector3(-323f - (Screen.width / 2), noteBookRT.localPosition.y);
+        Vector3 posOut = new Vector3(-noteBookRT.rect.width - (Screen.width / 2), noteBookRT.localPosition.y);
 
         if (inScreen)
         {
             inScreen = false;
-            iTween.MoveTo(noteBookPanel, iTween.Hash(
+            iTween.MoveTo(blockNote, iTween.Hash(
                 "x", posOut.x,
                 "time", 1f,
-                "islocal", false
+                "islocal", true
             ));
         } else
         {
             inScreen = true;
-            iTween.MoveTo(noteBookPanel, iTween.Hash(
+            iTween.MoveTo(blockNote, iTween.Hash(
                 "x", posIn.x,
                 "time", 1f,
-                "islocal", false
+                "islocal", true
             ));
         }
     }
