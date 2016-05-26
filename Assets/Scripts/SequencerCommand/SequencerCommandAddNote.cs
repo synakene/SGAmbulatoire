@@ -11,7 +11,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
             GameObject noteBookPanel;
             GameObject notes;
             noteBookPanel = GameObject.Find("BlockNotePanel");
-            notes = noteBookPanel.gameObject.transform.FindChild("Notes").gameObject;
+            notes = noteBookPanel.gameObject.transform.FindDeepChild("Notes").gameObject;
 
             Text textUI = notes.GetComponent<Text>();
 

@@ -220,7 +220,7 @@ public class HeaderUI : MonoBehaviour
 
     public void CloseWindow()
     {
-        StartCarousel sc = GameObject.Find("ContextPanel").GetComponent<StartCarousel>();
+        Carousel sc = GameObject.Find("ContextPanel").GetComponent<Carousel>();
         sc.ReinitPosition();
         contextPanel.SetActive(false);
         Pause(false);
