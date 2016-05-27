@@ -1,60 +1,49 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.UI;
+using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using PixelCrushers.DialogueSystem;
 
 public class EndCarousel : MonoBehaviour {
 
-    public List<Image> images;
-    public GameObject endPanel;
-    private Vector3 initPos;
-    public InputField nameInputField;
+	public List<Image> images;
+	public InputField nameInputField;
 
-    void Awake()
-    {
-        initPos = images[0].transform.localPosition;
-        initPos.x = (Screen.width);
+	private Vector3 moveNext;
+	private Vector3 movePrevious;
+
+
+	void Awake()
+	{
+		int index = 1;
+		Vector3 posInit = new Vector3(0f, 0f, 0f);
+		foreach (Image im in images)
+		{
+			// Position
+			posInit.x = (index * (Screen.width));
+			im.transform.localPosition = posInit;
+			index++;
+		}
 
         Text text = GameObject.Find("TextResultat").GetComponent<Text>();
         if (Application.isWebPlayer || Application.platform == RuntimePlatform.WebGLPlayer)
         {
             text.text = "Vos résultats détaillés sont visibles en cliquant sur le bouton\nsitué en haut de la fenêtre du jeu";
         }
+	}
 
-        endPanel.gameObject.SetActive(false);
-        endPanel.transform.localPosition = initPos;
-        gameObject.SetActive(true);
-        foreach (Image im in images)
-        {
-            im.transform.localPosition = initPos;
-            im.gameObject.SetActive(false);
+	void Start () {
 
-            Transform nextButton = im.gameObject.transform.FindChild("NextButton");
-            Transform previousButton = im.gameObject.transform.FindChild("PreviousButton");
-            Transform quitButton = im.gameObject.transform.FindChild("QuitButton");
-            if (nextButton)
-                nextButton.gameObject.GetComponent<Button>().enabled = false;
-            if (previousButton)
-                previousButton.gameObject.GetComponent<Button>().enabled = false;
-            if (quitButton)
-                quitButton.gameObject.GetComponent<Button>().enabled = false;
+		moveNext = new Vector3(-(Screen.width), 0f);
+		movePrevious = new Vector3((Screen.width), 0f);
 
-        }
-        images[0].gameObject.SetActive(true);
-        iTween.MoveTo(images[0].gameObject, iTween.Hash("x", 0,
-            "time", 1.5,
-            "islocal", true,
-            "oncompletetarget", gameObject,
-            "oncompleteparams", images[0].gameObject,
-            "oncomplete", "EnableButton",
-            "ignoretimescale", true));
-    }
-
-    void Start()
-    {
-
-    }
+		iTween.MoveBy(gameObject, iTween.Hash("amount", moveNext,
+			"time", 1,
+			"islocal", true,
+			"easetype", "easeInOutSine",
+			"ignoretimescale", true));
+	}
 
     public void OnValueChange()
     {
@@ -112,154 +101,26 @@ public class EndCarousel : MonoBehaviour {
         }
     }
 
-    public void NextImage()
-    {
-        int i = 0;
-        foreach (Image im in images)
-        {
-            if (im.gameObject.activeSelf == true)
-            {
-                if (i < images.Count -1)
-                {
-                    Transform nextButton = im.gameObject.transform.FindChild("NextButton");
-                    Transform previousButton = im.gameObject.transform.FindChild("PreviousButton");
-                    Transform quitButton = im.gameObject.transform.FindChild("QuitButton");
+	public void NextImage()
+	{
+		iTween.MoveBy(gameObject, iTween.Hash("amount", moveNext,
+			"time", 1,
+			"islocal", true,
+			"easetype", "easeInOutSine",
+			"ignoretimescale", true));
+	}
 
-                    if (nextButton != null)
-                    {
-                        nextButton.gameObject.GetComponent<Button>().enabled = false;
-                    }
+	public void Previous()
+	{
+		iTween.MoveBy(gameObject, iTween.Hash("amount", movePrevious,
+			"time", 1,
+			"islocal", true,
+			"easetype", "easeInOutSine",
+			"ignoretimescale", true));
+	}
 
-                    if (previousButton != null)
-                    {
-                        previousButton.gameObject.GetComponent<Button>().enabled = false;
-                    }
-
-                    if (quitButton != null)
-                    {
-                        quitButton.gameObject.GetComponent<Button>().enabled = false;
-                    }
-
-                    iTween.MoveTo(im.gameObject, iTween.Hash("x", -(Screen.width),
-                        "time", 1.5,
-                        "ignoretimescale", true,
-                        "oncompletetarget", gameObject,
-                        "oncompleteparams", im.gameObject,
-                        "islocal", true,
-                        "oncomplete", "Deactive"));
-
-
-                    images[i + 1].gameObject.SetActive(true);
-                    iTween.MoveTo(images[i + 1].gameObject, iTween.Hash("x", 0,
-                        "time", 1.5,
-                        "oncompletetarget", gameObject,
-                        "oncompleteparams", images[i + 1].gameObject,
-                        "oncomplete", "EnableButton",
-                        "islocal", true,
-                        "ignoretimescale", true));
-
-                    break;
-                } else
-                {
-                    iTween.MoveTo(im.gameObject, iTween.Hash("x", -(Screen.width),
-                        "time", 1.5,
-                        "ignoretimescale", true,
-                        "oncompletetarget", gameObject,
-                        "oncompleteparams", im.gameObject,
-                        "islocal", true,
-                        "oncomplete", "Deactive"));
-                    endPanel.SetActive(true);
-
-                    iTween.MoveTo(endPanel, iTween.Hash("x", 0,
-                        "time", 1.5,
-                        "oncompletetarget", gameObject,
-                        "oncompleteparams", endPanel,
-                        "oncomplete", "EnableButton",
-                        "islocal", true,
-                        "ignoretimescale", true));
-                }
-            }
-            i++;
-        }
-    }
-
-    public void Previous()
-    {
-        int i = 0;
-        foreach (Image im in images)
-        {
-            if (im.gameObject.activeSelf == true)
-            {
-                if (i > 0)
-                {
-                    Transform nextButton = im.gameObject.transform.FindChild("NextButton");
-                    Transform previousButton = im.gameObject.transform.FindChild("PreviousButton");
-                    Transform quitButton = im.gameObject.transform.FindChild("QuitButton");
-
-                    if (nextButton != null)
-                    {
-                        nextButton.gameObject.GetComponent<Button>().enabled = false;
-                    }
-
-                    if (previousButton != null)
-                    {
-                        previousButton.gameObject.GetComponent<Button>().enabled = false;
-                    }
-
-                    if (quitButton != null)
-                    {
-                        quitButton.gameObject.GetComponent<Button>().enabled = false;
-                    }
-
-                    iTween.MoveTo(im.gameObject, iTween.Hash("x", (Screen.width),
-                        "time", 1.5,
-                        "ignoretimescale", true,
-                        "oncompletetarget", gameObject,
-                        "oncompleteparams", im.gameObject,
-                        "islocal", true,
-                        "oncomplete", "Deactive"));
-
-
-                    images[i - 1].gameObject.SetActive(true);
-                    iTween.MoveTo(images[i - 1].gameObject, iTween.Hash("x", 0,
-                        "time", 1.5,
-                        "oncompletetarget", gameObject,
-                        "oncompleteparams", images[i - 1].gameObject,
-                        "oncomplete", "EnableButton",
-                        "islocal", true,
-                        "ignoretimescale", true));
-
-                    break;
-                }
-            }
-            i++;
-        }
-    }
-
-    private void Deactive(GameObject o)
-    {
-        o.gameObject.SetActive(false);
-    }
-
-    private void EnableButton(GameObject o)
-    {
-        Transform nextButton = o.transform.FindChild("NextButton");
-        Transform previousButton = o.transform.FindChild("PreviousButton");
-        Transform quitButton = o.transform.FindChild("QuitButton");
-
-        if (nextButton != null)
-        {
-            nextButton.gameObject.GetComponent<Button>().enabled = true;
-        }
-
-        if (previousButton != null)
-        {
-            previousButton.gameObject.GetComponent<Button>().enabled = true;
-        }
-
-        if (quitButton != null)
-        {
-            quitButton.gameObject.GetComponent<Button>().enabled = true;
-        }
-    }
+	public void ReinitPosition()
+	{
+		Awake();
+	}
 }
