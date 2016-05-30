@@ -7,9 +7,9 @@ public static class Data {
 
     public static void ReinitLuaVar()
     {
-        DialogueLua.SetVariable("choix1", true);
-        DialogueLua.SetVariable("choix2", true);
-        DialogueLua.SetVariable("choix3", true);
+		DialogueLua.SetVariable("choix1", false);
+		DialogueLua.SetVariable("choix2", false);
+		DialogueLua.SetVariable("choix3", false);
 
         DialogueLua.SetVariable("param1", false);
         DialogueLua.SetVariable("param2", false);
