@@ -121,6 +121,13 @@
 
 	{
       "idConv": 2,
+      "idNode": 49,
+      "idGoodAnswer": 30,
+      "text": "Vous avez bien repéré les signes de l’anxiété chez Mr Sainte-Marie, tremblements, se ronge les ongles, sueurs, douleurs abdominales, troubles du sommeil, tachycardie et hypertension. Mais pas du premier coup."
+    },
+
+	{
+      "idConv": 2,
       "idNode": 28,
       "idGoodAnswer": 30,
       "text": "Constipation avérée = 72h sans selles."
