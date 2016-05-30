@@ -63,6 +63,13 @@
       "text": "- Respect des effets personnels. \n \n- Installation propice à une bonne communication (hauteur, distance des interlocuteurs)."
     },
 
+	{
+      "idConv": 1,
+      "idNode": 29,
+      "idGoodAnswer": 11,
+      "text": "- Respect des effets personnels. \n \n- Installation propice à une bonne communication (hauteur, distance des interlocuteurs)."
+    },
+
     {
       "idConv": 1,
       "idNode": 13,
@@ -74,6 +81,76 @@
       "idConv": 1,
       "idNode": 14,
       "idGoodAnswer": 11,
+      "text": "A remplir."
+    },
+
+	{
+      "idConv": 2,
+      "idNode": 9,
+      "idGoodAnswer": 8,
+      "text": "Revoyez les normes des paramètres vitaux !"
+    },
+
+	{
+      "idConv": 2,
+      "idNode": 7,
+      "idGoodAnswer": 8,
+      "text": "Revoyez les normes des paramètres vitaux !"
+    },
+
+	{
+      "idConv": 2,
+      "idNode": 50,
+      "idGoodAnswer": 8,
+      "text": "Vous avez posé le bon diagnostic, mais pas du premier coup."
+    },
+
+	{
+      "idConv": 2,
+      "idNode": 8,
+      "idGoodAnswer": 8,
+      "text": "Vous avez posé le bon diagnostic."
+    },
+
+	{
+      "idConv": 2,
+      "idNode": 30,
+      "idGoodAnswer": 30,
+      "text": "Vous avez bien repéré les signes de l’anxiété chez Mr Sainte-Marie, tremblements, se ronge les ongles, sueurs, douleurs abdominales, troubles du sommeil, tachycardie et hypertension."
+    },
+
+	{
+      "idConv": 2,
+      "idNode": 28,
+      "idGoodAnswer": 30,
+      "text": "Constipation avérée = 72h sans selles."
+    },
+
+	{
+      "idConv": 2,
+      "idNode": 26,
+      "idGoodAnswer": 30,
+      "text": "Bonne idée car le patient a des sueurs, est à jeun mais glycémie correcte et absence de vertiges."
+    },
+
+	{
+      "idConv": 2,
+      "idNode": 29,
+      "idGoodAnswer": 30,
+      "text": "36°C < température normale < 38°C"
+    },
+
+	{
+      "idConv": 2,
+      "idNode": 35,
+      "idGoodAnswer": 35,
+      "text": "A remplir."
+    },
+
+	{
+      "idConv": 2,
+      "idNode": 34,
+      "idGoodAnswer": 35,
       "text": "A remplir."
     }
 

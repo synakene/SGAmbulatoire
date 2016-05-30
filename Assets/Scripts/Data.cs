@@ -16,15 +16,25 @@ public static class Data {
         DialogueLua.SetVariable("param3", false);
         DialogueLua.SetVariable("param4", false);
         DialogueLua.SetVariable("param5", false);
-        DialogueLua.SetVariable("diag1", false);
-        DialogueLua.SetVariable("diag2", false);
-        DialogueLua.SetVariable("diag3", false);
-        DialogueLua.SetVariable("diag4", false);
-        DialogueLua.SetVariable("diag5", false);
-        DialogueLua.SetVariable("diag6", false);
-        DialogueLua.SetVariable("diag7", false);
-        DialogueLua.SetVariable("diag8", false);
-        DialogueLua.SetVariable("diag9", false);
+		DialogueLua.SetVariable("terminer1", false);
+		DialogueLua.SetVariable("terminer2", false);
+		DialogueLua.SetVariable("terminer3", false);
+        DialogueLua.SetVariable("q1", false);
+        DialogueLua.SetVariable("q2", false);
+        DialogueLua.SetVariable("q3", false);
+        DialogueLua.SetVariable("q4", false);
+        DialogueLua.SetVariable("q5", false);
+        DialogueLua.SetVariable("q6", false);
+        DialogueLua.SetVariable("q7", false);
+        DialogueLua.SetVariable("q8", false);
+        DialogueLua.SetVariable("q9", false);
+
+		DialogueLua.SetVariable("Fdiag2", false);
+		DialogueLua.SetVariable("Fdiag3", false);
+		DialogueLua.SetVariable("Fdiag4", false);
+
+		DialogueLua.SetVariable("diag1", false);
+		DialogueLua.SetVariable("diag2", false);
     }
 
     //Feedback
@@ -43,7 +53,7 @@ public static class Data {
     public static int MaxScoreObj1 = 0;
     public static int MaxScoreObj2 = 0;
 
-    public static float MaxTotal = 23f;
+    public static float MaxTotal = 10f;
 
     public static void reinitFeedback()
     {

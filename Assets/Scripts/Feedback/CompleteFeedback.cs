@@ -16,6 +16,11 @@ public class CompleteFeedback {
         CompleteFeedbackList.Add(info);
     }
 
+	public void DeleteLastNode()
+	{
+		CompleteFeedbackList.RemoveAt (CompleteFeedbackList.Count - 1);
+	}
+
     public void SetChoice(int _IdChoice, string _Feedback)
     {
         Info lastLine = CompleteFeedbackList[CompleteFeedbackList.Count - 1];

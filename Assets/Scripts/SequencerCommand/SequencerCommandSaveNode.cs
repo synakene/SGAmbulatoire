@@ -63,7 +63,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
 
             info.AddGoodAnswer(idGoodAnswer, goodAnswer);
 
-            Data.CompleteFeedback.AddNode(info);
+			Data.CompleteFeedback.AddNode (info);
 
             Stop();
         }

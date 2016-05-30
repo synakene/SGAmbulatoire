@@ -70,7 +70,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     helpText.alignment = TextAnchor.MiddleLeft;
                     break;
                 case "gratz1":
-                    helpText.text = "Vous avez poser le bon diagnostic";
+                    helpText.text = "Vous avez posé le bon diagnostic";
                     titre.text = "Bravo !";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;

@@ -25,7 +25,7 @@ public class EndCarousel : MonoBehaviour {
 			im.transform.localPosition = posInit;
 			index++;
 		}
-
+			
         Text text = GameObject.Find("TextResultat").GetComponent<Text>();
         if (Application.isWebPlayer || Application.platform == RuntimePlatform.WebGLPlayer)
         {
@@ -43,6 +43,11 @@ public class EndCarousel : MonoBehaviour {
 			"islocal", true,
 			"easetype", "easeInOutSine",
 			"ignoretimescale", true));
+	}
+
+	public void genPDF()
+	{
+		gameObject.transform.FindDeepChild ("PDFGen").gameObject.SetActive(true);
 	}
 
     public void OnValueChange()
