@@ -30,6 +30,7 @@ public class HeaderUI : MonoBehaviour
     private float cpt;
     private int min = 0;
     private int sec = 0;
+    private bool profileIn = false;
 
     void Awake()
     {
@@ -61,16 +62,20 @@ public class HeaderUI : MonoBehaviour
         CalculateTime();
     }
 
-    public void PointerEnterProfile()
+    public void MoveProfile()
     {
         if (profileButton.enabled)
-            anim.Play("MoveIn");
-    }
-
-    public void PointerExitProfile()
-    {
-        if (profileButton.enabled)
-            anim.Play("MoveOut");
+        {
+            if (profileIn)
+            {
+                profilePanel.GetComponent<Animation>().Play("MoveOut");
+                profileIn = false;
+            } else
+            {
+                profilePanel.GetComponent<Animation>().Play("MoveIn");
+                profileIn = true;
+            }
+        }
     }
 
     public void CalculateTime()
