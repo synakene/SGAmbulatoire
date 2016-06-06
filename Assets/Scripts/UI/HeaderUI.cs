@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 using PixelCrushers.DialogueSystem;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine.iOS;
+using System;
 
 public class HeaderUI : MonoBehaviour
 {
@@ -177,7 +179,7 @@ public class HeaderUI : MonoBehaviour
             SceneManager.LoadScene(0);
         }
 
-        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXPlayer)
+        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXPlayer || Application.platform == RuntimePlatform.Android)
         {
             Time.timeScale = 1;
             Data.min = 0;

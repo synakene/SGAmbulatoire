@@ -4,6 +4,8 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using PixelCrushers.DialogueSystem;
+using UnityEngine.iOS;
+using System;
 
 public class EndCarousel : MonoBehaviour {
 
@@ -79,29 +81,36 @@ public class EndCarousel : MonoBehaviour {
 
     public void ConfirmExit()
     {
+
         if (Application.isWebPlayer)
         {
             Time.timeScale = 1;
-            Data.ReinitLuaVar();
-            Data.reinitScore();
             Data.min = 0;
             Data.sec = 0;
+            DialogueManager.Unpause();
+            Data.reinitScore();
+            Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
         }
 
-        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXPlayer)
+        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXPlayer || Application.platform == RuntimePlatform.Android)
         {
             Time.timeScale = 1;
+            Data.min = 0;
+            Data.sec = 0;
+            DialogueManager.Unpause();
+            Data.reinitScore();
             Application.Quit();
         }
 
         else
         {
             Time.timeScale = 1;
-            Data.ReinitLuaVar();
-            Data.reinitScore();
             Data.min = 0;
             Data.sec = 0;
+            DialogueManager.Unpause();
+            Data.reinitScore();
+            Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
         }
     }
