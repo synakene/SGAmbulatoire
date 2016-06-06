@@ -45,7 +45,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case "param2":
-                    helpText.text = "Fréquence cardiaque : 95 batt/min";
+                    helpText.text = "Température : 36,2°C";
                     titre.text = "Résultat";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;

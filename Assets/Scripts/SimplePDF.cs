@@ -127,13 +127,20 @@ public class SimplePDF : MonoBehaviour {
             {
                 res += s;
             }
-
             Application.ExternalCall("PDF", res);
+        }
 
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            string fileName = nomPDF + "-" + System.DateTime.Now.Day.ToString() + System.DateTime.Now.Month.ToString() + System.DateTime.Now.Year.ToString() + System.DateTime.Now.Hour.ToString() + System.DateTime.Now.Minute.ToString() + ".pdf";
+            myDoc.createPDF(Application.persistentDataPath + "/" + fileName);
+            string path = Application.persistentDataPath + "/" + fileName;
+            Application.OpenURL(path);
         }
         else
         {
-            myDoc.createPDF(nomPDF + "-" + System.DateTime.Now.Day.ToString() + System.DateTime.Now.Month.ToString() + System.DateTime.Now.Year.ToString() + System.DateTime.Now.Hour.ToString() + System.DateTime.Now.Minute.ToString() + ".pdf");
+            string fileName = nomPDF + "-" + System.DateTime.Now.Day.ToString() + System.DateTime.Now.Month.ToString() + System.DateTime.Now.Year.ToString() + System.DateTime.Now.Hour.ToString() + System.DateTime.Now.Minute.ToString() + ".pdf";
+            myDoc.createPDF(fileName);
         }
 
     }
