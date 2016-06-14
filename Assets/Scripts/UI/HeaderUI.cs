@@ -2,10 +2,6 @@
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using PixelCrushers.DialogueSystem;
-using System.Collections.Generic;
-using System.Collections;
-using UnityEngine.iOS;
-using System;
 
 public class HeaderUI : MonoBehaviour
 {

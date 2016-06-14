@@ -1,11 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using PixelCrushers.DialogueSystem;
-using UnityEngine.iOS;
-using System;
 
 public class EndCarousel : MonoBehaviour {
 
