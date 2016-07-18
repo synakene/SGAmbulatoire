@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-
+using UnityEngine;
 using sharpPDF.Exceptions;
 using sharpPDF.Enumerators;
 
@@ -44,15 +44,25 @@ namespace sharpPDF
 			}
 		}
 
-		/// <summary>
-		/// Indexer of the pdfTableRow that represents its columns
-		/// </summary>
-		public pdfTableColumn this[int index]
+        /// <summary>
+        /// Class's constructor
+        /// </summary>
+        /// <param name="tableHeader">Row Template based on Table's Header</param>
+        /// <param name="number">Number of columns (size)</param>
+        internal pdfTableRow(pdfTableHeader tableHeader, int number)
+        {
+            _cols.Add(new pdfTableColumn("", tableHeader[0].columnAlign, tableHeader[0].columnSize * number));
+        }
+
+        /// <summary>
+        /// Indexer of the pdfTableRow that represents its columns
+        /// </summary>
+        public pdfTableColumn this[int index]
 		{
 			get
 			{
 				if (index < 0 || index >= _cols.Count) {
-					throw new pdfBadColumnIndexException();
+                    throw new pdfBadColumnIndexException();
 				} else {
 					return (pdfTableColumn)_cols[index];
 				}

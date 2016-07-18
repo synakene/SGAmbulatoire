@@ -42,6 +42,13 @@ public static class Data {
     public static CompleteFeedback CompleteFeedback;
     public static string playerName = "";
 
+    // Description scenes (for feedbacks)
+    public static string S1 = "Présentation du patient";
+    public static string S2 = "Identito-vigilance";
+    public static string S3 = "Examen somatique";
+    public static string S4 = "Prise de paramètres vitaux";
+    public static string S5 = "Mesures d'hygiene";
+
     //time :
     public static int min = 0;
     public static int sec = 0;
@@ -50,10 +57,13 @@ public static class Data {
     public static int scoreObj1 = 0;
     public static int scoreObj2 = 0;
 
-    public static int MaxScoreObj1 = 0;
-    public static int MaxScoreObj2 = 0;
+    public static int curScoreObj1 = 0;
+    public static int curScoreObj2 = 0;
 
-    public static float MaxTotal = 10f;
+    public static int MaxScoreObj1 = 40;
+    public static int MaxScoreObj2 = 40;
+
+    public static float MaxTotal = 80f;
 
     public static void reinitFeedback()
     {
@@ -65,7 +75,8 @@ public static class Data {
         scoreObj1 = 0;
         scoreObj2 = 0;
 
-        MaxScoreObj1 = 0;
-        MaxScoreObj2 = 0;
+        curScoreObj1 = 0;
+        curScoreObj2 = 0;
+
     }
 }

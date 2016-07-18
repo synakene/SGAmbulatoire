@@ -16,13 +16,13 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                 int score1 = int.Parse(GetParameter(0));
                 int score2 = int.Parse(GetParameter(1));
 
-                Data.scoreObj1 += score1;
-                if (Data.scoreObj1 < 0) { Data.scoreObj1 = 0; }
-                GameObject.Find("count1").GetComponent<Text>().text = (Data.scoreObj1).ToString() + "/" + (Data.MaxScoreObj1).ToString();
+                Data.curScoreObj1 += score1;
+                if (Data.curScoreObj1 < 0) { Data.curScoreObj1 = 0; }
+                GameObject.Find("count1").GetComponent<Text>().text = (Data.curScoreObj1).ToString() + "/" + (Data.MaxScoreObj1).ToString();
 
-                Data.scoreObj2 += score2;
-                if (Data.scoreObj2 < 0) { Data.scoreObj2 = 0; }
-                GameObject.Find("count2").GetComponent<Text>().text = (Data.scoreObj2).ToString() + "/" + (Data.MaxScoreObj2).ToString();
+                Data.curScoreObj2 += score2;
+                if (Data.curScoreObj2 < 0) { Data.curScoreObj2 = 0; }
+                GameObject.Find("count2").GetComponent<Text>().text = (Data.curScoreObj2).ToString() + "/" + (Data.MaxScoreObj2).ToString();
 
                 GameObject ProfileButton = GameObject.Find("ProfileButton");
                 iTween.PunchScale(ProfileButton.gameObject, new Vector3(0.3f, 0.3f), 1.2f);

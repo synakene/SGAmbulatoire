@@ -53,30 +53,65 @@ public class SimplePDF : MonoBehaviour {
         {
             foreach (CompleteFeedback.Info info in feedback.CompleteFeedbackList)
             {
-                pdfTableRow myRow = myTable.createRow();
-                pdfTableRow SuccessRow = SuccessTable.createRow();
+                if (info.Feedback != "RESTART")
+                {
+                    pdfTableRow myRow = myTable.createRow();
+                    pdfTableRow SuccessRow = SuccessTable.createRow();
 
-                myRow[0].columnValue = info.Question + "\n\n" + "Que répondez-vous ?";
-                if (info.IdChoice == info.IdGoodAnswer)
-                {
-                    myRow[1].columnValue = "Réponse effectuée : " + info.GoodAnswer;
-                    SuccessRow.RowStyleProp = new pdfTableRowStyle(predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack), new pdfColor(predefinedColor.csMyGreen), new pdfColor(predefinedColor.csBlack));
-                } else
-                {
-                    foreach (KeyValuePair<int, string> entry in info.Reponses)
+                    myRow[0].columnValue = info.Question + "\n\n" + "Que répondez-vous ?";
+                    if (info.IdChoice == info.IdGoodAnswer)
                     {
-                        if (entry.Key == info.IdChoice)
-                        {
-                            myRow[1].columnValue = "Réponse effectuée : " + entry.Value;
-                        }
+                        myRow[1].columnValue = "Réponse effectuée : " + info.GoodAnswer;
+                        SuccessRow.RowStyleProp = new pdfTableRowStyle(predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack), new pdfColor(predefinedColor.csMyGreen), new pdfColor(predefinedColor.csBlack));
                     }
-                    myRow[1].columnValue += "\n\n" + "Réponse attendue : " + info.GoodAnswer;
-                    SuccessRow.RowStyleProp = new pdfTableRowStyle(predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack), new pdfColor(predefinedColor.csMyRed), new pdfColor(predefinedColor.csBlack));
-                }
-                myRow[2].columnValue = info.Feedback;
+                    else
+                    {
+                        foreach (KeyValuePair<int, string> entry in info.Reponses)
+                        {
+                            if (entry.Key == info.IdChoice)
+                            {
+                                myRow[1].columnValue = "Réponse effectuée : " + entry.Value;
+                            }
+                        }
+                        myRow[1].columnValue += "\n\n" + "Réponse attendue : " + info.GoodAnswer;
+                        SuccessRow.RowStyleProp = new pdfTableRowStyle(predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack), new pdfColor(predefinedColor.csMyRed), new pdfColor(predefinedColor.csBlack));
+                    }
+                    myRow[2].columnValue = info.Feedback;
 
-                myTable.addRow(myRow);
-                SuccessTable.addRow(SuccessRow);
+                    myTable.addRow(myRow);
+                    SuccessTable.addRow(SuccessRow);
+                }
+                else
+                {
+                    pdfTableRow myRow = myTable.createRow(3);
+                    pdfTableRow SuccessRow = SuccessTable.createRow();
+
+                    if (info.Question == Data.S1)
+                    {
+                        myRow[0].columnValue = "Retour à la partie : " + Data.S1;
+                    }
+                    if (info.Question == Data.S2)
+                    {
+                        myRow[0].columnValue = "Retour à la partie : " + Data.S2;
+                    }
+                    if (info.Question == Data.S3)
+                    {
+                        myRow[0].columnValue = "Retour à la partie : " + Data.S3;
+                    }
+                    if (info.Question == Data.S4)
+                    {
+                        myRow[0].columnValue = "Retour à la partie : " + Data.S4;
+                    }
+                    if (info.Question == Data.S5)
+                    {
+                        myRow[0].columnValue = "Retour à la partie : " + Data.S5;
+                    }
+                    SuccessRow.RowStyleProp = new pdfTableRowStyle(predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csWhite), new pdfColor(predefinedColor.csWhite), new pdfColor(predefinedColor.csBlack));
+
+                    myTable.addRow(myRow);
+                    SuccessTable.addRow(SuccessRow);
+                }
+
             }
         }
 

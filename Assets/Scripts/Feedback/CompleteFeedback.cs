@@ -11,6 +11,35 @@ public class CompleteFeedback {
         CompleteFeedbackList = new List<Info>();
     }
 
+    public void Restart(int convID)
+    {
+        Info info = new Info("");
+        switch (convID)
+        {
+            case 1:
+                info.Question = Data.S1;
+                info.Feedback = "RESTART";
+                break;
+            case 2:
+                info.Question = Data.S2;
+                info.Feedback = "RESTART";
+                break;
+            case 3:
+                info.Question = Data.S3;
+                info.Feedback = "RESTART";
+                break;
+            case 5:
+                info.Question = Data.S4;
+                info.Feedback = "RESTART";
+                break;
+            case 6:
+                info.Question = Data.S5;
+                info.Feedback = "RESTART";
+                break;
+        }
+        CompleteFeedbackList.Add(info);
+    }
+
     public void AddNode(Info info)
     {
         CompleteFeedbackList.Add(info);

@@ -109,6 +109,26 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     titre.text = "Information";
                     helpText.alignment = TextAnchor.MiddleLeft;
                     break;
+                case "identite":
+                    helpText.text = "Vous ne pouvez pas continuer votre entretien avec votre patient si vous n’avez pas toutes les informations le concernant dans un premier temps.";
+                    titre.text = "Echec";
+                    helpText.alignment = TextAnchor.MiddleLeft;
+                    break;
+                case "echecDouleur":
+                    helpText.text = "Ce n’est pas le moment d’appeler le médecin, vous devez pouvoir résoudre ce genre de situation par vous-même";
+                    titre.text = "Echec";
+                    helpText.alignment = TextAnchor.MiddleLeft;
+                    break;
+                case "infectionBijou":
+                    helpText.text = "Pour prévenir le risque infectieux, les bijoux ne sont pas autorisés au bloc.";
+                    titre.text = "Echec";
+                    helpText.alignment = TextAnchor.MiddleLeft;
+                    break;
+                case "infectionDouche":
+                    helpText.text = "Risque infectieux";
+                    titre.text = "Echec";
+                    helpText.alignment = TextAnchor.MiddleLeft;
+                    break;
             }
             Stop();
         }
