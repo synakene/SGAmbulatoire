@@ -36,8 +36,13 @@ public class CompleteFeedback {
                 info.Question = Data.S5;
                 info.Feedback = "RESTART";
                 break;
+            case 7:
+                info.Question = Data.S5;
+                info.Feedback = "RESTART";
+                break;
         }
         CompleteFeedbackList.Add(info);
+        Debug.Log("completeFeedback : " + CompleteFeedbackList[0].Feedback);
     }
 
     public void AddNode(Info info)

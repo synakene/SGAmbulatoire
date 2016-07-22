@@ -104,29 +104,29 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     titre.text = "Examen incomplet";
                     helpText.alignment = TextAnchor.MiddleLeft;
                     break;
-                case "comingSoon":
-                    helpText.text = "Vous avez fini l'étape de présentation.\nL'étape d'identito-vigilance et d'examen somatique sont réalisés par l'infirmière. Nous allons maintenant commencer l'étape de prise de paramètres vitaux";
-                    titre.text = "Information";
-                    helpText.alignment = TextAnchor.MiddleLeft;
-                    break;
                 case "identite":
                     helpText.text = "Vous ne pouvez pas continuer votre entretien avec votre patient si vous n’avez pas toutes les informations le concernant dans un premier temps.";
                     titre.text = "Echec";
-                    helpText.alignment = TextAnchor.MiddleLeft;
+                    helpText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case "echecDouleur":
                     helpText.text = "Ce n’est pas le moment d’appeler le médecin, vous devez pouvoir résoudre ce genre de situation par vous-même";
                     titre.text = "Echec";
-                    helpText.alignment = TextAnchor.MiddleLeft;
+                    helpText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case "infectionBijou":
                     helpText.text = "Pour prévenir le risque infectieux, les bijoux ne sont pas autorisés au bloc.";
                     titre.text = "Echec";
-                    helpText.alignment = TextAnchor.MiddleLeft;
+                    helpText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case "infectionDouche":
                     helpText.text = "Risque infectieux";
                     titre.text = "Echec";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "priseNote":
+                    helpText.text = "Afin de poser un diagnostique dans les meilleures conditions, une prise de note a été effectué, visible en cliquant sur le bouton du carnet situé en haut à gauche.";
+                    titre.text = "Information";
                     helpText.alignment = TextAnchor.MiddleLeft;
                     break;
             }

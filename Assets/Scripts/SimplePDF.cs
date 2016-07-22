@@ -86,25 +86,27 @@ public class SimplePDF : MonoBehaviour {
                     pdfTableRow myRow = myTable.createRow(3);
                     pdfTableRow SuccessRow = SuccessTable.createRow();
 
+                    myRow[0].columnValue = "Situation critique, retour au début de l'activité ";
+
                     if (info.Question == Data.S1)
                     {
-                        myRow[0].columnValue = "Retour à la partie : " + Data.S1;
+                        myRow[0].columnValue += "\"" + Data.S1 + "\"";
                     }
                     if (info.Question == Data.S2)
                     {
-                        myRow[0].columnValue = "Retour à la partie : " + Data.S2;
+                        myRow[0].columnValue += "\"" + Data.S2 + "\"";
                     }
                     if (info.Question == Data.S3)
                     {
-                        myRow[0].columnValue = "Retour à la partie : " + Data.S3;
+                        myRow[0].columnValue += "\"" + Data.S3 + "\"";
                     }
                     if (info.Question == Data.S4)
                     {
-                        myRow[0].columnValue = "Retour à la partie : " + Data.S4;
+                        myRow[0].columnValue += "\"" + Data.S4 + "\"";
                     }
                     if (info.Question == Data.S5)
                     {
-                        myRow[0].columnValue = "Retour à la partie : " + Data.S5;
+                        myRow[0].columnValue += "\"" + Data.S5 + "\"";
                     }
                     SuccessRow.RowStyleProp = new pdfTableRowStyle(predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csWhite), new pdfColor(predefinedColor.csWhite), new pdfColor(predefinedColor.csBlack));
 
