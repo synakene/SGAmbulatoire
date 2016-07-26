@@ -42,7 +42,6 @@ public class CompleteFeedback {
                 break;
         }
         CompleteFeedbackList.Add(info);
-        Debug.Log("completeFeedback : " + CompleteFeedbackList[0].Feedback);
     }
 
     public void AddNode(Info info)

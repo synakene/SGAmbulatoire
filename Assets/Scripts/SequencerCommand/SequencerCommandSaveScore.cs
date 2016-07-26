@@ -12,10 +12,6 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands
         {
             Data.scoreObj1 = Data.curScoreObj1;
             Data.scoreObj2 = Data.curScoreObj2;
-
-            GameObject.Find("count1").GetComponent<Text>().text = (Data.curScoreObj1).ToString() + "/" + (Data.MaxScoreObj1).ToString();
-            GameObject.Find("count2").GetComponent<Text>().text = (Data.curScoreObj2).ToString() + "/" + (Data.MaxScoreObj2).ToString();
-
             Stop();
         }
     }
