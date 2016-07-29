@@ -30,11 +30,11 @@ public class SimplePDF : MonoBehaviour {
         page.addText(Data.playerName, 16, 735, predefinedFont.csHelvetica, 14, new pdfColor(predefinedColor.csBlack));
         page.addText("L’accueil et la préparation du patient dans le cadre de chirurgie ambulatoire.", 16, 710, predefinedFont.csHelvetica, 16, new pdfColor(predefinedColor.csRaspberry));
 
-        page.addText("Être centré sur le patient : " + Data.scoreObj1 + "/" + Data.MaxScoreObj1, 26, 685, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
-        page.addText("Utiliser le raisonnement clinique : " + Data.scoreObj2 + "/" + Data.MaxScoreObj2, 26, 670, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
+        page.addText("Être centré sur le patient : " + Data.curScoreObj1 + "/" + Data.MaxScoreObj1, 26, 685, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
+        page.addText("Utiliser le raisonnement clinique : " + Data.curScoreObj2 + "/" + Data.MaxScoreObj2, 26, 670, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
 
 
-        float score = ((Data.scoreObj1 + Data.scoreObj2) / Data.MaxTotal) * 100f;
+        float score = ((Data.curScoreObj1 + Data.curScoreObj2) / Data.MaxTotal) * 100f;
         int scoreTotal = Mathf.FloorToInt(score);
 
         page.addText("Score Total : " + scoreTotal + "%", 26, 645, predefinedFont.csHelveticaBold, 14, new pdfColor(predefinedColor.csRaspberry));
@@ -164,6 +164,7 @@ public class SimplePDF : MonoBehaviour {
             {
                 res += s;
             }
+            Application.ExternalCall("namePDF", Data.playerName);
             Application.ExternalCall("PDF", res);
         }
 

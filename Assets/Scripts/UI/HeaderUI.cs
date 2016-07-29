@@ -51,8 +51,8 @@ public class HeaderUI : MonoBehaviour
 
     void OnDestroy()
     {
-        Data.min = min;
-        Data.sec = sec;
+        Data.min = 0;
+        Data.sec = 0;
     }
 
     void Update()
