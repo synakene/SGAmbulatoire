@@ -85,79 +85,303 @@
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 9,
       "idGoodAnswer": 8,
       "text": "Revoyez les normes des paramètres vitaux !"
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 7,
       "idGoodAnswer": 8,
       "text": "Revoyez les normes des paramètres vitaux !"
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 50,
       "idGoodAnswer": 8,
       "text": "Vous avez posé le bon diagnostic, mais pas du premier coup."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 8,
       "idGoodAnswer": 8,
       "text": "Vous avez posé le bon diagnostic."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 30,
       "idGoodAnswer": 30,
       "text": "Vous avez bien repéré les signes de l’anxiété chez Mr Sainte-Marie, tremblements, se ronge les ongles, sueurs, douleurs abdominales, troubles du sommeil, tachycardie et hypertension."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 49,
       "idGoodAnswer": 30,
       "text": "Vous avez bien repéré les signes de l’anxiété chez Mr Sainte-Marie, tremblements, se ronge les ongles, sueurs, douleurs abdominales, troubles du sommeil, tachycardie et hypertension. Mais pas du premier coup."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 28,
       "idGoodAnswer": 30,
       "text": "Constipation avérée = 72h sans selles."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 26,
       "idGoodAnswer": 30,
       "text": "Bonne idée car le patient a des sueurs, est à jeun mais glycémie correcte et absence de vertiges."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 29,
       "idGoodAnswer": 30,
       "text": "36°C < température normale < 38°C"
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 35,
       "idGoodAnswer": 35,
       "text": "A remplir."
     },
 
-	{
-      "idConv": 2,
+    {
+      "idConv": 5,
       "idNode": 34,
       "idGoodAnswer": 35,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 4,
+      "idGoodAnswer": 4,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 3,
+      "idGoodAnswer": 4,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 6,
+      "idGoodAnswer": 6,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 8,
+      "idGoodAnswer": 6,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 9,
+      "idGoodAnswer": 9,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 8,
+      "idGoodAnswer": 9,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 18,
+      "idGoodAnswer": 18,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 19,
+      "idGoodAnswer": 18,
+      "text": "A remplir."
+    },
+
+
+
+
+    {
+      "idConv": 3,
+      "idNode": 2,
+      "idGoodAnswer": 2,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 3,
+      "idGoodAnswer": 2,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 6,
+      "idGoodAnswer": 6,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 19,
+      "idGoodAnswer": 6,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 15,
+      "idGoodAnswer": 15,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 19,
+      "idGoodAnswer": 15,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 18,
+      "idGoodAnswer": 18,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 19,
+      "idGoodAnswer": 18,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 21,
+      "idGoodAnswer": 21,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 20,
+      "idGoodAnswer": 21,
+      "text": "A remplir."
+    },
+
+
+
+
+
+    {
+      "idConv": 6,
+      "idNode": 1,
+      "idGoodAnswer": 1,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 44,
+      "idGoodAnswer": 1,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 45,
+      "idGoodAnswer": 1,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 10,
+      "idGoodAnswer": 10,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 9,
+      "idGoodAnswer": 10,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 19,
+      "idGoodAnswer": 19,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 18,
+      "idGoodAnswer": 19,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 20,
+      "idGoodAnswer": 19,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 40,
+      "idGoodAnswer": 40,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 20,
+      "idGoodAnswer": 40,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 7,
+      "idNode": 2,
+      "idGoodAnswer": 2,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 7,
+      "idNode": 3,
+      "idGoodAnswer": 2,
+      "text": "A remplir."
+    },
+
+    {
+      "idConv": 7,
+      "idNode": 4,
+      "idGoodAnswer": 2,
       "text": "A remplir."
     }
 

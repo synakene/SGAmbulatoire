@@ -8,6 +8,9 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
 	public class SequencerCommandAddNote : SequencerCommand {
 
 		public void Start() {
+
+            // Ne plus utiliser. Utiliser un SendMessage au GameManager
+
             GameObject noteBookPanel;
             GameObject notes;
             noteBookPanel = GameObject.Find("BlockNotePanel");

@@ -14,8 +14,8 @@ public class CalculScore : MonoBehaviour {
 
         if ((Data.MaxScoreObj1 != 0 && Data.MaxScoreObj2 != 0))
         {
-            score1.text = ((Data.scoreObj1 * 100) / Data.MaxScoreObj1).ToString() + " %";
-            score2.text = ((Data.scoreObj2 * 100) / Data.MaxScoreObj2).ToString() + " %";
+            score1.text = ((Data.curScoreObj1 * 100) / Data.MaxScoreObj1).ToString() + " %";
+            score2.text = ((Data.curScoreObj2 * 100) / Data.MaxScoreObj2).ToString() + " %";
         }
     }
 }

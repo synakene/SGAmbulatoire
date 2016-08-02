@@ -2,11 +2,11 @@
 using System.Collections;
 using UnityEngine.UI;
 
-public class BlockNote : MonoBehaviour {
+public class BlockNoteButton : MonoBehaviour {
 
-    //public Button noteBookButton;
+    // Ne pas utiliser
+
     public GameObject blockNote;
-
     bool inScreen;
 
     void Start () {

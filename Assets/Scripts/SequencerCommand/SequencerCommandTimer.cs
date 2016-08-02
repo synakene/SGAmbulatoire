@@ -19,7 +19,6 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
 
         IEnumerator Count(KeyValuePair<int, float> info)
         {
-
             GameObject go = GameObject.Find("NPC Subtitle Reminder Panel");
 
             GameObject jauge = Instantiate(Resources.Load("Prefabs/UI/Jauge")) as GameObject;
@@ -28,7 +27,6 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
             Image im = jauge.GetComponent<Image>();
 
             int idConv = DialogueManager.ConversationModel.GetConversationID(DialogueManager.CurrentConversationState);
-            ConversationState curState = DialogueManager.CurrentConversationState;
             DialogueEntry entry = null;
 
             List<Link> outgoingLinks = DialogueManager.CurrentConversationState.subtitle.dialogueEntry.outgoingLinks;
@@ -50,7 +48,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
             float duration = info.Value;
             while ((duration > 0) && (jauge != null))
             {
-                if (DialogueManager.CurrentConversationState != curState)
+                if (DialogueManager.CurrentConversationState.subtitle.dialogueEntry.id == int.Parse(GetParameter(1)))
                 {
                     Destroy(jauge);
                     yield return null;

@@ -229,11 +229,14 @@ namespace sharpPDF
         private static List<string> getWords(string sentence, int fontSize, predefinedFont fontType)
         {
             List<string> wordList = new List<string>();
-            string[] strings = Regex.Split(sentence, @"(\s|\n)");
-            foreach (string s in strings)
+            if (sentence != null)
             {
-                if (!Regex.IsMatch(s, @"\[(.*?)\]")) //Don't take [f] or [pic=2]
-                    wordList.Add(s);
+                string[] strings = Regex.Split(sentence, @"(\s|\n)");
+                foreach (string s in strings)
+                {
+                    if (!Regex.IsMatch(s, @"\[(.*?)\]")) //Don't take [f] or [pic=2]
+                        wordList.Add(s);
+                }
             }
             return wordList;
         }
