@@ -13,6 +13,7 @@ GameObject:
   - 114: {fileID: 11417702}
   - 222: {fileID: 22217698}
   - 114: {fileID: 11417698}
+  - 114: {fileID: 11456232}
   m_Layer: 5
   m_Name: Quest Group Template
   m_TagString: Untagged
@@ -112,7 +113,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &125668
 GameObject:
   m_ObjectHideFlags: 1
@@ -306,6 +307,7 @@ GameObject:
   - 114: {fileID: 11425730}
   - 95: {fileID: 9525660}
   - 114: {fileID: 11425728}
+  - 114: {fileID: 11456234}
   m_Layer: 5
   m_Name: Close Button
   m_TagString: Untagged
@@ -882,7 +884,6 @@ GameObject:
   - 222: {fileID: 22225742}
   - 114: {fileID: 11425856}
   - 225: {fileID: 22525660}
-  - 95: {fileID: 9525666}
   m_Layer: 5
   m_Name: Quest Log Window Main Panel
   m_TagString: Untagged
@@ -1370,6 +1371,7 @@ GameObject:
   - 114: {fileID: 11425970}
   - 114: {fileID: 11425968}
   - 114: {fileID: 11425966}
+  - 114: {fileID: 11451224}
   m_Layer: 5
   m_Name: NPC Subtitle Reminder Line
   m_TagString: Untagged
@@ -1721,7 +1723,7 @@ GameObject:
   - 224: {fileID: 22425846}
   m_Layer: 5
   m_Name: 'NOTE: To see panels set Canvas Group Alpha to 1'
-  m_TagString: Untagged
+  m_TagString: EditorOnly
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1798,6 +1800,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &193532
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 224: {fileID: 22493532}
+  m_Layer: 5
+  m_Name: 'NOTE: To see panels, activate Vertical Group'
+  m_TagString: EditorOnly
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!4 &425660
 Transform:
   m_ObjectHideFlags: 1
@@ -1856,21 +1873,6 @@ Animator:
   m_ApplyRootMotion: 1
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
---- !u!95 &9525666
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 125752}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 1c072b8381d780743a547dcff149603c, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
 --- !u!95 &9525668
 Animator:
   serializedVersion: 3
@@ -1882,7 +1884,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 62b8011547f389344ba48f87b2ada51c, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 1
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -1897,7 +1899,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 62b8011547f389344ba48f87b2ada51c, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 1
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -1912,7 +1914,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 62b8011547f389344ba48f87b2ada51c, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 1
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -2272,6 +2274,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   container: {fileID: 22425666}
+  showContainerIfEmpty: 1
   questTrackTemplate: {fileID: 11425672}
   showActiveQuests: 1
   showCompletedQuests: 0
@@ -3266,7 +3269,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 22425702}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: .5
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4300,7 +4303,7 @@ MonoBehaviour:
   abandonQuestState: 1
   pauseWhileOpen: 1
   unlockCursorWhileOpen: 1
-  useGroups: 0
+  useGroups: 1
   mainPanel: {fileID: 11425856}
   activeQuestsButton: {fileID: 11425750}
   completedQuestsButton: {fileID: 11425740}
@@ -4310,6 +4313,16 @@ MonoBehaviour:
   abandonPopup: {fileID: 11425720}
   abandonQuestTitle: {fileID: 11425712}
   autoFocus: 0
+  onOpen:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  onClose:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   onContentChanged:
     m_PersistentCalls:
       m_Calls:
@@ -4400,7 +4413,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 20
@@ -5063,7 +5076,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 22425780}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: .58984375
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -5268,6 +5281,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   charactersPerSecond: 50
   audioClip: {fileID: 0}
+  audioSource: {fileID: 0}
+  interruptAudioClip: 0
+  fullPauseDuration: 1
+  quarterPauseDuration: .25
+  removeDuplicateTypewriterEffects: 1
+  waitOneFrameBeforeStarting: 0
+  onBegin:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  onCharacter:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  onEnd:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
 --- !u!114 &11425942
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -5923,6 +5957,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   charactersPerSecond: 50
   audioClip: {fileID: 0}
+  audioSource: {fileID: 0}
+  interruptAudioClip: 0
+  fullPauseDuration: 1
+  quarterPauseDuration: .25
+  removeDuplicateTypewriterEffects: 1
+  waitOneFrameBeforeStarting: 0
+  onBegin:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  onCharacter:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  onEnd:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
 --- !u!114 &11426008
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6532,6 +6587,7 @@ MonoBehaviour:
       portraitImage: {fileID: 11426024}
       portraitName: {fileID: 11426020}
       continueButton: {fileID: 11426002}
+      ignorePauseCodes: 0
       animationTransitions:
         showTrigger: 
         hideTrigger: 
@@ -6542,6 +6598,7 @@ MonoBehaviour:
       portraitImage: {fileID: 11425958}
       portraitName: {fileID: 11425954}
       continueButton: {fileID: 11425936}
+      ignorePauseCodes: 0
       animationTransitions:
         showTrigger: 
         hideTrigger: 
@@ -6558,6 +6615,7 @@ MonoBehaviour:
         portraitImage: {fileID: 11425982}
         portraitName: {fileID: 11425978}
         continueButton: {fileID: 0}
+        ignorePauseCodes: 1
         animationTransitions:
           showTrigger: 
           hideTrigger: 
@@ -6569,6 +6627,7 @@ MonoBehaviour:
       buttonTemplateHolder: {fileID: 11425914}
       buttonTemplateScrollbar: {fileID: 11425922}
       buttonTemplateScrollbarResetValue: 1
+      explicitNavigationForTemplateButtons: 1
       autonumber:
         enabled: 0
         format: '{0}. {1}'
@@ -6609,6 +6668,7 @@ MonoBehaviour:
       hideTrigger: Hide
   autoFocus: 0
   findActorOverrides: 0
+  addEventSystemIfNeeded: 1
 --- !u!114 &11426068
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6659,6 +6719,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   initialDatabase: {fileID: 0}
   displaySettings:
+    conversationOverrideSettings:
+      useOverrides: 0
+      overrideSubtitleSettings: 0
+      showNPCSubtitlesDuringLine: 1
+      showNPCSubtitlesWithResponses: 1
+      showPCSubtitlesDuringLine: 0
+      subtitleCharsPerSecond: 30
+      minSubtitleSeconds: 2
+      continueButton: 0
+      overrideSequenceSettings: 0
+      defaultSequence: 
+      defaultPlayerSequence: 
+      defaultResponseMenuSequence: 
+      overrideInputSettings: 0
+      alwaysForceResponseMenu: 1
+      responseTimeout: 0
     dialogueUI: {fileID: 0}
     localizationSettings:
       language: 
@@ -6707,6 +6783,71 @@ MonoBehaviour:
   dontDestroyOnLoad: 1
   allowOnlyOneInstance: 1
   debugLevel: 2
+--- !u!114 &11451224
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 125806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03f74548731cbe94aab73effe5ffcabf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &11456232
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 117698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: .960784316, g: .960784316, b: .960784316, a: 1}
+    m_PressedColor: {r: .784313738, g: .784313738, b: .784313738, a: 1}
+    m_DisabledColor: {r: .784313738, g: .784313738, b: .784313738, a: .501960814}
+    m_ColorMultiplier: 1
+    m_FadeDuration: .100000001
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 11417706}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+--- !u!114 &11456234
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 125688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c9d27989a5b06848886a48c124164a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: 27
+  buttonName: 
 --- !u!114 &11483826
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7329,10 +7470,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 22425664}
   m_RootOrder: 1
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 128, y: -36}
+  m_SizeDelta: {x: 248, y: 18}
   m_Pivot: {x: .5, y: .5}
 --- !u!224 &22425662
 RectTransform:
@@ -7346,10 +7487,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 22425664}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 128, y: -15.5}
+  m_SizeDelta: {x: 248, y: 23}
   m_Pivot: {x: .5, y: .5}
 --- !u!224 &22425664
 RectTransform:
@@ -7365,10 +7506,10 @@ RectTransform:
   - {fileID: 22425660}
   m_Father: {fileID: 22425666}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 256, y: 49}
   m_Pivot: {x: 0, y: 1}
 --- !u!224 &22425666
 RectTransform:
@@ -7382,7 +7523,7 @@ RectTransform:
   m_Children:
   - {fileID: 22425664}
   m_Father: {fileID: 22425668}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
@@ -7398,6 +7539,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 22493532}
   - {fileID: 22425666}
   m_Father: {fileID: 22425850}
   m_RootOrder: 2
@@ -8732,7 +8874,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 105}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!224 &22425820
@@ -9045,6 +9187,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!224 &22493532
+RectTransform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 193532}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 22425668}
+  m_RootOrder: 0
+  m_AnchorMin: {x: .5, y: .5}
+  m_AnchorMax: {x: .5, y: .5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: .5, y: .5}
 --- !u!225 &22525660
 CanvasGroup:
   m_ObjectHideFlags: 1

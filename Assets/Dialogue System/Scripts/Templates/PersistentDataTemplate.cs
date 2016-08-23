@@ -6,9 +6,10 @@
 
 
 using UnityEngine;
+using System.Collections;
 using PixelCrushers.DialogueSystem;
 
-public class PersistentDataTemplate : MonoBehaviour {
+public class PersistentDataTemplate : MonoBehaviour { //<--Copy this file. Rename the file and class name.
 	
 	public void OnRecordPersistentData() {
 		// Add your code here to record data into the Lua environment.
@@ -20,6 +21,16 @@ public class PersistentDataTemplate : MonoBehaviour {
 		// Add your code here to get data from Lua and apply it (usually to the game object).
 		// Typically, you'll use a line similar to:
 		// myData = DialogueLua.GetActorField(name, "myFieldName").AsSomeType;
+		//
+		// When changing scenes, OnApplyPersistentData() is typically called at the same 
+		// time as Start() methods. If your code depends on another script having finished 
+		// its Start() method, use a coroutine to wait one frame. For example, in 
+		// OnApplyPersistentData() call StartCoroutine(DelayedApply());
+		// Then define DelayedApply() as:
+		// IEnumerator DelayedApply() {
+		//     yield return null; // Wait 1 frame for other scripts to initialize.
+		//     <your code here>
+		// }
 	}
 
 	//--- Uncomment this method if you want to implement it:

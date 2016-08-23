@@ -267,9 +267,13 @@ namespace PixelCrushers.DialogueSystem {
 		/// Draws the Convert button that calls Convert().
 		/// </summary>
 		protected virtual void DrawConvertButton() {
-			EditorGUI.BeginDisabledGroup(!IsReadyToConvert());
-			if (GUILayout.Button("Convert", GUILayout.Width(100))) Convert();
-			EditorGUI.EndDisabledGroup();
+            var isReady = IsReadyToConvert();
+            EditorGUI.BeginDisabledGroup(!isReady);
+            try {
+                if (GUILayout.Button("Convert", GUILayout.Width(100))) Convert();
+            } finally {
+                EditorGUI.EndDisabledGroup();
+            }
 		}
 
 		/// <summary>

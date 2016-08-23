@@ -68,6 +68,9 @@ namespace PixelCrushers.DialogueSystem {
 		[Tooltip("Reset the scroll bar to this value when preparing the response menu")]
 		public float buttonTemplateScrollbarResetValue = 1;
 
+        [Tooltip("Automatically set up explicit navigation for instantiated template buttons instead of using Automatic navigation")]
+        public bool explicitNavigationForTemplateButtons = true;
+
 		[Serializable]
 		public class AnimationTransitions {
 			[Tooltip("Trigger to set when showing the response menu panel.")]
@@ -170,7 +173,8 @@ namespace PixelCrushers.DialogueSystem {
 					if (!isVisible && CanTriggerAnimation(animationTransitions.showTrigger)) {
 						animator.SetTrigger(animationTransitions.showTrigger);
 					}
-				} else {
+                    if (explicitNavigationForTemplateButtons) SetupTemplateButtonNavigation();
+                } else {
 					if (isVisible && CanTriggerAnimation(animationTransitions.hideTrigger)) {
 						animator.SetTrigger(animationTransitions.hideTrigger);
 						DialogueManager.Instance.StartCoroutine(DisableAfterAnimation(panel));
@@ -289,7 +293,7 @@ namespace PixelCrushers.DialogueSystem {
 			if (buttons != null) {
 				int position = start;
 				while ((0 <= position) && (position < buttons.Length)) {
-					if (buttons[position].clickable) {
+					if (buttons[position].visible && buttons[position].response != null) {
 						position += direction;
 					} else {
 						return position;
@@ -298,6 +302,25 @@ namespace PixelCrushers.DialogueSystem {
 			}
 			return 5;
 		}
+
+        private void SetupTemplateButtonNavigation()
+        {
+            // Assumes buttons are active (since uses GetComponent), so call after activating panel.
+            for (int i = 0; i < instantiatedButtons.Count; i++)
+            {
+                var button = instantiatedButtons[i].GetComponent<UnityUIResponseButton>().button;
+                var above = (i == 0) ? null : instantiatedButtons[i - 1].GetComponent<UnityUIResponseButton>().button;
+                var below = (i == instantiatedButtons.Count - 1) ? null : instantiatedButtons[i + 1].GetComponent<UnityUIResponseButton>().button;
+                var navigation = new UnityEngine.UI.Navigation();
+
+                navigation.mode = UnityEngine.UI.Navigation.Mode.Explicit;
+                navigation.selectOnUp = above;
+                navigation.selectOnLeft = above;
+                navigation.selectOnDown = below;
+                navigation.selectOnRight = below;
+                button.navigation = navigation;
+            }
+        }
 
 		public void DestroyInstantiatedButtons() {
 			foreach (var instantiatedButton in instantiatedButtons) {
@@ -394,7 +417,7 @@ namespace PixelCrushers.DialogueSystem {
 				while ((UITools.GetAnimatorNameHash(animator.GetCurrentAnimatorStateInfo(0)) == oldHashId) && (Time.realtimeSinceStartup < timeout)) {
 					yield return null;
 				}
-				yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
+				yield return DialogueManager.Instance.StartCoroutine(DialogueTime.WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length));
 			}
 			isHiding = false;
 			if (panel != null) Tools.SetGameObjectActive(panel, false);
