@@ -1162,6 +1162,7 @@ GameObject:
   - 114: {fileID: 11495740}
   - 114: {fileID: 11495680}
   - 114: {fileID: 11495682}
+  - 114: {fileID: 11420164}
   m_Layer: 5
   m_Name: Subtitle Reminder Line
   m_TagString: Untagged
@@ -1708,7 +1709,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 62b8011547f389344ba48f87b2ada51c, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 1
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -1738,7 +1739,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 62b8011547f389344ba48f87b2ada51c, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 1
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -1753,10 +1754,21 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 62b8011547f389344ba48f87b2ada51c, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 1
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &11420164
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 195556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03f74548731cbe94aab73effe5ffcabf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &11495430
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3651,7 +3663,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   heading: {fileID: 11495600}
   description: {fileID: 11495596}
+  alternateDescriptions:
+    successDescription: {fileID: 0}
+    failureDescription: {fileID: 0}
+  entryContainer: {fileID: 0}
   entryDescription: {fileID: 11495594}
+  alternateEntryDescriptions:
+    successDescription: {fileID: 0}
+    failureDescription: {fileID: 0}
   trackButton: {fileID: 11495592}
   abandonButton: {fileID: 11495588}
 --- !u!114 &11495604
@@ -3858,10 +3877,12 @@ MonoBehaviour:
   abandonQuestState: 1
   pauseWhileOpen: 1
   unlockCursorWhileOpen: 1
+  useGroups: 0
   mainPanel: {fileID: 11495610}
   activeQuestsButton: {fileID: 11495614}
   completedQuestsButton: {fileID: 11495608}
   questTable: {fileID: 11495604}
+  questGroupTemplate: {fileID: 0}
   questTemplate: {fileID: 11495602}
   abandonPopup: {fileID: 11495584}
   abandonQuestTitle: {fileID: 11495582}
@@ -5001,7 +5022,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 22495576}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: .866983354
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -5254,7 +5275,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   charactersPerSecond: 50
   audioClip: {fileID: 0}
-  paused: 0
+  audioSource: {fileID: 0}
+  fullPauseDuration: 1
+  quarterPauseDuration: .25
+  removeDuplicateTypewriterEffects: 1
 --- !u!114 &11495746
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -5508,11 +5532,15 @@ MonoBehaviour:
           hideTrigger: 
         alwaysVisible: 0
       timer: {fileID: 11495738}
+      selectCurrentOnTimeout: 0
       buttons: []
       buttonTemplate: {fileID: 11495734}
       buttonTemplateHolder: {fileID: 11495742}
       buttonTemplateScrollbar: {fileID: 11495726}
       buttonTemplateScrollbarResetValue: 1
+      autonumber:
+        enabled: 0
+        format: '{0}. {1}'
       animationTransitions:
         showTrigger: 
         hideTrigger: 
@@ -5544,10 +5572,12 @@ MonoBehaviour:
     panel: {fileID: 11495716}
     line: {fileID: 11495714}
     continueButton: {fileID: 11495712}
+    queueAlerts: 0
     animationTransitions:
       showTrigger: Show
       hideTrigger: Hide
   autoFocus: 0
+  findActorOverrides: 0
 --- !u!114 &11495764
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -5748,7 +5778,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   description: {fileID: 11495796}
+  alternateDescriptions:
+    successDescription: {fileID: 0}
+    failureDescription: {fileID: 0}
+  entryContainer: {fileID: 0}
   entryDescription: {fileID: 11495824}
+  alternateEntryDescriptions:
+    successDescription: {fileID: 0}
+    failureDescription: {fileID: 0}
 --- !u!114 &11495786
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7224,10 +7261,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 22495438}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 90, y: -23}
+  m_SizeDelta: {x: 180, y: 46}
   m_Pivot: {x: .5, y: .5}
 --- !u!224 &22495498
 RectTransform:
@@ -7275,10 +7312,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 22495456}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 90, y: -23}
+  m_SizeDelta: {x: 180, y: 46}
   m_Pivot: {x: .5, y: .5}
 --- !u!224 &22495504
 RectTransform:

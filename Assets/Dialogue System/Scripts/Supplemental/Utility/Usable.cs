@@ -42,7 +42,7 @@ namespace PixelCrushers.DialogueSystem {
 			}
 		}
 		
-		public void Start() {
+		public virtual void Start() {
 			if (string.IsNullOrEmpty(overrideName)) {
 				OverrideActorName overrideActorName = GetComponentInChildren<OverrideActorName>();
 				if (overrideActorName != null) overrideName = overrideActorName.overrideName;

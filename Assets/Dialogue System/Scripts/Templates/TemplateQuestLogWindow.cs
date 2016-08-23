@@ -19,16 +19,16 @@ public class TemplateQuestLogWindow : QuestLogWindow {
 	/// <summary>
 	/// This handler is called if the player confirms abandonment of a quest.
 	/// </summary>
-	private Action confirmAbandonQuestHandler = null;
+	private System.Action confirmAbandonQuestHandler = null;
 
-	public override void OpenWindow(Action openedWindowHandler) {
+	public override void OpenWindow(System.Action openedWindowHandler) {
 		// Add your code here to open the quest log window.
 
 		// When done, call openedWindowHandler:
 		openedWindowHandler();
 	}
 	
-	public override void CloseWindow(Action closedWindowHandler) {
+	public override void CloseWindow(System.Action closedWindowHandler) {
 		// Add your code here to close the quest log window.
 		
 		// When done, call closedWindowHandler:
@@ -45,7 +45,7 @@ public class TemplateQuestLogWindow : QuestLogWindow {
 		//     Otherwise you're viewing the completed quests.
 	}
 	
-	public override void ConfirmAbandonQuest(string title, Action confirmAbandonQuestHandler) {
+	public override void ConfirmAbandonQuest(string title, System.Action confirmAbandonQuestHandler) {
 		// Save the handler to call if the player confirms:
 		this.confirmAbandonQuestHandler = confirmAbandonQuestHandler;
 

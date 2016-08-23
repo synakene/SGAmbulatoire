@@ -110,7 +110,7 @@ namespace PixelCrushers.DialogueSystem {
 		private void DrawDatabaseStage() {
 			EditorGUILayout.LabelField("Dialogue Database", EditorStyles.boldLabel);
 			EditorWindowTools.StartIndentedSection();
-			EditorGUILayout.HelpBox("This wizard will help you configure the Dialogue Manager GameObject.\n\nThe Dialogue Manager coordinates all Dialogue System activity. It should be in the first scene that uses any Dialogue System functionality.\n\nThe first step is to assign an initial dialogue database asset. This asset contains your conversations and related data.", MessageType.Info);
+			EditorGUILayout.HelpBox("This wizard will help you configure the Dialogue Manager GameObject.\n\nThe Dialogue Manager coordinates all Dialogue System activity. It should be in the first scene that uses any Dialogue System functionality. By default, it's configured to persist across scene changes, replacing any Dialogue Managers in the newly-loaded scene. This allows you to retain your runtime dialogue information as you change scenes.\n\nThe first step is to assign an initial dialogue database asset. This asset contains your conversations and related data.", MessageType.Info);
 			EditorGUILayout.BeginHorizontal();
 			if (DialogueManager.Instance == null) {
 				EditorGUILayout.LabelField("Dialogue Manager object is null. Creating a new instance...");
