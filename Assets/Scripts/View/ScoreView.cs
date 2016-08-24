@@ -21,6 +21,7 @@ public class ScoreView {
         }
         ProfilPanel.transform.FindDeepChild("GoalPanel/Goal1/count1").GetComponent<Text>().text = (Data.curScoreObj1).ToString() + "/" + (Data.MaxScoreObj1).ToString();
         ProfilPanel.transform.FindDeepChild("GoalPanel/Goal2/count2").GetComponent<Text>().text = (Data.curScoreObj2).ToString() + "/" + (Data.MaxScoreObj2).ToString();
+        ProfilPanel.transform.FindDeepChild("GoalPanel/Goal3/count3").GetComponent<Text>().text = (Data.curScoreObj3).ToString() + "/" + (Data.MaxScoreObj3).ToString();
 
         if (ProfileButton == null)
         {

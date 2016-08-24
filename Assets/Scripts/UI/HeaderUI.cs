@@ -47,6 +47,7 @@ public class HeaderUI : MonoBehaviour
 
         GameObject.Find("count1").GetComponent<Text>().text = (Data.scoreObj1).ToString() + "/" + (Data.MaxScoreObj1).ToString();
         GameObject.Find("count2").GetComponent<Text>().text = (Data.scoreObj2).ToString() + "/" + (Data.MaxScoreObj2).ToString();
+        GameObject.Find("count3").GetComponent<Text>().text = (Data.scoreObj3).ToString() + "/" + (Data.MaxScoreObj3).ToString();
     }
 
     void OnDestroy()

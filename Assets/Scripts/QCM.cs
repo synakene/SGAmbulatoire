@@ -35,7 +35,7 @@ public class QCM : MonoBehaviour {
         {
             if (r1 && r2 && r3)
             {
-                OverMind.AddPoint(0,1);
+                OverMind.AddPoint(0,0,1);
             }
         }
 
@@ -43,7 +43,7 @@ public class QCM : MonoBehaviour {
         {
             if (r1 && r2 && !r3 && r4 && !r5 && r6)
             {
-                OverMind.AddPoint(0,1);
+                OverMind.AddPoint(0,0,1);
             }
         }
 
@@ -51,7 +51,7 @@ public class QCM : MonoBehaviour {
         {
             if (!r1 && r2 && !r3 && !r4 && r5)
             {
-                OverMind.AddPoint(0, 1);
+                OverMind.AddPoint(0,0,2);
             }
         }
 

@@ -64,6 +64,11 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     titre.text = "Aide";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
+                case "reponseDiag":
+                    helpText.text = "Le patient souffre d'une hypertension et d'une tachycardie";
+                    titre.text = "Echec";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
                 case "diagConsigne":
                     helpText.text = "Vous allez devoir élaborer un diagnostic. Posez les questions les plus pertinentes au patient avant de poser un diagnostic. Vous pouvez consulter les questions et réponses déjà posées au patient, en cliquant sur l'icone du carnet en haut à gauche. Quand vous avez terminé cliquez sur \"Poser un diagnostic\". Vous pourrez toujours revenir aux questions avant de poser un diagnostic si vous le désirez.";
                     titre.text = "Consigne";
@@ -99,7 +104,12 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     titre.text = "Information";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
-                case "echecDiag":
+                case "echecDiag1":
+                    helpText.text = "Attention, vous n'avez pas réaliser l'ensemble des examens necessaires";
+                    titre.text = "Aide";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "echecDiag2":
                     helpText.text = "Dans ce cas il est necessaire d'effectuer les examens suivant :\n - Prise de la tension artérielle \n - Prise de la température \n - Prise de la saturation \n - Prise de la fréquence cardiaque";
                     titre.text = "Examen incomplet";
                     helpText.alignment = TextAnchor.MiddleLeft;

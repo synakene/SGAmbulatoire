@@ -12,6 +12,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands
         {
             Data.scoreObj1 = Data.curScoreObj1;
             Data.scoreObj2 = Data.curScoreObj2;
+            Data.scoreObj3 = Data.curScoreObj3;
             Stop();
         }
     }

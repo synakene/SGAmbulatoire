@@ -32,12 +32,13 @@ public class SimplePDF : MonoBehaviour {
 
         page.addText("Être centré sur le patient : " + Data.curScoreObj1 + "/" + Data.MaxScoreObj1, 26, 685, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
         page.addText("Utiliser le raisonnement clinique : " + Data.curScoreObj2 + "/" + Data.MaxScoreObj2, 26, 670, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
+        page.addText("Respecter la procédure : " + Data.curScoreObj3 + "/" + Data.MaxScoreObj3, 26, 655, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
 
 
         float score = ((Data.curScoreObj1 + Data.curScoreObj2) / Data.MaxTotal) * 100f;
         int scoreTotal = Mathf.FloorToInt(score);
 
-        page.addText("Score Total : " + scoreTotal + "%", 26, 645, predefinedFont.csHelveticaBold, 14, new pdfColor(predefinedColor.csRaspberry));
+        page.addText("Score Total : " + scoreTotal + "%", 26, 630, predefinedFont.csHelveticaBold, 14, new pdfColor(predefinedColor.csRaspberry));
 
 
         pdfTable myTable = new pdfTable();
@@ -126,8 +127,8 @@ public class SimplePDF : MonoBehaviour {
         /*Set Cellpadding*/
         myTable.cellpadding = 5;
 
-        page.addTable(myDoc, pages, myTable, 16, 625, 680);
-        page.addSuccessTable(myDoc, pages, SuccessTable, 8, 625, 680, myTable);
+        page.addTable(myDoc, pages, myTable, 16, 610, 665);
+        page.addSuccessTable(myDoc, pages, SuccessTable, 8, 610, 665, myTable);
 
         /* Add header to each pages */
         for (int i = 1; i < pages.Count; i++)

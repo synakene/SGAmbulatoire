@@ -25,7 +25,6 @@ public static class Data {
         DialogueLua.SetVariable("q6", false);
         DialogueLua.SetVariable("q7", false);
         DialogueLua.SetVariable("q8", false);
-        DialogueLua.SetVariable("q9", false);
 
         DialogueLua.SetVariable("terminer1", false);
         DialogueLua.SetVariable("terminer2", false);
@@ -37,9 +36,11 @@ public static class Data {
 
 		DialogueLua.SetVariable("diag1", false);
 		DialogueLua.SetVariable("diag2", false);
+        DialogueLua.SetVariable("diag3", false);
 
         DialogueLua.SetVariable("diagS5_1", false);
         DialogueLua.SetVariable("diagS5_2", false);
+        DialogueLua.SetVariable("NbParam", 0);
     }
 
     //Feedback
@@ -61,14 +62,17 @@ public static class Data {
     //Score :
     public static int scoreObj1 = 0;
     public static int scoreObj2 = 0;
+    public static int scoreObj3 = 0;
 
     public static int curScoreObj1 = 0;
     public static int curScoreObj2 = 0;
+    public static int curScoreObj3 = 0;
 
-    public static int MaxScoreObj1 = 10;
-    public static int MaxScoreObj2 = 20;
+    public static int MaxScoreObj1 = 9;
+    public static int MaxScoreObj2 = 17;
+    public static int MaxScoreObj3 = 15;
 
-    public static float MaxTotal = 30f;
+    public static float MaxTotal = 41f;
 
     public static void reinitFeedback()
     {
@@ -79,8 +83,10 @@ public static class Data {
     {
         scoreObj1 = 0;
         scoreObj2 = 0;
+        scoreObj3 = 0;
 
         curScoreObj1 = 0;
         curScoreObj2 = 0;
+        curScoreObj3 = 0;
     }
 }

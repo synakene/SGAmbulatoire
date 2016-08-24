@@ -72,13 +72,16 @@ public class OverMind : MonoBehaviour {
     }
 
     // Score
-    public void AddPoint(int op1, int op2)
+    public void AddPoint(int op1, int op2, int op3)
     {
         Data.curScoreObj1 += op1;
         if (Data.curScoreObj1 < 0) { Data.curScoreObj1 = 0; }
 
         Data.curScoreObj2 += op2;
         if (Data.curScoreObj2 < 0) { Data.curScoreObj2 = 0; }
+
+        Data.curScoreObj3 += op3;
+        if (Data.curScoreObj3 < 0) { Data.curScoreObj3 = 0; }
 
         ScoreView.Update();
     }
