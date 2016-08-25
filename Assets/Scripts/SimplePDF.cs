@@ -35,7 +35,7 @@ public class SimplePDF : MonoBehaviour {
         page.addText("Respecter la procédure : " + Data.curScoreObj3 + "/" + Data.MaxScoreObj3, 26, 655, predefinedFont.csHelvetica, 10, new pdfColor(predefinedColor.csBlack));
 
 
-        float score = ((Data.curScoreObj1 + Data.curScoreObj2) / Data.MaxTotal) * 100f;
+        float score = ((Data.curScoreObj1 + Data.curScoreObj2 + Data.curScoreObj3) / Data.MaxTotal) * 100f;
         int scoreTotal = Mathf.FloorToInt(score);
 
         page.addText("Score Total : " + scoreTotal + "%", 26, 630, predefinedFont.csHelveticaBold, 14, new pdfColor(predefinedColor.csRaspberry));
