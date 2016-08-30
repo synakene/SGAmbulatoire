@@ -83,6 +83,7 @@ public class OverMind : MonoBehaviour {
         Data.curScoreObj3 += op3;
         if (Data.curScoreObj3 < 0) { Data.curScoreObj3 = 0; }
 
+        ScoreView.ScorePanelAnim(op1, op2, op3);
         ScoreView.Update();
     }
 
