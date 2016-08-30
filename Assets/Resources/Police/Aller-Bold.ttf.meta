@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 6d40ef7c8135d6247b1f76f91d46ccc9
+timeCreated: 1472460236
+licenseType: Pro
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Aller
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 36832fb366b99dc4aa0daaaa95ec9965, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
