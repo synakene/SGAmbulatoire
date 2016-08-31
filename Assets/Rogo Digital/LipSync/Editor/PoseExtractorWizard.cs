@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -7,13 +8,14 @@ using RogoDigital;
 using RogoDigital.Lipsync;
 
 public class PoseExtractorWizard : WizardWindow {
+	private LipSync component;
 
 	private Vector2 scrollPosition;
 	private AvatarMask mask;
 
-	private string identifier;
-	private Transform target;
-	private Shape pose;
+	private int poseType;
+	private string selectedPose;
+	private int poseIndex;
 	private AnimationClip animClip;
 
 	private int currentFrame;
@@ -26,10 +28,10 @@ public class PoseExtractorWizard : WizardWindow {
 
 	private bool dontReset;
 
-	public override void OnWizardGUI () {
+	public override void OnWizardGUI() {
 		GUILayout.BeginHorizontal();
 		GUILayout.FlexibleSpace();
-		GUILayout.Label("Creating Pose for " + identifier, EditorStyles.boldLabel);
+		GUILayout.Label("Creating Pose for " + (poseType == 0 ? "Phoneme " : "Emotion ") + selectedPose + ".", EditorStyles.boldLabel);
 		GUILayout.FlexibleSpace();
 		GUILayout.EndHorizontal();
 		GUILayout.Space(10);
@@ -37,8 +39,8 @@ public class PoseExtractorWizard : WizardWindow {
 		switch (currentStep) {
 			case 1:
 				EditorGUI.BeginChangeCheck();
-				animClip = (AnimationClip)EditorGUILayout.ObjectField("Animation Clip", animClip, typeof(AnimationClip), false);
-				if (EditorGUI.EndChangeCheck()) {
+				animClip = (AnimationClip) EditorGUILayout.ObjectField("Animation Clip", animClip, typeof(AnimationClip), false);
+				if(EditorGUI.EndChangeCheck()){
 					RefreshInfo();
 				}
 				GUILayout.Space(10);
@@ -88,7 +90,7 @@ public class PoseExtractorWizard : WizardWindow {
 						for (int b = 0; b < transformPaths.Length; b++) {
 							Rect bar = EditorGUILayout.BeginHorizontal();
 							if (transformReferences[b] == null && transformsToUse[b]) {
-								GUI.Box(new Rect(bar.x + 5, bar.y, bar.width - 10, bar.height), "", (GUIStyle)"TL SelectionButton PreDropGlow");
+								GUI.Box(new Rect(bar.x + 5, bar.y, bar.width-10, bar.height), "", (GUIStyle)"TL SelectionButton PreDropGlow");
 								canContinue = false;
 							}
 							GUILayout.Space(10);
@@ -120,13 +122,13 @@ public class PoseExtractorWizard : WizardWindow {
 				break;
 			case 2:
 				EditorGUI.BeginDisabledGroup(true);
-				animClip = (AnimationClip)EditorGUILayout.ObjectField("Animation Clip", animClip, typeof(AnimationClip), false);
+				animClip = (AnimationClip) EditorGUILayout.ObjectField("Animation Clip", animClip, typeof(AnimationClip), false);
 				EditorGUI.EndDisabledGroup();
 				GUILayout.Space(10);
 				EditorGUI.BeginChangeCheck();
 				currentFrame = Mathf.Clamp(EditorGUILayout.IntSlider("Animation Frame", currentFrame, 0, (int)(animClip.length * animClip.frameRate)), 0, (int)(animClip.length * animClip.frameRate));
-				if (EditorGUI.EndChangeCheck()) {
-					animClip.SampleAnimation(target.gameObject, (float)currentFrame / animClip.frameRate);
+				if(EditorGUI.EndChangeCheck()){
+					animClip.SampleAnimation(component.gameObject, (float)currentFrame / animClip.frameRate);
 				}
 				GUILayout.Space(5);
 				scrollPosition = GUILayout.BeginScrollView(scrollPosition);
@@ -148,7 +150,7 @@ public class PoseExtractorWizard : WizardWindow {
 		}
 	}
 
-	public override void OnBackPressed () {
+	public override void OnBackPressed() {
 		switch (currentStep) {
 			case 2:
 				for (int b = 0; b < transformPaths.Length; b++) {
@@ -162,7 +164,7 @@ public class PoseExtractorWizard : WizardWindow {
 		}
 	}
 
-	public override void OnContinuePressed () {
+	public override void OnContinuePressed() {
 		switch (currentStep) {
 			case 1:
 				scrollPosition = Vector2.zero;
@@ -177,7 +179,7 @@ public class PoseExtractorWizard : WizardWindow {
 					}
 				}
 
-				animClip.SampleAnimation(target.gameObject, (float)currentFrame / animClip.frameRate);
+				animClip.SampleAnimation(component.gameObject, (float)currentFrame / animClip.frameRate);
 				break;
 			case 2:
 				List<BoneShape> boneShapes = new List<BoneShape>();
@@ -191,14 +193,18 @@ public class PoseExtractorWizard : WizardWindow {
 					}
 				}
 
-				pose.bones = boneShapes;
+				if (poseType == 0) {
+					component.phonemes[poseIndex].bones = boneShapes;
+				} else {
+					component.emotions[poseIndex].bones = boneShapes;
+				}
 
 				dontReset = true;
 				break;
 		}
 	}
 
-	void OnDestroy () {
+	void OnDestroy() {
 		if (startPositions != null && !dontReset) {
 			for (int b = 0; b < transformPaths.Length; b++) {
 				if (transformsToUse[b] && transformReferences[b] != null) {
@@ -219,19 +225,19 @@ public class PoseExtractorWizard : WizardWindow {
 		return result;
 	}
 
-	void SetAll (bool setting) {
-		for (int b = 0; b < transformsToUse.Length; b++) {
+	void SetAll(bool setting) {
+		for (int b = 0; b < transformsToUse.Length; b++ ) {
 			transformsToUse[b] = setting;
 		}
 	}
 
-	void RefreshInfo () {
+	void RefreshInfo() {
 		if (animClip == null) {
 			canContinue = false;
 		} else {
 			EditorCurveBinding[] bindings = AnimationUtility.GetCurveBindings(animClip);
 			List<string> finalBindings = new List<string>();
-
+			
 			for (int b = 0; b < bindings.Length; b++) {
 				if (!string.IsNullOrEmpty(bindings[b].path)) {
 					if (!finalBindings.Contains(bindings[b].path)) {
@@ -250,7 +256,7 @@ public class PoseExtractorWizard : WizardWindow {
 					transformsToUse[b] = true;
 
 					// Attempt to find transforms from path
-					transformReferences[b] = target.Find(transformPaths[b]);
+					transformReferences[b] = component.transform.Find(transformPaths[b]);
 				}
 
 				canContinue = true;
@@ -260,17 +266,17 @@ public class PoseExtractorWizard : WizardWindow {
 		}
 	}
 
-	public static void ShowWindow (Transform target, Shape shape, string identifer) {
+	public static void ShowWindow(LipSync component, int index, int poseType) {
 		PoseExtractorWizard window = EditorWindow.GetWindow<PoseExtractorWizard>(true);
+		window.component = component;
 		window.topMessage = "Creates a Pose from an AnimationClip.";
 		window.totalSteps = 2;
 		window.Focus();
 
 		window.titleContent = new GUIContent("Pose Extractor Wizard");
-		window.pose = shape;
-		window.target = target;
-		window.identifier = identifer;
-
+		window.poseIndex = index;
+		window.poseType = poseType;
+		window.selectedPose = poseType == 0 ? component.phonemes[index].phoneme.ToString() : component.emotions[index].emotion;
 		window.canContinue = false;
 	}
 }

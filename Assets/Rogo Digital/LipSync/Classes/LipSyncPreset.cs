@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 namespace RogoDigital.Lipsync {
 	public class LipSyncPreset : ScriptableObject {
@@ -15,14 +16,14 @@ namespace RogoDigital.Lipsync {
 		/// <param name="blendable"></param>
 		/// <param name="blendSystem"></param>
 		/// <returns>The index of the blendable if found, or -1 if not.</returns>
-		public int FindBlendable (BlendableInfo blendable, BlendSystem blendSystem) {
+		public int FindBlendable(BlendableInfo blendable, BlendSystem blendSystem) {
 			// First attempts to match based on name, then index. If both fail, returns -1.
 			if (!string.IsNullOrEmpty(blendable.blendableName)) {
 				string cleanName = blendable.blendableName;
 
 				if (cleanName.Contains("(" + blendable.blendableNumber.ToString() + ")")) {
 					string[] parts = cleanName.Split(new string[] { "(" + blendable.blendableNumber.ToString() + ")" }, System.StringSplitOptions.RemoveEmptyEntries);
-					if (parts.Length > 0) {
+					if(parts.Length > 0){
 						cleanName = parts[0];
 					}
 				}
@@ -63,20 +64,20 @@ namespace RogoDigital.Lipsync {
 		/// <param name="bone"></param>
 		/// <param name="blendSystem"></param>
 		/// <returns>The matching bone transform if found, or null if not.</returns>
-		public Transform FindBone (BoneInfo bone, Transform searchRoot) {
+		public Transform FindBone(BoneInfo bone, Transform searchRoot) {
 			// First attempts to find the transform at the same position in the hierarchy relative to searchRoot, then a transform anywhere under searchRoot with the same name.
 			// If both fail, returns null;
-			Transform fullMatch = searchRoot.Find(bone.path + bone.name);
+			Transform fullMatch = searchRoot.Find(bone.path+bone.name);
 			if (fullMatch != null) return fullMatch;
 
 			return searchRoot.FindDeepChild(bone.name);
 		}
 
-		public void CreateFromShapes (PhonemeShape[] phonemes, EmotionShape[] emotions, BlendSystem blendSystem) {
+		public void CreateFromShapes(PhonemeShape[] phonemes , EmotionShape[] emotions , BlendSystem blendSystem) {
 			phonemeShapes = new PhonemeShapeInfo[phonemes.Length];
 			emotionShapes = new EmotionShapeInfo[emotions.Length];
 
-			for (int s = 0; s < phonemeShapes.Length; s++) {
+			for (int s = 0 ; s < phonemeShapes.Length ; s++) {
 				phonemeShapes[s] = new PhonemeShapeInfo();
 				phonemeShapes[s].phoneme = phonemes[s].phoneme;
 

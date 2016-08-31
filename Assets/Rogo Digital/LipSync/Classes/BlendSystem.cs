@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using System;
 
-namespace RogoDigital.Lipsync {
+namespace RogoDigital.Lipsync{
 	[ExecuteInEditMode]
-	public class BlendSystem : MonoBehaviour {
+	public class BlendSystem : MonoBehaviour{
 
 		// BlendSystem GUI information
 		public string blendableDisplayName = "Blendable";
@@ -19,92 +22,42 @@ namespace RogoDigital.Lipsync {
 		public bool isReady = false;
 
 		/// <summary>
-		/// The components using this BlendSystem.
+		/// The LipSync component using this BlendSystem.
 		/// </summary>
-		public BlendSystemUser[] users = new BlendSystemUser[0];
+		public BlendSystemUser[] users;
 
 		/// <summary>
 		/// Gets the number of blendables associated with this Blend System.
 		/// </summary>
 		/// <value>The blendable count.</value>
-		public int blendableCount {
+		public int blendableCount{
 			get {
-				if (_blendables == null) _blendables = new List<Blendable>();
+				if(_blendables == null) _blendables = new List<Blendable>();
 				return _blendables.Count;
 			}
 		}
-
-		public BlendSystemGenericDelegate onBlendablesChanged;
-		public delegate void BlendSystemGenericDelegate ();
-
+			
 		private List<Blendable> _blendables;
 
 		public virtual void OnEnable () {
-			hideFlags = HideFlags.HideInInspector;
+			this.hideFlags = HideFlags.HideInInspector;
+			users = GetComponents<BlendSystemUser>();
 
-			OnVariableChanged();
-			GetBlendables();
-		}
-
-		// When in editor mode, watch for components being removed without unregistering themselves
-		// #if'd out in builds for performance, as components are able to unregister correctly in play mode.
-#if UNITY_EDITOR
-		void Update () {
-			for (int user = 0; user < users.Length; user++) {
-				if (users[user] == null) Unregister(users[user]);
-			}
-		}
-#endif
-		/// <summary>
-		/// Register a BlendSystemUser as using this Blend System
-		/// </summary>
-		/// <param name="user"></param>
-		public void Register (BlendSystemUser user) {
-			List<BlendSystemUser> newUsers = new List<BlendSystemUser>();
-		
-			for (int i = 0; i < users.Length; i++) {
-				newUsers.Add(users[i]);
-			}
-
-			if (newUsers.Contains(user)) {
-				Debug.LogError("Could not register " + user.GetType().Name + " component to " + GetType().Name + ". BlendSystemUser is already registered.");
-			} else {
-				newUsers.Add(user);
-				user.blendSystem = this;
-			}
-
-			users = newUsers.ToArray();
-		}
-
-		/// <summary>
-		/// Unregister a BlendSystemUser
-		/// </summary>
-		/// <param name="user"></param>
-		public void Unregister (BlendSystemUser user) {
-			List<BlendSystemUser> newUsers = new List<BlendSystemUser>();
-
-			for (int i = 0; i < users.Length; i++) {
-				newUsers.Add(users[i]);
-			}
-
-			if (newUsers.Contains(user)) {
-				if(user != null) user.blendSystem = null;
-				newUsers.Remove(user);
-			} else {
-				Debug.LogError("Could not unregister " + user.GetType().Name + " component from " + GetType().Name + ". BlendSystemUser is not registered to this Blend System.");
-			}
-
-			users = newUsers.ToArray();
-
-			if (users.Length == 0) {
-				OnBlendSystemRemoved();
-
+			if(users == null){
+				if(Application.isPlaying){
+					Destroy(this);
+				}else{
+					DestroyImmediate(this);
+				}
+			} else if(users.Length == 0){
 				if (Application.isPlaying) {
 					Destroy(this);
 				} else {
 					DestroyImmediate(this);
 				}
 			}
+			OnVariableChanged();
+			GetBlendables();
 		}
 
 		/// <summary>
@@ -112,17 +65,7 @@ namespace RogoDigital.Lipsync {
 		/// </summary>
 		/// <param name="blendable">Blendable.</param>
 		/// <param name="value">Value.</param>
-		public virtual void SetBlendableValue (int blendable, float value) {
-		}
-
-		/// <summary>
-		/// Override for SetBlendableValue that provides basic smoothing functionality.
-		/// </summary>
-		/// <param name="blendable"></param>
-		/// <param name="value"></param>
-		/// <param name="speed"></param>
-		public void SetBlendableValue (int blendable, float value, float speed) {
-			SetBlendableValue(blendable, Mathf.Lerp(GetBlendableValue(blendable), value, Time.deltaTime * speed));
+		public virtual void SetBlendableValue (int blendable , float value) {
 		}
 
 		/// <summary>
@@ -131,7 +74,7 @@ namespace RogoDigital.Lipsync {
 		/// <returns>The blendable value.</returns>
 		/// <param name="blendable">Blendable.</param>
 		public float GetBlendableValue (int blendable) {
-			if (_blendables == null) _blendables = new List<Blendable>();
+			if(_blendables == null) _blendables = new List<Blendable>();
 			return _blendables[blendable].currentWeight;
 		}
 
@@ -139,12 +82,6 @@ namespace RogoDigital.Lipsync {
 		/// Called when a BlendSystem variable is changed in the LipSync editor.
 		/// </summary>
 		public virtual void OnVariableChanged () {
-		}
-
-		/// <summary>
-		/// Called just after a Blend System is added to the GameObject.
-		/// </summary>
-		public virtual void OnBlendSystemAdded () {
 		}
 
 		/// <summary>
@@ -162,17 +99,17 @@ namespace RogoDigital.Lipsync {
 		}
 
 		// Internal blendable list methods
-		public void AddBlendable (int blendable, float currentValue) {
-			if (_blendables == null) _blendables = new List<Blendable>();
-			_blendables.Insert(blendable, new Blendable(blendable, currentValue));
+		public void AddBlendable (int blendable , float currentValue) {
+			if(_blendables == null) _blendables = new List<Blendable>();
+			_blendables.Insert(blendable , new Blendable(blendable , currentValue));
 		}
 
 		public void ClearBlendables () {
 			_blendables = new List<Blendable>();
 		}
 
-		public void SetInternalValue (int blendable, float value) {
-			if (_blendables == null) {
+		public void SetInternalValue (int blendable , float value) {
+			if(_blendables == null){
 				_blendables = new List<Blendable>();
 				GetBlendables();
 			}

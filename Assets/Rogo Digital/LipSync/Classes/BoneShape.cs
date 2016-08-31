@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 namespace RogoDigital.Lipsync {
 	[System.Serializable]
-	public class BoneShape : System.Object {
+	public class BoneShape {
 		[SerializeField]
 		public Transform bone;
 		[SerializeField]
@@ -19,13 +20,13 @@ namespace RogoDigital.Lipsync {
 		public Vector3 neutralRotation;
 
 		public void SetNeutral () {
-			if (bone != null) {
+			if(bone != null) {
 				neutralPosition = bone.localPosition;
 				neutralRotation = bone.localEulerAngles;
 			}
 		}
 
-		public BoneShape (Transform bone, Vector3 endPosition, Vector3 endRotation) {
+		public BoneShape (Transform bone , Vector3 endPosition , Vector3 endRotation) {
 			this.bone = bone;
 			this.endPosition = endPosition;
 			this.endRotation = endRotation;

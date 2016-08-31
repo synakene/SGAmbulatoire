@@ -239,10 +239,12 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'LipSync Pro 1.2 - Simple Sprite Demo
+  m_Text: 'LipSync Pro 1.0 - Simple Sprite Demo
 
 
-    Simplest way to use the new SpriteBlendSystem, with just  a single layer.'
+    Simplest way to use the new SpriteBlendSystem, with just  a single layer.
+
+    (Multi-layer advanced sprite demo coming soon.)'
 --- !u!222 &826931204
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -891,7 +893,7 @@ MonoBehaviour:
   blendableDisplayName: Sprite
   blendableDisplayNamePlural: Sprites
   noBlendablesMessage: No Sprites or Layers available. Add Sprites and Layers to the
-    attached SpriteManager to use them.
+    attached SpriteSwapManager to use them.
   notReadyMessage: No renderers set up
   blendRangeLow: 0
   blendRangeHigh: 100
@@ -899,7 +901,6 @@ MonoBehaviour:
   users:
   - {fileID: 1480373864}
   defaultSprite: {fileID: 21300000, guid: e181a95960309674581e7687611b9faa, type: 3}
-  manager: {fileID: 1480373865}
 --- !u!114 &1480373864
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -920,95 +921,82 @@ MonoBehaviour:
     weights:
     - 100
     bones: []
-    verified: 1
     phoneme: 0
   - blendShapes: 01000000
     weights:
     - 100
     bones: []
-    verified: 1
     phoneme: 1
   - blendShapes: 09000000
     weights:
     - 100
     bones: []
-    verified: 1
     phoneme: 2
   - blendShapes: 06000000
     weights:
     - 100
     bones: []
-    verified: 1
     phoneme: 3
   - blendShapes: 02000000
     weights:
     - 100
     bones: []
-    verified: 1
     phoneme: 4
   - blendShapes: 03000000
     weights:
     - 100
     bones: []
-    verified: 1
     phoneme: 5
   - blendShapes: 04000000
     weights:
     - 100
     bones: []
-    verified: 1
     phoneme: 6
   - blendShapes: 05000000
     weights:
     - 100
     bones: []
-    verified: 1
     phoneme: 7
   - blendShapes: 0a000000
     weights:
     - 100
     bones: []
-    verified: 1
     phoneme: 8
   - blendShapes: 07000000
     weights:
     - 100
     bones: []
-    verified: 1
     phoneme: 9
   emotions:
   - blendShapes: 
     weights: []
     bones: []
-    verified: 1
     emotion: Happy
+    verified: 1
   - blendShapes: 
     weights: []
     bones: []
-    verified: 1
     emotion: Sad
+    verified: 1
   - blendShapes: 
     weights: []
     bones: []
-    verified: 1
     emotion: Serious
+    verified: 1
   - blendShapes: 
     weights: []
     bones: []
-    verified: 1
     emotion: Eyebrows Up
+    verified: 1
   playOnAwake: 0
   loop: 0
   defaultClip: {fileID: 0}
   defaultDelay: 3
   scaleAudioSpeed: 1
-  animationTimingMode: 0
-  frameRate: 30
   restTime: .200000003
   restHoldTime: .100000001
   phonemeCurveGenerationMode: 1
   emotionCurveGenerationMode: 0
-  keepEmotionWhenFinished: 0
   gesturesAnimator: {fileID: 0}
   gesturesLayer: 0
   gestures: []
@@ -1017,8 +1005,12 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-  animCurves: []
-  lastUsedVersion: 1.20000005
+  reset:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  lastUsedVersion: 1
 --- !u!114 &1480373865
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1045,7 +1037,6 @@ MonoBehaviour:
   groups:
   - groupName: Base
     spriteRenderer: {fileID: 1185274552}
-  blendSystem: {fileID: 1480373863}
 --- !u!1 &1566289693
 GameObject:
   m_ObjectHideFlags: 0

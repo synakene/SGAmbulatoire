@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace RogoDigital.Lipsync {
-	[System.Serializable]
-	public class TransformAnimationCurve {
+	public class TransformAnimationCurve  {
 		private AnimationCurve _posX;
 		private AnimationCurve _posY;
 		private AnimationCurve _posZ;
@@ -13,16 +13,16 @@ namespace RogoDigital.Lipsync {
 		private AnimationCurve _rotW;
 
 		public TransformKeyframe[] keys {
-			get {
+			get{
 				List<TransformKeyframe> keyframes = new List<TransformKeyframe>();
-				for (int k = 0; k < _posX.length; k++) {
+				for(int k = 0 ; k < _posX.length ; k++) {
 					keyframes.Add(new TransformKeyframe(
-						_posX.keys[k].time,
+						_posX.keys[k].time ,
 						new Vector3(
 							_posX.keys[k].value,
 							_posY.keys[k].value,
 							_posZ.keys[k].value
-						), new Quaternion(
+						) , new Quaternion(
 							_rotX.keys[k].value,
 							_rotY.keys[k].value,
 							_rotZ.keys[k].value,
@@ -75,51 +75,45 @@ namespace RogoDigital.Lipsync {
 			}
 		}
 
-		public int AddKey (float time, Vector3 position, Quaternion rotation, float inTangent, float outTangent) {
-			int index = _posX.AddKey(new Keyframe(time, position.x, inTangent, outTangent));
-			_posY.AddKey(new Keyframe(time, position.y, inTangent, outTangent));
-			_posZ.AddKey(new Keyframe(time, position.z, inTangent, outTangent));
+		public int AddKey (float time , Vector3 position , Quaternion rotation , float inTangent , float outTangent) {
+			int index = _posX.AddKey(new Keyframe(time , position.x , inTangent , outTangent));
+			_posY.AddKey(new Keyframe(time , position.y , inTangent , outTangent));
+			_posZ.AddKey(new Keyframe(time , position.z , inTangent , outTangent));
 
-			Quaternion fixedRotation = Quaternion.Euler(CentreAngles(rotation.eulerAngles));
-
-			_rotX.AddKey(new Keyframe(time, fixedRotation.x, inTangent, outTangent));
-			_rotY.AddKey(new Keyframe(time, fixedRotation.y, inTangent, outTangent));
-			_rotZ.AddKey(new Keyframe(time, fixedRotation.z, inTangent, outTangent));
-			_rotW.AddKey(new Keyframe(time, fixedRotation.w, inTangent, outTangent));
+			_rotX.AddKey(new Keyframe(time , rotation.x , inTangent , outTangent));
+			_rotY.AddKey(new Keyframe(time , rotation.y , inTangent , outTangent));
+			_rotZ.AddKey(new Keyframe(time , rotation.z , inTangent , outTangent));
+			_rotW.AddKey(new Keyframe(time , rotation.w , inTangent , outTangent));
 
 			return index;
 		}
 
-		public int AddKey (float time, Quaternion rotation, float inTangent, float outTangent) {
-			Quaternion fixedRotation = Quaternion.Euler(CentreAngles(rotation.eulerAngles));
-
-			int index = _rotX.AddKey(new Keyframe(time, fixedRotation.x, inTangent, outTangent));
-			_rotY.AddKey(new Keyframe(time, fixedRotation.y, inTangent, outTangent));
-			_rotZ.AddKey(new Keyframe(time, fixedRotation.z, inTangent, outTangent));
-			_rotW.AddKey(new Keyframe(time, fixedRotation.w, inTangent, outTangent));
+		public int AddKey (float time , Quaternion rotation , float inTangent , float outTangent) {
+			int index = _rotX.AddKey(new Keyframe(time , rotation.x , inTangent , outTangent));
+			_rotY.AddKey(new Keyframe(time , rotation.y , inTangent , outTangent));
+			_rotZ.AddKey(new Keyframe(time , rotation.z , inTangent , outTangent));
+			_rotW.AddKey(new Keyframe(time , rotation.w , inTangent , outTangent));
 
 			return index;
 		}
 
-		public int AddKey (float time, Vector3 position, float inTangent, float outTangent) {
-			int index = _posX.AddKey(new Keyframe(time, position.x, inTangent, outTangent));
-			_posY.AddKey(new Keyframe(time, position.y, inTangent, outTangent));
-			_posZ.AddKey(new Keyframe(time, position.z, inTangent, outTangent));
+		public int AddKey (float time , Vector3 position , float inTangent , float outTangent) {
+			int index = _posX.AddKey(new Keyframe(time , position.x , inTangent , outTangent));
+			_posY.AddKey(new Keyframe(time , position.y , inTangent , outTangent));
+			_posZ.AddKey(new Keyframe(time , position.z , inTangent , outTangent));
 
 			return index;
 		}
 
-		public int AddKey (TransformKeyframe keyframe) {
+		public int AddKey(TransformKeyframe keyframe) {
 			int index = _posX.AddKey(new Keyframe(keyframe.time, keyframe.position.x, keyframe.inTangent, keyframe.outTangent));
 			_posY.AddKey(new Keyframe(keyframe.time, keyframe.position.y, keyframe.inTangent, keyframe.outTangent));
 			_posZ.AddKey(new Keyframe(keyframe.time, keyframe.position.z, keyframe.inTangent, keyframe.outTangent));
 
-			Quaternion fixedRotation = Quaternion.Euler(CentreAngles(keyframe.rotation.eulerAngles));
-
-			_rotX.AddKey(new Keyframe(keyframe.time, fixedRotation.x, keyframe.inTangent, keyframe.outTangent));
-			_rotY.AddKey(new Keyframe(keyframe.time, fixedRotation.y, keyframe.inTangent, keyframe.outTangent));
-			_rotZ.AddKey(new Keyframe(keyframe.time, fixedRotation.z, keyframe.inTangent, keyframe.outTangent));
-			_rotW.AddKey(new Keyframe(keyframe.time, fixedRotation.w, keyframe.inTangent, keyframe.outTangent));
+			_rotX.AddKey(new Keyframe(keyframe.time, keyframe.rotation.x, keyframe.inTangent, keyframe.outTangent));
+			_rotY.AddKey(new Keyframe(keyframe.time, keyframe.rotation.y, keyframe.inTangent, keyframe.outTangent));
+			_rotZ.AddKey(new Keyframe(keyframe.time, keyframe.rotation.z, keyframe.inTangent, keyframe.outTangent));
+			_rotW.AddKey(new Keyframe(keyframe.time, keyframe.rotation.w, keyframe.inTangent, keyframe.outTangent));
 
 			return index;
 		}
@@ -129,7 +123,7 @@ namespace RogoDigital.Lipsync {
 			float y = _posY.Evaluate(time);
 			float z = _posZ.Evaluate(time);
 
-			return new Vector3(x, y, z);
+			return new Vector3(x,y,z);
 		}
 
 		public Quaternion EvaluateRotation (float time) {
@@ -138,7 +132,7 @@ namespace RogoDigital.Lipsync {
 			float z = _rotZ.Evaluate(time);
 			float w = _rotW.Evaluate(time);
 
-			return new Quaternion(x, y, z, w);
+			return new Quaternion(x,y,z,w);
 		}
 
 		public TransformAnimationCurve () {
@@ -159,17 +153,13 @@ namespace RogoDigital.Lipsync {
 			public float inTangent;
 			public float outTangent;
 
-			public TransformKeyframe (float time, Vector3 position, Quaternion rotation, float inTangent, float outTangent) {
+			public TransformKeyframe (float time , Vector3 position, Quaternion rotation, float inTangent, float outTangent) {
 				this.time = time;
 				this.position = position;
 				this.rotation = rotation;
 				this.inTangent = inTangent;
 				this.outTangent = outTangent;
 			}
-		}
-
-		private Vector3 CentreAngles (Vector3 euler) {
-			return euler.ToNegativeEuler();
 		}
 	}
 }

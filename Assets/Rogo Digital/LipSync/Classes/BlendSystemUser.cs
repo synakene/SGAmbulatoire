@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 namespace RogoDigital.Lipsync {
 	public class BlendSystemUser : MonoBehaviour {
@@ -6,10 +7,6 @@ namespace RogoDigital.Lipsync {
 		/// BlendSystem used
 		/// </summary>
 		public BlendSystem blendSystem;
-
-		protected void OnDestroy () {
-			blendSystem.Unregister(this);
-		}
 
 	}
 }

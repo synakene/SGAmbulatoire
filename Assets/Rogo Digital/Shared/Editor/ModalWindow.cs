@@ -1,4 +1,6 @@
-﻿using UnityEditor;
+﻿using UnityEngine;
+using UnityEditor;
+using System.Collections;
 
 namespace RogoDigital {
 	public class ModalWindow : EditorWindow {

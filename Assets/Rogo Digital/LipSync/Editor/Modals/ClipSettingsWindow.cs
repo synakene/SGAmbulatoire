@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System;
+using System.Collections;
+using RogoDigital;
 
 namespace RogoDigital.Lipsync {
 	public class ClipSettingsWindow : ModalWindow {
@@ -10,8 +12,14 @@ namespace RogoDigital.Lipsync {
 		private string transcript;
 		private Vector2 scroll;
 
-		void OnGUI () {
+		void OnGUI() {
 			GUILayout.Space(20);
+			GUILayout.BeginHorizontal();
+			GUILayout.FlexibleSpace();
+			GUILayout.Label("Clip Settings" , EditorStyles.boldLabel);
+			GUILayout.FlexibleSpace();
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 			scroll = GUILayout.BeginScrollView(scroll);
 			TimeSpan time = TimeSpan.FromSeconds(length);
 
@@ -23,19 +31,19 @@ namespace RogoDigital.Lipsync {
 			EditorGUI.BeginDisabledGroup(setup.clip != null);
 			GUILayout.Label("Duration");
 			minutes = EditorGUILayout.IntField(minutes);
-			GUILayout.Label("m", EditorStyles.miniLabel);
+			GUILayout.Label("m" , EditorStyles.miniLabel);
 			seconds = EditorGUILayout.IntField(seconds);
 			GUILayout.Label("s", EditorStyles.miniLabel);
 			milliseconds = EditorGUILayout.IntField(milliseconds);
 			GUILayout.Label("ms", EditorStyles.miniLabel);
-			EditorGUI.EndDisabledGroup();
+			EditorGUI.EndDisabledGroup();	
 			GUILayout.EndHorizontal();
 			if (setup.clip != null) EditorGUILayout.HelpBox("File duration matches AudioClip duration when a clip is set.", MessageType.Info);
-			length = (minutes * 60) + seconds + ((milliseconds) / 1000f);
+			length = (minutes * 60) + seconds + ((milliseconds)/1000f);
 
 			GUILayout.Space(10);
 			GUILayout.Label("Transcript");
-			transcript = GUILayout.TextArea(transcript, GUILayout.MinHeight(90));
+			transcript = GUILayout.TextArea(transcript , GUILayout.MinHeight(90));
 
 			GUILayout.Space(20);
 			GUILayout.BeginHorizontal();
@@ -57,11 +65,14 @@ namespace RogoDigital.Lipsync {
 			GUILayout.EndScrollView();
 		}
 
-		public static ClipSettingsWindow CreateWindow (ModalParent parent, LipSyncClipSetup setup) {
-			ClipSettingsWindow window = CreateInstance<ClipSettingsWindow>();
-
+		public static void CreateWindow(ModalParent parent, LipSyncClipSetup setup) {
+			ClipSettingsWindow window = Create(parent, setup);
 			window.length = setup.fileLength;
 			window.transcript = setup.transcript;
+		}
+
+		private static ClipSettingsWindow Create(ModalParent parent, LipSyncClipSetup setup) {
+			ClipSettingsWindow window = CreateInstance<ClipSettingsWindow>();
 
 			window.position = new Rect(parent.center.x - 250, parent.center.y - 100, 500, 200);
 			window.minSize = new Vector2(500, 200);

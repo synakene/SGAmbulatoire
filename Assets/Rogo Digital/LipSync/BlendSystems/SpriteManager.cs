@@ -9,8 +9,6 @@ namespace RogoDigital.Lipsync {
 		[SerializeField]
 		public List<SpriteGroup> groups = new List<SpriteGroup>();
 
-		public SpriteBlendSystem blendSystem;
-
 		[System.Serializable]
 		public class SpriteGroup {
 			[SerializeField]
@@ -18,7 +16,7 @@ namespace RogoDigital.Lipsync {
 			[SerializeField]
 			public SpriteRenderer spriteRenderer;
 
-			public SpriteGroup (string groupName) {
+			public SpriteGroup(string groupName) {
 				this.groupName = groupName;
 			}
 		}
