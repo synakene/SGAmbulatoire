@@ -1,8 +1,7 @@
-﻿using UnityEngine;
-using System;
-using System.Collections;
+﻿using System;
+
 namespace RogoDigital.Lipsync {
-	[AttributeUsage(AttributeTargets.Method , AllowMultiple = false)]
+	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 	public class BlendSystemButton : Attribute {
 		public string displayName;
 
@@ -14,7 +13,7 @@ namespace RogoDigital.Lipsync {
 			public string displayName;
 			public System.Reflection.MethodInfo method;
 
-			public Reference (string displayName , System.Reflection.MethodInfo method) {
+			public Reference (string displayName, System.Reflection.MethodInfo method) {
 				this.displayName = displayName;
 				this.method = method;
 			}

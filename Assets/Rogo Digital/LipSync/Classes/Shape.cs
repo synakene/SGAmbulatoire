@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
-namespace RogoDigital.Lipsync{
+namespace RogoDigital.Lipsync {
 	[System.Serializable]
 	public class Shape : System.Object {
 
@@ -10,30 +9,37 @@ namespace RogoDigital.Lipsync{
 		/// The blendable indexes. Used with dropdown-type blend systems.
 		/// </summary>
 		[SerializeField]
-		public List<int> blendShapes;
+		public List<int> blendShapes = new List<int>();
 
 		/// <summary>
 		/// The associated weights.
 		/// </summary>
 		[SerializeField]
-		public List<float> weights;
+		public List<float> weights = new List<float>();
 
 		/// <summary>
 		/// List of bone shapes.
 		/// </summary>
 		[SerializeField]
-		public List<BoneShape> bones;
+		public List<BoneShape> bones = new List<BoneShape>();
+
+		/// <summary>
+		/// Whether or not this shape exists in the project
+		/// Will always be true for phoneme shapes.
+		/// </summary>
+		[SerializeField]
+		public bool verified = true;
 
 		public bool HasBone (Transform bone) {
-			for(int b = 0 ; b < bones.Count ; b++) {
-				if(bones[b].bone == bone) return true;
+			for (int b = 0; b < bones.Count; b++) {
+				if (bones[b].bone == bone) return true;
 			}
 			return false;
 		}
 
 		public int IndexOfBone (Transform bone) {
-			for(int b = 0 ; b < bones.Count ; b++) {
-				if(bones[b].bone == bone) return b;
+			for (int b = 0; b < bones.Count; b++) {
+				if (bones[b].bone == bone) return b;
 			}
 			return -1;
 		}

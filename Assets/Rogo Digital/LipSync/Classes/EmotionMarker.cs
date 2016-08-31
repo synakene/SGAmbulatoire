@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
 namespace RogoDigital.Lipsync {
 	[System.Serializable]
@@ -28,7 +27,7 @@ namespace RogoDigital.Lipsync {
 		// Editor Only
 		public bool invalid = false;
 
-		public EmotionMarker (string emotion , float startTime , float endTime , float blendInTime , float blendOutTime , bool blendToMarker , bool blendFromMarker, bool customBlendIn, bool customBlendOut) {
+		public EmotionMarker (string emotion, float startTime, float endTime, float blendInTime, float blendOutTime, bool blendToMarker, bool blendFromMarker, bool customBlendIn, bool customBlendOut) {
 			this.emotion = emotion;
 			this.startTime = startTime;
 			this.endTime = endTime;

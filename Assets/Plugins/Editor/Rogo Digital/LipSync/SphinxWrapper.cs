@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.IO;
 using System.Text;
-using System.Linq;
 using System;
 
 namespace RogoDigital.Lipsync {
@@ -13,33 +12,38 @@ namespace RogoDigital.Lipsync {
 		public static bool dataReady = false;
 
 #if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
-	[DllImport("libpocketsphinx.3.dylib", EntryPoint = "ps_run")]
-	public static extern int psRun([MarshalAs(UnmanagedType.FunctionPtr)] MessageCallback msgCallbackPtr, [MarshalAs(UnmanagedType.FunctionPtr)] ResultCallback resCallbackPtr, int argsCount, string[] argsArray);
+#if UNITY_EDITOR_64
+		[DllImport("Assets/Plugins/Editor/Rogo Digital/LipSync/AutoSync 64bit/libpocketsphinx.3.dylib", EntryPoint = "ps_run")]
+		public static extern int psRun([MarshalAs(UnmanagedType.FunctionPtr)] MessageCallback msgCallbackPtr, [MarshalAs(UnmanagedType.FunctionPtr)] ResultCallback resCallbackPtr, int argsCount, string[] argsArray);
+#else
+		[DllImport("Assets/Plugins/Editor/Rogo Digital/LipSync/AutoSync 32bit/libpocketsphinx.3.dylib", EntryPoint = "ps_run")]
+		public static extern int psRun([MarshalAs(UnmanagedType.FunctionPtr)] MessageCallback msgCallbackPtr, [MarshalAs(UnmanagedType.FunctionPtr)] ResultCallback resCallbackPtr, int argsCount, string[] argsArray);
+#endif
 #else
 		[DllImport("pocketsphinx", EntryPoint = "ps_run")]
-		public static extern int psRun([MarshalAs(UnmanagedType.FunctionPtr)] MessageCallback msgCallbackPtr, [MarshalAs(UnmanagedType.FunctionPtr)] ResultCallback resCallbackPtr, int argsCount, string[] argsArray);
+		public static extern int psRun ([MarshalAs(UnmanagedType.FunctionPtr)] MessageCallback msgCallbackPtr, [MarshalAs(UnmanagedType.FunctionPtr)] ResultCallback resCallbackPtr, int argsCount, string[] argsArray);
 #endif
 
 		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-		public delegate void MessageCallback(string value);
+		public delegate void MessageCallback (string value);
 
 		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-		public delegate void ResultCallback(string value);
+		public delegate void ResultCallback (string value);
 
 
 		// Use this for initialization
-		public static string Recognize(string[] args, bool multiThread = true) {
+		public static string Recognize (string[] args, bool multiThread = true) {
 			dataReady = false;
 			return RecognizeProcess(args, multiThread);
 		}
 
-		public static string PhonemesFromDictionary(string[] args, bool multiThread = true) {
+		public static string PhonemesFromDictionary (string[] args, bool multiThread = true) {
 			dataReady = false;
 			result = RecognizeProcess(args, multiThread, true, true);
 			return result;
 		}
 
-		public static string RecognizeProcess(string[] args, bool multiThread = true, bool flagOff = true, bool toPhone = false) {
+		public static string RecognizeProcess (string[] args, bool multiThread = true, bool flagOff = true, bool toPhone = false) {
 			bool failed = false;
 
 			if (resultCode != -1) {
@@ -102,29 +106,34 @@ namespace RogoDigital.Lipsync {
 
 				int argsCount = args.Length;
 
-				if (multiThread) {
-					Thread thread = new Thread(new ThreadStart(() => {
+				try {
+					if (multiThread) {
+						Thread thread = new Thread(new ThreadStart(() => {
+							resultCode = psRun(msgCallback, resCallback, argsCount, args);
+						}));
+						thread.Start();
+					} else {
 						resultCode = psRun(msgCallback, resCallback, argsCount, args);
-					}));
-					thread.Start();
-				} else {
-					resultCode = psRun(msgCallback, resCallback, argsCount, args);
+					}
+				} catch (Exception e) {
+					return "FAILED: " + e.Message;
 				}
+
 
 			} else {
 				Debug.Log("SphinxWrapper is busy. Please wait and try again.");
 			}
 
-			return failed?"FAILED":result;
+			return failed ? "FAILED" : result;
 		}
 
 
-		static void RemoveSIL() {
+		static void RemoveSIL () {
 			result = result.Replace("SIL ", "").Replace(" SIL", "");
 		}
 
 
-		static string[] ConvertToPhonemes(string dictFile, string[] words) {
+		static string[] ConvertToPhonemes (string dictFile, string[] words) {
 			string line;
 			string[] phonemes;
 			phonemes = words;
@@ -160,7 +169,7 @@ namespace RogoDigital.Lipsync {
 		public string currentPath;
 		public string dllPath;
 
-		public PluginPathClass() {
+		public PluginPathClass () {
 			currentPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
 			dllPath = Environment.CurrentDirectory + Path.DirectorySeparatorChar + "Assets" + Path.DirectorySeparatorChar + "Plugins";
 			if (currentPath.Contains(dllPath) == false) {

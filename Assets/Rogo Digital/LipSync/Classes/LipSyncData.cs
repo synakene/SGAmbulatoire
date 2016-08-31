@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-namespace RogoDigital.Lipsync{
-	public class LipSyncData : ScriptableObject  {
+namespace RogoDigital.Lipsync {
+	public class LipSyncData : ScriptableObject {
 		[SerializeField]
 		public AudioClip clip;
 		[SerializeField]
@@ -12,19 +11,17 @@ namespace RogoDigital.Lipsync{
 		[SerializeField]
 		public GestureMarker[] gestureData;
 
-        [SerializeField]
-        public float version;
+		[SerializeField]
+		public float version;
 		[SerializeField]
 		public float length;
 		[SerializeField]
 		public string transcript;
 
-		public LipSyncData ()
-		{
+		public LipSyncData () {
 		}
 
-		public LipSyncData(AudioClip clip, PhonemeMarker[] pData, EmotionMarker[] eData, GestureMarker[] gData)
-		{
+		public LipSyncData (AudioClip clip, PhonemeMarker[] pData, EmotionMarker[] eData, GestureMarker[] gData) {
 			this.clip = clip;
 			phonemeData = pData;
 			emotionData = eData;
@@ -32,8 +29,7 @@ namespace RogoDigital.Lipsync{
 			length = clip.length;
 		}
 
-		public LipSyncData (AudioClip clip , PhonemeMarker[] pData , EmotionMarker[] eData , GestureMarker[] gData , float length)
-		{
+		public LipSyncData (AudioClip clip, PhonemeMarker[] pData, EmotionMarker[] eData, GestureMarker[] gData, float length) {
 			this.clip = clip;
 			phonemeData = pData;
 			emotionData = eData;
