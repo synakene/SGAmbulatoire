@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
 namespace RogoDigital.Lipsync {
 	[System.Serializable]
@@ -10,10 +9,19 @@ namespace RogoDigital.Lipsync {
 		public float time;
 		[SerializeField]
 		public float intensity = 1;
+		[SerializeField]
+		public bool sustain = false;
 
-		public PhonemeMarker (Phoneme ePhoneme , float eTime) {
-			phoneme = ePhoneme;
-			time = eTime;
+		public PhonemeMarker (Phoneme phoneme, float time, float intensity, bool sustain) {
+			this.phoneme = phoneme;
+			this.time = time;
+			this.intensity = intensity;
+			this.sustain = sustain;
+		}
+
+		public PhonemeMarker (Phoneme phoneme, float time) {
+			this.phoneme = phoneme;
+			this.time = time;
 		}
 	}
 }

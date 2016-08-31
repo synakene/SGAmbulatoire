@@ -4,16 +4,15 @@ using UnityEditor;
 
 using System;
 using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
-
-using System.Media;
 
 public class RDExtensionWindow : EditorWindow {
 	public bool downloading = false;
 	public string currentExtension = "";
 
+	private int sortingMode;
+	private int sortDirection;
 	private int currentFilter = -1;
 	private string currentCategory;
 
@@ -22,7 +21,11 @@ public class RDExtensionWindow : EditorWindow {
 
 	private List<string> headerLinks = new List<string>();
 	private List<string> categories = new List<string>();
-	private List<ItemListing> items = new List<ItemListing>();
+
+	private List<ItemListing> itemsAlpha = new List<ItemListing>();
+	private List<ItemListing> itemsCat = new List<ItemListing>();
+	private List<ItemListing> itemsUpdate = new List<ItemListing>();
+	private List<ItemListing>[] lists;
 
 	private bool gotListing = false;
 	private bool connectionFailed = false;
@@ -46,25 +49,42 @@ public class RDExtensionWindow : EditorWindow {
 	Texture2D headerBG;
 	Texture2D headerButtonActive;
 	Texture2D defaultIcon;
+	Texture2D upArrow;
+	Texture2D downArrow;
 
 	Dictionary<string, Texture2D> productIcons = new Dictionary<string, Texture2D>();
-	
-	void OnEnable() {
+
+	void OnEnable () {
+		sortingMode = EditorPrefs.GetInt("RogoDigital_ExtensionsSortingMode", 0);
+		sortDirection = EditorPrefs.GetInt("RogoDigital_ExtensionsSortDirection", 0);
+
 		headerLogo = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/RogoDigital_header_left.png");
 		headerBG = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/RogoDigital_header_bg.png");
 		headerButtonActive = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/RogoDigital_header_button.png");
 		defaultIcon = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/default_icon.png");
+
+		if (EditorGUIUtility.isProSkin) {
+			upArrow = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/Dark/up.png");
+			downArrow = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/Dark/down.png");
+		} else {
+			upArrow = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/Light/up.png");
+			downArrow = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/Light/down.png");
+		}
+		
 		ConnectToServer();
 	}
 
-	void ConnectToServer() {
+	void ConnectToServer () {
 		WWW listConnection = new WWW(baseAddress + listFilename);
 
 		ContinuationManager.Add(() => listConnection.isDone, () => {
 			if (string.IsNullOrEmpty(listConnection.error)) {
 				XmlReader reader = XmlReader.Create(new StringReader(listConnection.text));
 				headerLinks = new List<string>();
-				items = new List<ItemListing>();
+
+				itemsAlpha = new List<ItemListing>();
+				itemsCat = new List<ItemListing>();
+				itemsUpdate = new List<ItemListing>();
 
 				try {
 					while (reader.Read()) {
@@ -98,53 +118,55 @@ public class RDExtensionWindow : EditorWindow {
 								string itemName = reader.GetAttribute("name");
 								string itemCategory = reader.GetAttribute("category");
 								string[] itemProducts = reader.GetAttribute("products").Replace(" ", "_").Split(',');
+								float versionNumber = float.Parse(reader.GetAttribute("version"));
+								DateTime lastUpdated = DateTime.Parse(reader.GetAttribute("lastUpdated"));
 								float itemMinVersion = float.Parse(reader.GetAttribute("minVersion"));
 								string itemURL = reader.GetAttribute("url");
 								string itemDescription = reader.GetAttribute("description");
+
 
 								if (!categories.Contains(itemCategory)) {
 									categories.Add(itemCategory);
 								}
 
-								ContinuationManager.Add(() => iconDownload.isDone, () => {
+								ContinuationManager.Add(() => iconDownload.isDone || iconDownload.error != null, () => {
+									Texture2D icon = null;
 									if (string.IsNullOrEmpty(iconDownload.error)) {
-
-										Texture2D icon = iconDownload.texture;
-
+										icon = iconDownload.texture;
 										icon.hideFlags = HideFlags.DontSave;
-
-										if (icon != null) {
-											items.Add(new ItemListing(
-												itemName,
-												itemCategory,
-												itemProducts,
-												itemMinVersion,
-												itemURL,
-												itemDescription,
-												icon
-											));
-										} else {
-											items.Add(new ItemListing(
-												itemName,
-												itemCategory,
-												itemProducts,
-												itemMinVersion,
-												itemURL,
-												itemDescription,
-												null
-											));
-										}
-
-										Repaint();
+									} else {
+										Debug.LogWarning("Icon for " + itemName + " failed with error: " + iconDownload.error);
 									}
+
+									ItemListing item = new ItemListing(
+											itemName,
+											itemCategory,
+											itemProducts,
+											itemMinVersion,
+											lastUpdated,
+											versionNumber,
+											itemURL,
+											itemDescription,
+											icon == null ? defaultIcon : icon
+										);
+
+									itemsAlpha.Add(item);
+									itemsAlpha.Sort(SortItemsAlphaNumeric);
+									itemsCat.Add(item);
+									itemsCat.Sort(SortItemsCategory);
+									itemsUpdate.Add(item);
+									itemsUpdate.Sort(SortItemsLastUpdated);
+									Repaint();
 								});
 							}
 						}
 					}
+
+					lists = new List<ItemListing>[] { itemsAlpha, itemsCat, itemsUpdate };
 					gotListing = true;
 
-				} catch (System.Exception exception) {
-					Debug.Log("Error loading extension list. Error: " + exception.Message);
+				} catch (Exception exception) {
+					Debug.Log("Error loading extension list. Error: " + exception.StackTrace);
 					connectionFailed = true;
 				}
 			} else {
@@ -157,19 +179,19 @@ public class RDExtensionWindow : EditorWindow {
 	}
 
 	// Editor GUI
-	public static void ShowWindowGeneric(object startProduct) {
+	public static void ShowWindowGeneric (object startProduct) {
 		ShowWindow((string)startProduct);
 	}
 
 	[MenuItem("Window/Rogo Digital/Get Extensions", false, 0)]
-	public static RDExtensionWindow ShowWindow() {
-		return ShowWindow("");
+	public static void ShowWindow () {
+		ShowWindow("");
 	}
 
-	public static RDExtensionWindow ShowWindow(string startProduct) {
+	public static void ShowWindow (string startProduct) {
 		RDExtensionWindow window;
 
-		window = EditorWindow.GetWindow<RDExtensionWindow>();
+		window = GetWindow<RDExtensionWindow>();
 		Texture2D icon = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/RogoDigital_Icon.png");
 
 		window.titleContent = new GUIContent("Extensions", icon);
@@ -179,11 +201,9 @@ public class RDExtensionWindow : EditorWindow {
 				window.currentFilter = window.headerLinks.IndexOf(startProduct);
 			}
 		});
-
-		return window;
 	}
 
-	void OnGUI() {
+	void OnGUI () {
 		//Initialize GUIStyles if needed
 		if (headerLink == null) {
 			headerLink = new GUIStyle((GUIStyle)"TL Selection H2");
@@ -238,7 +258,7 @@ public class RDExtensionWindow : EditorWindow {
 			GUILayout.Space(-170);
 			GUILayout.Box("Products", headerText);
 
-			headerScroll = GUILayout.BeginScrollView(headerScroll, false, false, GUILayout.MaxHeight(headerBG.height+12));
+			headerScroll = GUILayout.BeginScrollView(headerScroll, false, false, GUILayout.MaxHeight(headerBG.height + 12));
 			GUILayout.Space(0);
 			int linkCount = 0;
 			GUILayout.BeginHorizontal();
@@ -286,7 +306,7 @@ public class RDExtensionWindow : EditorWindow {
 		GUILayout.Space(30);
 		foreach (string category in categories) {
 			Rect buttonRect = EditorGUILayout.BeginHorizontal();
-			if (GUILayout.Button(new GUIContent(category), category != currentCategory?headerText:headerTextActive)) {
+			if (GUILayout.Button(new GUIContent(category), category != currentCategory ? headerText : headerTextActive)) {
 				if (currentCategory == category) {
 					currentCategory = null;
 				} else {
@@ -298,6 +318,27 @@ public class RDExtensionWindow : EditorWindow {
 		}
 		GUILayout.FlexibleSpace();
 		GUILayout.EndHorizontal();
+		GUILayout.Space(-12);
+		EditorGUILayout.BeginHorizontal();
+		GUILayout.Space(20);
+		GUILayout.Label("Sort by:");
+		int oldSortingMode = sortingMode;
+		sortingMode = GUILayout.Toolbar(sortingMode, new string[] { "Name", "Category", "Last Updated" }, EditorStyles.miniButton);
+		if (oldSortingMode != sortingMode) {
+			EditorPrefs.SetInt("RogoDigital_ExtensionsSortingMode", sortingMode);
+		}
+		GUILayout.Space(5);
+		if (GUILayout.Button(sortDirection == 0 ? upArrow : downArrow, EditorStyles.miniButton)) {
+			sortDirection = 1 - sortDirection;
+			EditorPrefs.SetInt("RogoDigital_ExtensionsSortDirection", sortDirection);
+			itemsAlpha.Sort(SortItemsAlphaNumeric);
+			itemsCat.Sort(SortItemsCategory);
+			itemsUpdate.Sort(SortItemsLastUpdated);
+		}
+		GUILayout.FlexibleSpace();
+		GUILayout.Space(20);
+		EditorGUILayout.EndHorizontal();
+		GUILayout.Space(10);
 
 		if (connectionFailed) {
 			GUILayout.FlexibleSpace();
@@ -326,7 +367,7 @@ public class RDExtensionWindow : EditorWindow {
 		} else {
 			EditorGUI.BeginDisabledGroup(downloading);
 			bodyScroll = GUILayout.BeginScrollView(bodyScroll, false, false);
-			foreach (ItemListing listing in items) {
+			foreach (ItemListing listing in lists[sortingMode]) {
 				bool show = false;
 
 				if (currentFilter >= 0) {
@@ -338,7 +379,7 @@ public class RDExtensionWindow : EditorWindow {
 				} else {
 					show = true;
 				}
-				
+
 				if (!string.IsNullOrEmpty(currentCategory)) {
 					if (listing.category != currentCategory) {
 						show = false;
@@ -348,11 +389,7 @@ public class RDExtensionWindow : EditorWindow {
 				if (show) {
 					GUILayout.BeginHorizontal();
 					GUILayout.Space(20);
-					if (listing.icon != null) {
-						GUILayout.Box(listing.icon, GUIStyle.none, GUILayout.Width(90), GUILayout.Height(90));
-					} else {
-						GUILayout.Box(defaultIcon, GUIStyle.none, GUILayout.Width(90), GUILayout.Height(90));
-					}
+					GUILayout.Box(listing.icon, GUIStyle.none, GUILayout.Width(90), GUILayout.Height(90));
 
 					GUILayout.Space(30);
 					GUILayout.BeginVertical();
@@ -367,6 +404,7 @@ public class RDExtensionWindow : EditorWindow {
 					}
 					GUILayout.EndHorizontal();
 					GUILayout.Box(listing.description, productDescription);
+					GUILayout.Box("Updated: " + listing.lastUpdatedString, productDescription);
 					GUILayout.EndVertical();
 					GUILayout.FlexibleSpace();
 					GUILayout.BeginVertical();
@@ -431,7 +469,95 @@ public class RDExtensionWindow : EditorWindow {
 
 	}
 
-	void Update() {
+	int SortItemsAlphaNumeric (ItemListing a, ItemListing b) {
+		if (sortDirection == 0) {
+			return AlphaSort(a.name, b.name);
+		} else {
+			return AlphaSort(b.name, a.name);
+		}
+	}
+
+	int SortItemsCategory (ItemListing a, ItemListing b) {
+		if (sortDirection == 0) {
+			return AlphaSort(a.category, b.category);
+		} else {
+			return AlphaSort(b.category, a.category);
+		}
+	}
+
+	int SortItemsLastUpdated (ItemListing a, ItemListing b) {
+		if (sortDirection == 1) {
+			return a.lastUpdatedRaw.CompareTo(b.lastUpdatedRaw);
+		} else {
+			return b.lastUpdatedRaw.CompareTo(a.lastUpdatedRaw);
+		}
+	}
+
+	static int AlphaSort (string s1, string s2) {
+		int len1 = s1.Length;
+		int len2 = s2.Length;
+		int marker1 = 0;
+		int marker2 = 0;
+
+		// Walk through two the strings with two markers.
+		while (marker1 < len1 && marker2 < len2) {
+			char ch1 = s1[marker1];
+			char ch2 = s2[marker2];
+
+			// Some buffers we can build up characters in for each chunk.
+			char[] space1 = new char[len1];
+			int loc1 = 0;
+			char[] space2 = new char[len2];
+			int loc2 = 0;
+
+			// Walk through all following characters that are digits or
+			// characters in BOTH strings starting at the appropriate marker.
+			// Collect char arrays.
+			do {
+				space1[loc1++] = ch1;
+				marker1++;
+
+				if (marker1 < len1) {
+					ch1 = s1[marker1];
+				} else {
+					break;
+				}
+			} while (char.IsDigit(ch1) == char.IsDigit(space1[0]));
+
+			do {
+				space2[loc2++] = ch2;
+				marker2++;
+
+				if (marker2 < len2) {
+					ch2 = s2[marker2];
+				} else {
+					break;
+				}
+			} while (char.IsDigit(ch2) == char.IsDigit(space2[0]));
+
+			// If we have collected numbers, compare them numerically.
+			// Otherwise, if we have strings, compare them alphabetically.
+			string str1 = new string(space1);
+			string str2 = new string(space2);
+
+			int result;
+
+			if (char.IsDigit(space1[0]) && char.IsDigit(space2[0])) {
+				int thisNumericChunk = int.Parse(str1);
+				int thatNumericChunk = int.Parse(str2);
+				result = thisNumericChunk.CompareTo(thatNumericChunk);
+			} else {
+				result = str1.CompareTo(str2);
+			}
+
+			if (result != 0) {
+				return result;
+			}
+		}
+		return len1 - len2;
+	}
+
+	void Update () {
 		if (downloadConnection != null) {
 			if (!downloadConnection.isDone) {
 				Repaint();
@@ -444,15 +570,21 @@ public class RDExtensionWindow : EditorWindow {
 		public string category;
 		public string[] products;
 		public float minVersion;
+		public DateTime lastUpdatedRaw;
+		public string lastUpdatedString;
+		public float versionNumber;
 		public string url;
 		public string description;
 		public Texture2D icon;
 
-		public ItemListing(string name, string category, string[] products, float minVersion, string url, string description, Texture2D icon) {
+		public ItemListing (string name, string category, string[] products, float minVersion, DateTime lastUpdated, float versionNumber, string url, string description, Texture2D icon) {
 			this.name = name;
 			this.category = category;
 			this.products = products;
 			this.minVersion = minVersion;
+			lastUpdatedRaw = lastUpdated;
+			lastUpdatedString = lastUpdated.ToLongDateString();
+			this.versionNumber = versionNumber;
 			this.url = url;
 			this.description = description;
 			this.icon = icon;

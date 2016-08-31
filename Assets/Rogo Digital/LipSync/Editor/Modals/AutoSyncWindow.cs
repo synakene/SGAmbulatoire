@@ -2,7 +2,6 @@
 using UnityEditor;
 using RogoDigital;
 using RogoDigital.Lipsync;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -26,7 +25,7 @@ public class AutoSyncWindow : ModalWindow {
 
 	private bool soXDefined = false;
 
-	void OnEnable() {
+	void OnEnable () {
 		languageModelNames = AutoSyncLanguageModel.FindModels();
 		attemptAudioConversion = EditorPrefs.GetBool("LipSync_SoXAvailable", false);
 		soXDefined = attemptAudioConversion;
@@ -87,7 +86,7 @@ public class AutoSyncWindow : ModalWindow {
 				GUILayout.Space(5);
 				clips[a] = (AudioClip)EditorGUILayout.ObjectField(clips[a], typeof(AudioClip), false);
 				GUILayout.FlexibleSpace();
-				if(GUILayout.Button("Remove", GUILayout.MaxWidth(200))){
+				if (GUILayout.Button("Remove", GUILayout.MaxWidth(200))) {
 					clips.RemoveAt(a);
 					break;
 				}
@@ -128,7 +127,7 @@ public class AutoSyncWindow : ModalWindow {
 		}
 	}
 
-	void FinishedProcessingMulti(AudioClip finishedClip, List<PhonemeMarker> markers) {
+	void FinishedProcessingMulti (AudioClip finishedClip, List<PhonemeMarker> markers) {
 		// Create File
 		string path = AssetDatabase.GetAssetPath(finishedClip);
 		path = Path.ChangeExtension(path, "asset");
@@ -137,7 +136,7 @@ public class AutoSyncWindow : ModalWindow {
 		file.phonemeData = markers.ToArray();
 		file.emotionData = new EmotionMarker[0];
 		file.gestureData = new GestureMarker[0];
-		file.version = 1.0f;
+		file.version = 1.2f;
 		file.clip = finishedClip;
 		file.length = finishedClip.length;
 		file.transcript = "";
@@ -166,8 +165,8 @@ public class AutoSyncWindow : ModalWindow {
 		}
 	}
 
-	void FinishedProcessingSingle(AudioClip clip, List<PhonemeMarker> markers) {
-		if(markers.Count > 0){
+	void FinishedProcessingSingle (AudioClip clip, List<PhonemeMarker> markers) {
+		if (markers.Count > 0) {
 			setup.phonemeData = markers;
 			setup.changed = true;
 			setup.previewOutOfDate = true;
@@ -175,11 +174,11 @@ public class AutoSyncWindow : ModalWindow {
 		}
 	}
 
-	public static void CreateWindow (ModalParent parent , LipSyncClipSetup setup, int mode) {
-		AutoSyncWindow window = GetWindow<AutoSyncWindow>();
+	public static void CreateWindow (ModalParent parent, LipSyncClipSetup setup, int mode) {
+		AutoSyncWindow window = CreateInstance<AutoSyncWindow>();
 
-		window.position = new Rect(parent.center.x-250 , parent.center.y-150 , 500 , 300);
-		window.minSize = new Vector2(500,300);
+		window.position = new Rect(parent.center.x - 250, parent.center.y - 150, 500, 300);
+		window.minSize = new Vector2(500, 300);
 		window.titleContent = new GUIContent("AutoSync");
 
 		window.setup = setup;
