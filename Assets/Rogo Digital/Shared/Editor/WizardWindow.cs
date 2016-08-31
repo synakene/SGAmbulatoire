@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
-using System.Collections;
 
 namespace RogoDigital {
 	public class WizardWindow : EditorWindow {
@@ -36,24 +35,24 @@ namespace RogoDigital {
 		private AnimFloat progressBar;
 		private Texture2D white;
 
-		void OnEnable () {
-			progressBar = new AnimFloat(0 , Repaint);
+		public void OnEnable () {
+			progressBar = new AnimFloat(0, Repaint);
 			progressBar.speed = 2;
 			white = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/white.png");
 		}
 
 		void OnGUI () {
 			Rect topbar = EditorGUILayout.BeginHorizontal();
-			GUI.Box(topbar , "" , EditorStyles.toolbar);
+			GUI.Box(topbar, "", EditorStyles.toolbar);
 			GUILayout.FlexibleSpace();
-			GUILayout.Box (topMessage+" Step "+currentStep.ToString()+"/"+totalSteps.ToString() , EditorStyles.label);
+			GUILayout.Box(topMessage + " Step " + currentStep.ToString() + "/" + totalSteps.ToString(), EditorStyles.label);
 			GUILayout.FlexibleSpace();
-			GUILayout.Box("" , EditorStyles.toolbar);
+			GUILayout.Box("", EditorStyles.toolbar);
 			EditorGUILayout.EndHorizontal();
 			GUI.color = Color.grey;
-			GUI.DrawTexture(new Rect(0 , topbar.height , topbar.width , 3) , white);
-			GUI.color = new Color(1f , 0.77f, 0f);
-			GUI.DrawTexture(new Rect(0 , topbar.height , progressBar.value*topbar.width , 3) , white);
+			GUI.DrawTexture(new Rect(0, topbar.height, topbar.width, 3), white);
+			GUI.color = new Color(1f, 0.77f, 0f);
+			GUI.DrawTexture(new Rect(0, topbar.height, progressBar.value * topbar.width, 3), white);
 			GUI.color = Color.white;
 			GUILayout.Space(20);
 
@@ -72,33 +71,33 @@ namespace RogoDigital {
 			EditorGUILayout.BeginVertical();
 			GUILayout.FlexibleSpace();
 			EditorGUILayout.BeginHorizontal();
-			GUI.Box(bottomBar , "" , EditorStyles.helpBox);
+			GUI.Box(bottomBar, "", EditorStyles.helpBox);
 			GUILayout.FlexibleSpace();
 			GUILayout.Space(20);
-			if(GUILayout.Button((currentStep == 1)?"Cancel":"Back" , GUILayout.Height(30) , GUILayout.MaxWidth(200))){
+			if (GUILayout.Button((currentStep == 1) ? "Cancel" : "Back", GUILayout.Height(30), GUILayout.MaxWidth(200))) {
 				OnBackPressed();
-				if(currentStep > 1) {
+				if (currentStep > 1) {
 					currentStep--;
-				}else{
+				} else {
 					Close();
 				}
 			}
 			GUILayout.Space(10);
 			GUILayout.FlexibleSpace();
 			GUILayout.Space(10);
-			if(canContinue){
-				if(GUILayout.Button((currentStep == totalSteps)?"Finish":"Continue" , GUILayout.Height(30) , GUILayout.MaxWidth(200))){
+			if (canContinue) {
+				if (GUILayout.Button((currentStep == totalSteps) ? "Finish" : "Continue", GUILayout.Height(30), GUILayout.MaxWidth(200))) {
 					OnContinuePressed();
 					GUI.FocusControl("");
-					if(currentStep < totalSteps) {
+					if (currentStep < totalSteps) {
 						currentStep++;
-					}else{
+					} else {
 						Close();
 					}
 				}
-			}else{
+			} else {
 				GUI.color = Color.grey;
-				GUILayout.Box("Continue" , (GUIStyle)"button" , GUILayout.Height(30) , GUILayout.MaxWidth(200));
+				GUILayout.Box("Continue", (GUIStyle)"button", GUILayout.Height(30), GUILayout.MaxWidth(200));
 				GUI.color = Color.white;
 			}
 			GUILayout.Space(20);

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
 namespace RogoDigital.Lipsync {
 	[System.Serializable]
@@ -9,7 +8,7 @@ namespace RogoDigital.Lipsync {
 		[SerializeField]
 		public float time;
 
-		public GestureMarker (string gesture , float time) {
+		public GestureMarker (string gesture, float time) {
 			this.gesture = gesture;
 			this.time = time;
 		}

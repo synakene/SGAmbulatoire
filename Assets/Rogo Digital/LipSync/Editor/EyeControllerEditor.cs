@@ -2,7 +2,6 @@
 using UnityEditor;
 using UnityEditor.AnimatedValues;
 using RogoDigital;
-using System.Text;
 using RogoDigital.Lipsync;
 using System.Collections.Generic;
 
@@ -13,21 +12,29 @@ public class EyeControllerEditor : Editor {
 	private Texture2D logo;
 
 	private SerializedObject serializedTarget;
+	private BlendSystemEditor blendSystemEditor;
+	private SerializedProperty boneUpdateAnimation;
 
 	// Blinking
 	private AnimBool showBlinking;
-	private BlendSystemEditor blendSystemEditor;
+	private AnimBool showBlinkingClassicControl;
+
+	private SerializedProperty blinkingEnabled;
+	private SerializedProperty blinkingControlMode;
 
 	private SerializedProperty leftEyeBlinkBlendshape;
 	private SerializedProperty rightEyeBlinkBlendshape;
+
 	private SerializedProperty minimumBlinkGap;
 	private SerializedProperty maximumBlinkGap;
-	private SerializedProperty blinkSpeed;
+	private SerializedProperty blinkDuration;
 
 	// Looking Shared
 	private AnimBool showLookShared;
-	private SerializedProperty lefteye;
-	private SerializedProperty righteye;
+	private AnimBool showLookingClassicControl;
+
+	private SerializedProperty leftEyeLookAtBone;
+	private SerializedProperty rightEyeLookAtBone;
 
 	private SerializedProperty eyeRotationRangeX;
 	private SerializedProperty eyeRotationRangeY;
@@ -36,11 +43,18 @@ public class EyeControllerEditor : Editor {
 
 	// Random Looking
 	private AnimBool showRandomLook;
+
+	private SerializedProperty randomLookingEnabled;
+	private SerializedProperty lookingControlMode;
+
 	private SerializedProperty minimumChangeDirectionGap;
 	private SerializedProperty maximumChangeDirectionGap;
 
 	// Look Target
 	private AnimBool showLookTarget;
+
+	private SerializedProperty targetEnabled;
+
 	private SerializedProperty viewTarget;
 	private SerializedProperty targetWeight;
 
@@ -53,11 +67,12 @@ public class EyeControllerEditor : Editor {
 	private List<System.Type> blendSystems;
 	private List<string> blendSystemNames;
 
-	private GUIContent[] blendables;
-	private int[] blendShapeNumbers;
+	private GUIStyle inlineToolbar;
+
+	private string[] blendables;
 
 	void OnEnable () {
-		if(!EditorGUIUtility.isProSkin){
+		if (!EditorGUIUtility.isProSkin) {
 			logo = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Eye Controller/Light/EyeController_logo.png");
 		} else {
 			logo = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Eye Controller/Dark/EyeController_logo.png");
@@ -65,23 +80,36 @@ public class EyeControllerEditor : Editor {
 
 		myTarget = (EyeController)target;
 		serializedTarget = new SerializedObject(target);
-		if(myTarget.blendSystem == null) myTarget.blendSystem = myTarget.GetComponent<BlendSystem>();
+		
+		blendSystemNumber = BlendSystemEditor.FindBlendSystems(myTarget);
 
-		leftEyeBlinkBlendshape = serializedTarget.FindProperty("leftEyeBlinkBlendshape");
-		rightEyeBlinkBlendshape = serializedTarget.FindProperty("rightEyeBlinkBlendshape");
+		boneUpdateAnimation = serializedTarget.FindProperty("boneUpdateAnimation");
+
+		blinkingEnabled = serializedTarget.FindProperty("blinkingEnabled");
+		blinkingControlMode = serializedTarget.FindProperty("blinkingControlMode");
+
+		leftEyeBlinkBlendshape = serializedTarget.FindProperty("leftEyeBlinkBlendable");
+		rightEyeBlinkBlendshape = serializedTarget.FindProperty("rightEyeBlinkBlendable");
+
 		minimumBlinkGap = serializedTarget.FindProperty("minimumBlinkGap");
 		maximumBlinkGap = serializedTarget.FindProperty("maximumBlinkGap");
-		blinkSpeed = serializedTarget.FindProperty("blinkSpeed");
+		blinkDuration = serializedTarget.FindProperty("blinkDuration");
 
-		lefteye = serializedTarget.FindProperty("lefteye");
-		righteye = serializedTarget.FindProperty("righteye");
+		leftEyeLookAtBone = serializedTarget.FindProperty("leftEyeLookAtBone");
+		rightEyeLookAtBone = serializedTarget.FindProperty("rightEyeLookAtBone");
 		eyeRotationRangeX = serializedTarget.FindProperty("eyeRotationRangeX");
 		eyeRotationRangeY = serializedTarget.FindProperty("eyeRotationRangeY");
+
 		eyeLookOffset = serializedTarget.FindProperty("eyeLookOffset");
 		eyeTurnSpeed = serializedTarget.FindProperty("eyeTurnSpeed");
 
+		randomLookingEnabled = serializedTarget.FindProperty("randomLookingEnabled");
+		lookingControlMode = serializedTarget.FindProperty("lookingControlMode");
+
 		minimumChangeDirectionGap = serializedTarget.FindProperty("minimumChangeDirectionGap");
 		maximumChangeDirectionGap = serializedTarget.FindProperty("maximumChangeDirectionGap");
+
+		targetEnabled = serializedTarget.FindProperty("targetEnabled");
 
 		viewTarget = serializedTarget.FindProperty("viewTarget");
 		targetWeight = serializedTarget.FindProperty("targetWeight");
@@ -90,308 +118,443 @@ public class EyeControllerEditor : Editor {
 		autoTargetTag = serializedTarget.FindProperty("autoTargetTag");
 		autoTargetDistance = serializedTarget.FindProperty("autoTargetDistance");
 
-		CreateBlendSystemEditor();
+		showBlinking = new AnimBool(myTarget.blinkingEnabled, Repaint);
+		showRandomLook = new AnimBool(myTarget.randomLookingEnabled, Repaint);
+		showLookTarget = new AnimBool(myTarget.targetEnabled, Repaint);
+		showAutoTarget = new AnimBool(myTarget.autoTarget, Repaint);
+		showLookShared = new AnimBool(myTarget.randomLookingEnabled || myTarget.targetEnabled, Repaint);
+		showBlinkingClassicControl = new AnimBool(myTarget.blinkingControlMode == EyeController.ControlMode.Classic, Repaint);
+		showLookingClassicControl = new AnimBool(myTarget.lookingControlMode == EyeController.ControlMode.Classic, Repaint);
 
-		showBlinking = new AnimBool(myTarget.blinkingEnabled , Repaint);
-		showRandomLook = new AnimBool(myTarget.randomLookingEnabled , Repaint);
-		showLookTarget = new AnimBool(myTarget.targetEnabled , Repaint);
-		showAutoTarget = new AnimBool(myTarget.autoTarget , Repaint);
-		showLookShared = new AnimBool(myTarget.randomLookingEnabled||myTarget.targetEnabled , Repaint);
-
-		if(myTarget.blendSystem != null){
-			if(myTarget.blendSystem.isReady){
+		if (myTarget.blendSystem != null) {
+			if (myTarget.blendSystem.isReady) {
+				myTarget.blendSystem.onBlendablesChanged += GetBlendShapes;
 				GetBlendShapes();
+				BlendSystemEditor.GetBlendSystemButtons(myTarget.blendSystem);
 			}
 		}
 	}
 
-	void ChangeBlendSystem () {
-		if(myTarget.GetComponent<BlendSystem>() != null){
-			if(blendSystems[blendSystemNumber] != myTarget.GetComponent<BlendSystem>().GetType()){
-				BlendSystem[] oldSystems = myTarget.GetComponents<BlendSystem>();
-				foreach(BlendSystem system in oldSystems){
-					DestroyImmediate(system);
+	void OnDisable () {
+		if (myTarget.blendSystem != null) {
+			if (myTarget.blendSystem.isReady) {
+				myTarget.blendSystem.onBlendablesChanged -= GetBlendShapes;
+
+				Shape shape = null;
+
+				switch (LipSyncEditorExtensions.oldToggle) {
+					case 0:
+						shape = myTarget.blinkingShape;
+						break;
+					case 1:
+						shape = myTarget.lookingUpShape;
+						break;
+					case 2:
+						shape = myTarget.lookingDownShape;
+						break;
+					case 3:
+						shape = myTarget.lookingLeftShape;
+						break;
+					case 4:
+						shape = myTarget.lookingRightShape;
+						break;
 				}
 
-				myTarget.gameObject.AddComponent(blendSystems[blendSystemNumber]);
-				myTarget.blendSystem = myTarget.GetComponent<BlendSystem>();
-				CreateBlendSystemEditor();
+				if (shape != null) {
+					for (int blendable = 0; blendable < shape.weights.Count; blendable++) {
+						myTarget.blendSystem.SetBlendableValue(shape.blendShapes[blendable], 0);
+					}
+
+					foreach (BoneShape bone in shape.bones) {
+						if (bone.bone != null) {
+							bone.bone.localPosition = bone.neutralPosition;
+							bone.bone.localEulerAngles = bone.neutralRotation;
+						}
+					}
+				}
 			}
-		}else{
-			myTarget.gameObject.AddComponent(blendSystems[blendSystemNumber]);
-			myTarget.blendSystem = myTarget.GetComponent<BlendSystem>();
-			CreateBlendSystemEditor();
 		}
+
+		LipSyncEditorExtensions.currentToggle = -1;
 	}
 
 	public override void OnInspectorGUI () {
-		GUILayout.BeginHorizontal();
-		GUILayout.FlexibleSpace();
-		GUILayout.Box(logo , GUIStyle.none);
-		GUILayout.FlexibleSpace();
-		GUILayout.EndHorizontal();
+
+		// Create styles if necesarry
+		if (inlineToolbar == null) {
+			inlineToolbar = new GUIStyle((GUIStyle)"TE toolbarbutton");
+			inlineToolbar.fixedHeight = 0;
+			inlineToolbar.fixedWidth = 0;
+		}
+
+		LipSyncEditorExtensions.BeginPaddedHorizontal();
+		GUILayout.Box(logo, GUIStyle.none);
+		LipSyncEditorExtensions.EndPaddedHorizontal();
 
 		GUILayout.Space(20);
 
 		serializedTarget.Update();
 
 		Rect lineRect;
-		EditorGUILayout.HelpBox("Enable or disable Eye Controller functionality below." , MessageType.Info);
+		EditorGUILayout.HelpBox("Enable or disable Eye Controller functionality below.", MessageType.Info);
+
 		GUILayout.Space(10);
-			
-		// Blinking
-		lineRect = EditorGUILayout.BeginHorizontal();
-		GUI.Box(lineRect , "" , (GUIStyle)"flow node 0");
-		GUILayout.Space(10);
-		myTarget.blinkingEnabled = EditorGUILayout.ToggleLeft("Blinking" , myTarget.blinkingEnabled , EditorStyles.largeLabel , GUILayout.ExpandWidth(true) , GUILayout.Height(20));
-		showBlinking.target = myTarget.blinkingEnabled;
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal();
-		EditorGUI.indentLevel++;
-		if(EditorGUILayout.BeginFadeGroup(showBlinking.faded)){
-			GUILayout.Space(5);
-			if(blendSystems == null) {
-				FindBlendSystems();
-			}
-			if(blendSystems.Count == 0){
-				EditorGUILayout.Popup("Blend System" , 0 , new string[]{"No BlendSystems Found"});
-			}else{
-				if(myTarget.blendSystem == null){
-					EditorGUI.BeginChangeCheck();
-					blendSystemNumber = EditorGUILayout.Popup("Blend System" , blendSystemNumber , blendSystemNames.ToArray() , GUIStyle.none);
-					if(EditorGUI.EndChangeCheck()){
-						ChangeBlendSystem();
-					}
-					GUI.Box(new Rect(EditorGUIUtility.labelWidth+GUILayoutUtility.GetLastRect().x , GUILayoutUtility.GetLastRect().y , GUILayoutUtility.GetLastRect().width , GUILayoutUtility.GetLastRect().height) , "Select a BlendSystem" , EditorStyles.popup);
-				}else{
-					EditorGUI.BeginChangeCheck();
-					blendSystemNumber = EditorGUILayout.Popup("Blend System" , blendSystemNumber , blendSystemNames.ToArray());
-					if(EditorGUI.EndChangeCheck()){
-						ChangeBlendSystem();
-					}
+
+		blendSystemNumber = BlendSystemEditor.DrawBlendSystemEditor(myTarget, blendSystemNumber, "EyeController requires a blend system to function.");
+
+		if (myTarget.blendSystem != null) {
+			if (myTarget.blendSystem.isReady) {
+
+				if (blendables == null) {
+					myTarget.blendSystem.onBlendablesChanged += GetBlendShapes;
+					GetBlendShapes();
 				}
-			}
 
-			EditorGUILayout.Space();
-			if(myTarget.blendSystem == null){
-				GUILayout.Label("No BlendSystem Selected");
-			}else{
-				if(blendSystemEditor == null) CreateBlendSystemEditor();
-				blendSystemEditor.OnInspectorGUI();
-				if(!myTarget.blendSystem.isReady){
-					GUILayout.Space(10);
-					GUILayout.BeginHorizontal();
-					GUILayout.FlexibleSpace();
-					if(GUILayout.Button("Continue" , GUILayout.MaxWidth(200))) {
-						myTarget.blendSystem.OnVariableChanged();
-					}
-					GUILayout.FlexibleSpace();
-					GUILayout.EndHorizontal();
-					GUILayout.Space(10);
-				}
-			}
-
-			GUILayout.Space(10);
-
-			if(myTarget.blendSystem == null){
-				EditorGUILayout.HelpBox("Select a BlendSystem to enable blinking." , MessageType.Warning);
-			}else if(!myTarget.blendSystem.isReady){
-				EditorGUILayout.HelpBox("BlendSystem not set up." , MessageType.Warning);
-			}else if(blendables == null) {
-				GetBlendShapes();
-			}else{
-				EditorGUILayout.IntPopup(leftEyeBlinkBlendshape , blendables , blendShapeNumbers , new GUIContent("Left Blink "+myTarget.blendSystem.blendableDisplayName));
-				EditorGUILayout.IntPopup(rightEyeBlinkBlendshape , blendables , blendShapeNumbers , new GUIContent("Right Blink "+myTarget.blendSystem.blendableDisplayName));
-			}
-			GUILayout.Space(10);
-
-			float minGap = minimumBlinkGap.floatValue;
-			float maxGap = maximumBlinkGap.floatValue;
-
-			MinMaxSliderWithNumbers(new GUIContent("Blink Gap" , "Time, in seconds, between blinks.") , ref minGap , ref maxGap , 0.1f , 20);
-
-			minimumBlinkGap.floatValue = minGap;
-			maximumBlinkGap.floatValue = maxGap;
-
-			EditorGUILayout.PropertyField(blinkSpeed , new GUIContent("Blink Duration" , "How long each blink takes."));
-			GUILayout.Space(10);
-		}
-		FixedEndFadeGroup(showBlinking.faded);
-		EditorGUI.indentLevel--;
-
-		// Random Look Direction
-		lineRect = EditorGUILayout.BeginHorizontal();
-		GUI.Box(lineRect , "" , (GUIStyle)"flow node 0");
-		GUILayout.Space(10);
-		myTarget.randomLookingEnabled = EditorGUILayout.ToggleLeft("Random Looking" , myTarget.randomLookingEnabled , EditorStyles.largeLabel , GUILayout.ExpandWidth(true) , GUILayout.Height(20));
-		showRandomLook.target = myTarget.randomLookingEnabled;
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal();
-		EditorGUI.indentLevel++;
-		if(EditorGUILayout.BeginFadeGroup(showRandomLook.faded)){
-			GUILayout.Space(5);
-
-			float minGap = minimumChangeDirectionGap.floatValue;
-			float maxGap = maximumChangeDirectionGap.floatValue;
-
-			MinMaxSliderWithNumbers(new GUIContent("Change Direction Gap" , "Time, in seconds, between the eyes turning to a new direction.") , ref minGap , ref maxGap , 1f , 30);
-
-			minimumChangeDirectionGap.floatValue = minGap;
-			maximumChangeDirectionGap.floatValue = maxGap;
-
-			float minX = eyeRotationRangeY.vector2Value.x;
-			float maxX = eyeRotationRangeY.vector2Value.y;
-			float minY = eyeRotationRangeX.vector2Value.x;
-			float maxY = eyeRotationRangeX.vector2Value.y;
-
-			GUILayout.Space(10);
-
-			MinMaxSliderWithNumbers(new GUIContent("Horizontal Look Range" , "The minimum and maximum horizontal angles random look directions will be between") , ref minX , ref maxX , -90 , 90);
-			MinMaxSliderWithNumbers(new GUIContent("Vertical Look Range" , "The minimum and maximum vertical angles random look directions will be between") , ref minY , ref maxY , -90 , 90);
-
-			eyeRotationRangeY.vector2Value = new Vector2(minX , maxX);
-			eyeRotationRangeX.vector2Value = new Vector2(minY , maxY);
-
-			GUILayout.Space(10);
-		}
-		FixedEndFadeGroup(showRandomLook.faded);
-		EditorGUI.indentLevel--;
-
-		// Look Targets
-		lineRect = EditorGUILayout.BeginHorizontal();
-		GUI.Box(lineRect , "" , (GUIStyle)"flow node 0");
-		GUILayout.Space(10);
-		myTarget.targetEnabled = EditorGUILayout.ToggleLeft("Look At Target" , myTarget.targetEnabled , EditorStyles.largeLabel , GUILayout.ExpandWidth(true) , GUILayout.Height(20));
-		showLookTarget.target = myTarget.targetEnabled;
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal();
-		EditorGUI.indentLevel++;
-		if(EditorGUILayout.BeginFadeGroup(showLookTarget.faded)){
-			GUILayout.Space(5);
-			if(EditorGUILayout.BeginFadeGroup(1-showAutoTarget.faded)){
-				EditorGUILayout.PropertyField(viewTarget , new GUIContent("Target" , "Transform to look at."));
+				EditorGUILayout.PropertyField(boneUpdateAnimation, new GUIContent("Account for Animation", "If true, will calculate relative bone positions/rotations each frame. Improves results when using animation, but will cause errors when not."));
 				GUILayout.Space(10);
-			}
-			FixedEndFadeGroup(1-showAutoTarget.faded);
-			EditorGUILayout.PropertyField(autoTarget , new GUIContent("Use Auto Target"));
-			showAutoTarget.target = myTarget.autoTarget;
-			if(EditorGUILayout.BeginFadeGroup(showAutoTarget.faded)){
+				BlendSystemEditor.DrawBlendSystemButtons(myTarget.blendSystem);
+				GUILayout.Space(10);
+
+				// Blinking
+				lineRect = EditorGUILayout.BeginHorizontal();
+				GUI.Box(lineRect, "", (GUIStyle)"flow node 0");
+				GUILayout.Space(10);
+				blinkingEnabled.boolValue = EditorGUILayout.ToggleLeft("Blinking", blinkingEnabled.boolValue, EditorStyles.largeLabel, GUILayout.ExpandWidth(true), GUILayout.Height(24));
+				showBlinking.target = blinkingEnabled.boolValue;
+				GUILayout.FlexibleSpace();
+				blinkingControlMode.enumValueIndex = GUILayout.Toolbar(blinkingControlMode.enumValueIndex, System.Enum.GetNames(typeof(EyeController.ControlMode)), inlineToolbar, GUILayout.MaxWidth(300), GUILayout.Height(24));
+				showBlinkingClassicControl.target = blinkingControlMode.enumValueIndex == (int)EyeController.ControlMode.Classic;
+				EditorGUILayout.EndHorizontal();
 				EditorGUI.indentLevel++;
-				EditorGUILayout.PropertyField(autoTargetTag , new GUIContent("Auto Target Tag" , "Tag to use when searching for targets."));
-				EditorGUILayout.PropertyField(autoTargetDistance , new GUIContent("Auto Target Distance" , "The maximum distance between a target and the character for it to be targeted."));
+				if (EditorGUILayout.BeginFadeGroup(showBlinking.faded)) {
+					GUILayout.Space(5);
+
+					// Classic Mode
+					if (EditorGUILayout.BeginFadeGroup(showBlinkingClassicControl.faded)) {
+						leftEyeBlinkBlendshape.intValue = EditorGUILayout.Popup("Left Eye Blink Blendshape", leftEyeBlinkBlendshape.intValue, blendables, GUILayout.MaxWidth(500));
+						rightEyeBlinkBlendshape.intValue = EditorGUILayout.Popup("Right Eye Blink Blendshape", rightEyeBlinkBlendshape.intValue, blendables, GUILayout.MaxWidth(500));
+					}
+					LipSyncEditorExtensions.FixedEndFadeGroup(showBlinkingClassicControl.faded);
+
+					// Pose Mode
+					if (EditorGUILayout.BeginFadeGroup(1 - showBlinkingClassicControl.faded)) {
+						this.DrawShapeEditor(myTarget.blendSystem, blendables, true, true, myTarget.blinkingShape, "Blinking", 0);
+					}
+					LipSyncEditorExtensions.FixedEndFadeGroup(1 - showBlinkingClassicControl.faded);
+
+					GUILayout.Space(10);
+
+					float minGap = minimumBlinkGap.floatValue;
+					float maxGap = maximumBlinkGap.floatValue;
+
+					MinMaxSliderWithNumbers(new GUIContent("Blink Gap", "Time, in seconds, between blinks."), ref minGap, ref maxGap, 0.1f, 20);
+
+					minimumBlinkGap.floatValue = minGap;
+					maximumBlinkGap.floatValue = maxGap;
+
+					EditorGUILayout.PropertyField(blinkDuration, new GUIContent("Blink Duration", "How long each blink takes."));
+					GUILayout.Space(10);
+				}
+				LipSyncEditorExtensions.FixedEndFadeGroup(showBlinking.faded);
+				EditorGUI.indentLevel--;
+				GUILayout.Space(2);
+				// Random Look Direction
+				lineRect = EditorGUILayout.BeginHorizontal();
+				GUI.Box(lineRect, "", (GUIStyle)"flow node 0");
+				GUILayout.Space(10);
+				randomLookingEnabled.boolValue = EditorGUILayout.ToggleLeft("Random Looking", randomLookingEnabled.boolValue, EditorStyles.largeLabel, GUILayout.ExpandWidth(true), GUILayout.Height(24));
+				showRandomLook.target = randomLookingEnabled.boolValue;
+				GUILayout.FlexibleSpace();
+				lookingControlMode.enumValueIndex = GUILayout.Toolbar(lookingControlMode.enumValueIndex, System.Enum.GetNames(typeof(EyeController.ControlMode)), inlineToolbar, GUILayout.MaxWidth(300), GUILayout.Height(24));
+				showLookingClassicControl.target = lookingControlMode.enumValueIndex == (int)EyeController.ControlMode.Classic;
+				EditorGUILayout.EndHorizontal();
+				EditorGUI.indentLevel++;
+				if (EditorGUILayout.BeginFadeGroup(showRandomLook.faded)) {
+					GUILayout.Space(5);
+
+					float minGap = minimumChangeDirectionGap.floatValue;
+					float maxGap = maximumChangeDirectionGap.floatValue;
+
+					MinMaxSliderWithNumbers(new GUIContent("Change Direction Gap", "Time, in seconds, between the eyes turning to a new direction."), ref minGap, ref maxGap, 1f, 30);
+
+					minimumChangeDirectionGap.floatValue = minGap;
+					maximumChangeDirectionGap.floatValue = maxGap;
+
+					GUILayout.Space(10);
+				}
+				LipSyncEditorExtensions.FixedEndFadeGroup(showRandomLook.faded);
+				EditorGUI.indentLevel--;
+
+				// Look Targets
+				lineRect = EditorGUILayout.BeginHorizontal();
+				GUI.Box(lineRect, "", (GUIStyle)"flow node 0");
+				GUILayout.Space(10);
+				EditorGUI.BeginDisabledGroup(lookingControlMode.enumValueIndex == (int)EyeController.ControlMode.PoseBased);
+				targetEnabled.boolValue = EditorGUILayout.ToggleLeft("Look At Target", targetEnabled.boolValue, EditorStyles.largeLabel, GUILayout.ExpandWidth(true), GUILayout.Height(24)) && lookingControlMode.enumValueIndex == (int)EyeController.ControlMode.Classic;
+				showLookTarget.target = targetEnabled.boolValue;
+				EditorGUI.EndDisabledGroup();
+				GUILayout.FlexibleSpace();
+				GUILayout.Space(24);
+				EditorGUILayout.EndHorizontal();
+				EditorGUI.indentLevel++;
+				if (EditorGUILayout.BeginFadeGroup(showLookTarget.faded)) {
+					GUILayout.Space(5);
+					if (EditorGUILayout.BeginFadeGroup(1 - showAutoTarget.faded)) {
+						EditorGUILayout.PropertyField(viewTarget, new GUIContent("Target", "Transform to look at."));
+						GUILayout.Space(10);
+					}
+					LipSyncEditorExtensions.FixedEndFadeGroup(1 - showAutoTarget.faded);
+					EditorGUILayout.PropertyField(autoTarget, new GUIContent("Use Auto Target"));
+					showAutoTarget.target = myTarget.autoTarget;
+					if (EditorGUILayout.BeginFadeGroup(showAutoTarget.faded)) {
+						EditorGUI.indentLevel++;
+						EditorGUILayout.PropertyField(autoTargetTag, new GUIContent("Auto Target Tag", "Tag to use when searching for targets."));
+						EditorGUILayout.PropertyField(autoTargetDistance, new GUIContent("Auto Target Distance", "The maximum distance between a target and the character for it to be targeted."));
+						EditorGUI.indentLevel--;
+						GUILayout.Space(10);
+					}
+					LipSyncEditorExtensions.FixedEndFadeGroup(showAutoTarget.faded);
+					EditorGUILayout.Slider(targetWeight, 0, 1, new GUIContent("Look At Amount"));
+					GUILayout.Space(10);
+				}
+				LipSyncEditorExtensions.FixedEndFadeGroup(showLookTarget.faded);
+				if (lookingControlMode.enumValueIndex == (int)EyeController.ControlMode.PoseBased) {
+					EditorGUILayout.HelpBox("Targeting is only available in classic mode.", MessageType.Warning);
+				}
+				EditorGUI.indentLevel--;
+
+				// Shared Look Controls
+				GUILayout.Space(-2);
+				lineRect = EditorGUILayout.BeginHorizontal();
+				GUI.Box(lineRect, "", (GUIStyle)"flow node 0");
+				GUILayout.Space(24);
+				GUILayout.Label("Looking (Shared)", EditorStyles.largeLabel, GUILayout.ExpandWidth(true), GUILayout.Height(24));
+				GUILayout.FlexibleSpace();
+				EditorGUILayout.EndHorizontal();
+				showLookShared.target = myTarget.targetEnabled || myTarget.randomLookingEnabled;
+				EditorGUI.indentLevel++;
+				if (EditorGUILayout.BeginFadeGroup(showLookShared.faded)) {
+					GUILayout.Space(5);
+
+					// Classic Mode
+					if (EditorGUILayout.BeginFadeGroup(showLookingClassicControl.faded)) {
+						EditorGUILayout.PropertyField(leftEyeLookAtBone);
+						EditorGUILayout.PropertyField(rightEyeLookAtBone);
+						GUILayout.Space(5);
+						MinMaxSliderWithNumbers(new GUIContent("X Axis Range"), eyeRotationRangeX, -90, 90);
+						MinMaxSliderWithNumbers(new GUIContent("Y Axis Range"), eyeRotationRangeY, -90, 90);
+						GUILayout.Space(5);
+						EditorGUILayout.PropertyField(eyeLookOffset);
+					}
+					LipSyncEditorExtensions.FixedEndFadeGroup(showLookingClassicControl.faded);
+
+					// Pose Mode
+					if (EditorGUILayout.BeginFadeGroup(1 - showLookingClassicControl.faded)) {
+						this.DrawShapeEditor(myTarget.blendSystem, blendables, true, true, myTarget.lookingUpShape, "Looking Up", 1);
+						this.DrawShapeEditor(myTarget.blendSystem, blendables, true, true, myTarget.lookingDownShape, "Looking Down", 2);
+						this.DrawShapeEditor(myTarget.blendSystem, blendables, true, true, myTarget.lookingLeftShape, "Looking Left", 3);
+						this.DrawShapeEditor(myTarget.blendSystem, blendables, true, true, myTarget.lookingRightShape, "Looking Right", 4);
+					}
+					LipSyncEditorExtensions.FixedEndFadeGroup(1 - showLookingClassicControl.faded);
+					GUILayout.Space(5);
+					EditorGUILayout.PropertyField(eyeTurnSpeed, new GUIContent("Eye Turn Speed", "The speed at which eyes rotate."));
+					GUILayout.Space(10);
+				}
+				LipSyncEditorExtensions.FixedEndFadeGroup(showLookShared.faded);
 				EditorGUI.indentLevel--;
 				GUILayout.Space(10);
 			}
-			FixedEndFadeGroup(showAutoTarget.faded);
-			EditorGUILayout.PropertyField(eyeLookOffset , new GUIContent("Rotation Offset" , "Offset applied to eye rotations. (Used if eyes don't look down the Z axis.)"));
-			EditorGUILayout.Slider(targetWeight , 0 , 1 , new GUIContent("Look At Amount"));
-			GUILayout.Space(10);
+
+			if (LipSyncEditorExtensions.oldToggle != LipSyncEditorExtensions.currentToggle && LipSyncEditorExtensions.currentTarget == myTarget) {
+
+				Shape oldShape = null;
+				Shape newShape = null;
+
+				switch (LipSyncEditorExtensions.oldToggle) {
+					case 0:
+						oldShape = myTarget.blinkingShape;
+						break;
+					case 1:
+						oldShape = myTarget.lookingUpShape;
+						break;
+					case 2:
+						oldShape = myTarget.lookingDownShape;
+						break;
+					case 3:
+						oldShape = myTarget.lookingLeftShape;
+						break;
+					case 4:
+						oldShape = myTarget.lookingRightShape;
+						break;
+				}
+
+				switch (LipSyncEditorExtensions.currentToggle) {
+					case 0:
+						newShape = myTarget.blinkingShape;
+						break;
+					case 1:
+						newShape = myTarget.lookingUpShape;
+						break;
+					case 2:
+						newShape = myTarget.lookingDownShape;
+						break;
+					case 3:
+						newShape = myTarget.lookingLeftShape;
+						break;
+					case 4:
+						newShape = myTarget.lookingRightShape;
+						break;
+				}
+
+				if (LipSyncEditorExtensions.oldToggle > -1) {
+					foreach (BoneShape boneshape in oldShape.bones) {
+						if (boneshape.bone != null) {
+							boneshape.bone.localPosition = boneshape.neutralPosition;
+							boneshape.bone.localEulerAngles = boneshape.neutralRotation;
+						}
+					}
+
+					foreach (int blendable in oldShape.blendShapes) {
+						myTarget.blendSystem.SetBlendableValue(blendable, 0);
+					}
+				}
+
+				if (LipSyncEditorExtensions.currentToggle > -1) {
+					foreach (BoneShape boneshape in newShape.bones) {
+						if (boneshape.bone != null) {
+							boneshape.bone.localPosition = boneshape.endPosition;
+							boneshape.bone.localEulerAngles = boneshape.endRotation;
+						}
+					}
+
+					for (int b = 0; b < newShape.blendShapes.Count; b++) {
+						myTarget.blendSystem.SetBlendableValue(newShape.blendShapes[b], newShape.weights[b]);
+					}
+				}
+
+				LipSyncEditorExtensions.oldToggle = LipSyncEditorExtensions.currentToggle;
+			}
+
+			if (GUI.changed) {
+				if (blendables == null) {
+					GetBlendShapes();
+				}
+
+				Shape newShape = null;
+
+				switch (LipSyncEditorExtensions.currentToggle) {
+					case 0:
+						newShape = myTarget.blinkingShape;
+						break;
+					case 1:
+						newShape = myTarget.lookingUpShape;
+						break;
+					case 2:
+						newShape = myTarget.lookingDownShape;
+						break;
+					case 3:
+						newShape = myTarget.lookingLeftShape;
+						break;
+					case 4:
+						newShape = myTarget.lookingRightShape;
+						break;
+				}
+
+				if (LipSyncEditorExtensions.currentToggle > -1 && LipSyncEditorExtensions.currentTarget == myTarget) {
+					for (int b = 0; b < newShape.blendShapes.Count; b++) {
+						myTarget.blendSystem.SetBlendableValue(newShape.blendShapes[b], newShape.weights[b]);
+					}
+				}
+
+				EditorUtility.SetDirty(myTarget);
+				serializedTarget.SetIsDifferentCacheDirty();
+			}
+
+			serializedTarget.ApplyModifiedProperties();
 		}
-		FixedEndFadeGroup(showLookTarget.faded);
-		EditorGUI.indentLevel--;
-
-		// Shared Look Controls
-		GUILayout.Space(-2);
-		lineRect = EditorGUILayout.BeginHorizontal();
-		GUI.Box(lineRect , "" , (GUIStyle)"flow node 0");
-		GUILayout.Space(24);
-		GUILayout.Label("Looking (Shared)" , EditorStyles.largeLabel , GUILayout.ExpandWidth(true) , GUILayout.Height(20));
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal();
-		showLookShared.target = myTarget.targetEnabled||myTarget.randomLookingEnabled;
-		EditorGUI.indentLevel++;
-		if(EditorGUILayout.BeginFadeGroup(showLookShared.faded)){
-			GUILayout.Space(5);
-			EditorGUILayout.PropertyField(lefteye , new GUIContent("Left Eye Transform" , "Either a bone, or the eye mesh itself depending on how your model is set up."));
-			EditorGUILayout.PropertyField(righteye , new GUIContent("Right Eye Transform" , "Either a bone, or the eye mesh itself depending on how your model is set up."));
-
-			GUILayout.Space(10);
-
-			EditorGUILayout.PropertyField(eyeTurnSpeed , new GUIContent("Eye Turn Speed" , "The speed at which eyes rotate."));
-			GUILayout.Space(10);
-		}
-		FixedEndFadeGroup(showLookShared.faded);
-		EditorGUI.indentLevel--;
-		GUILayout.Space(10);
-
-		serializedTarget.ApplyModifiedProperties();
 	}
 
-	void MinMaxSliderWithNumbers (GUIContent label , ref float minValue , ref float maxValue , float minLimit , float maxLimit) {
+	void OnSceneGUI () {
+
+		// Bone Handles
+		if (LipSyncEditorExtensions.currentToggle >= 0 && LipSyncEditorExtensions.currentTarget == myTarget) {
+			BoneShape bone = null;
+			Shape shape = null;
+
+			switch (LipSyncEditorExtensions.currentToggle) {
+				case 0:
+					shape = myTarget.blinkingShape;
+					break;
+				case 1:
+					shape = myTarget.lookingUpShape;
+					break;
+				case 2:
+					shape = myTarget.lookingDownShape;
+					break;
+				case 3:
+					shape = myTarget.lookingLeftShape;
+					break;
+				case 4:
+					shape = myTarget.lookingRightShape;
+					break;
+			}
+
+			if (LipSyncEditorExtensions.selectedBone < shape.bones.Count && shape.bones.Count > 0) {
+				bone = shape.bones[LipSyncEditorExtensions.selectedBone];
+			} else {
+				return;
+			}
+
+			if (bone.bone == null)
+				return;
+
+			if (Tools.current == Tool.Move) {
+				Undo.RecordObject(bone.bone, "Move");
+
+				Vector3 change = Handles.PositionHandle(bone.bone.position, bone.bone.rotation);
+				if (change != bone.bone.position) {
+					bone.bone.position = change;
+					bone.endPosition = bone.bone.localPosition;
+				}
+			} else if (Tools.current == Tool.Rotate) {
+				Undo.RecordObject(bone.bone, "Rotate");
+				Quaternion change = Handles.RotationHandle(bone.bone.rotation, bone.bone.position);
+				if (change != bone.bone.rotation) {
+					bone.bone.rotation = change;
+					bone.endRotation = bone.bone.localEulerAngles;
+				}
+			} else if (Tools.current == Tool.Scale) {
+				Undo.RecordObject(bone.bone, "Scale");
+				Vector3 change = Handles.ScaleHandle(bone.bone.localScale, bone.bone.position, bone.bone.rotation, HandleUtility.GetHandleSize(bone.bone.position));
+				if (change != bone.bone.localScale) {
+					bone.bone.localScale = change;
+				}
+			}
+
+		}
+	}
+
+	void MinMaxSliderWithNumbers (GUIContent label, SerializedProperty property, float minLimit, float maxLimit) {
+		Vector2 val = property.vector2Value;
+		MinMaxSliderWithNumbers(label, ref val.x, ref val.y, minLimit, maxLimit);
+		property.vector2Value = val;
+	}
+
+	void MinMaxSliderWithNumbers (GUIContent label, ref float minValue, ref float maxValue, float minLimit, float maxLimit) {
 		GUILayout.BeginHorizontal();
 		EditorGUILayout.PrefixLabel(label);
-		minValue = EditorGUILayout.FloatField(minValue , GUILayout.Width(65));
-		EditorGUILayout.MinMaxSlider(ref minValue , ref maxValue , minLimit , maxLimit);
-		maxValue = EditorGUILayout.FloatField(maxValue , GUILayout.Width(65));
+		minValue = EditorGUILayout.FloatField(minValue, GUILayout.Width(65));
+		EditorGUILayout.MinMaxSlider(ref minValue, ref maxValue, minLimit, maxLimit);
+		maxValue = EditorGUILayout.FloatField(maxValue, GUILayout.Width(65));
 		GUILayout.EndHorizontal();
 
-		minValue = Mathf.Clamp(minValue , minLimit , maxValue);
-		maxValue = Mathf.Clamp(maxValue , minValue , maxLimit);
+		minValue = Mathf.Clamp(minValue, minLimit, maxValue);
+		maxValue = Mathf.Clamp(maxValue, minValue, maxLimit);
 	}
 
 	void GetBlendShapes () {
-		if(myTarget.blendSystem.isReady){
-			string[] blendableNames = myTarget.blendSystem.GetBlendables();
-			blendables = new GUIContent[blendableNames.Length];
-			blendShapeNumbers = new int[blendableNames.Length];
-
-			for(int b = 0 ; b < blendableNames.Length ; b++) {
-				blendables[b] = new GUIContent(blendableNames[b]);
-				blendShapeNumbers[b] = b;
-			}
+		if (myTarget.blendSystem.isReady) {
+			blendables = myTarget.blendSystem.GetBlendables();
 		}
-	}
-
-	void FindBlendSystems () {
-		blendSystems = new List<System.Type>();
-		blendSystemNames = new List<string>();
-		foreach(System.Type t in typeof(BlendSystem).Assembly.GetTypes()){
-			if(t.IsSubclassOf(typeof(BlendSystem))){
-				blendSystems.Add(t);
-				blendSystemNames.Add(AddSpaces(t.Name));
-			}
-		}
-
-		if(myTarget.blendSystem != null){
-			blendSystemNumber = blendSystems.IndexOf(myTarget.blendSystem.GetType());
-		}
-	}
-
-	void CreateBlendSystemEditor () {
-		if(myTarget.blendSystem != null){
-			myTarget.blendSystem = myTarget.GetComponent<BlendSystem>();
-			if(myTarget.blendSystem != null){
-				blendSystemEditor = (BlendSystemEditor)Editor.CreateEditor(myTarget.blendSystem);
-			}
-		}
-	}
-
-	public static void FixedEndFadeGroup (float value) {
-		if(value == 0f || value == 1f) {
-			return;
-		}
-		EditorGUILayout.EndFadeGroup();
-	}
-
-	static string AddSpaces (string input){
-		if (string.IsNullOrEmpty(input))
-			return "";
-
-		StringBuilder newText = new StringBuilder(input.Length * 2);
-		newText.Append(input[0]);
-		for (int i = 1; i < input.Length; i++)
-		{
-			if (char.IsUpper(input[i]) && input[i-1] != ' '){
-				if(i+1 < input.Length){
-					if(!char.IsUpper(input[i-1]) || !char.IsUpper(input[i+1])){
-						newText.Append(' ');
-					}
-				}else{
-					newText.Append(' ');
-				}
-			}
-			newText.Append(input[i]);
-		}
-		return newText.ToString();
 	}
 }

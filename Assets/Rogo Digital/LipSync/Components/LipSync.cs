@@ -1,13 +1,11 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Xml;
 
 namespace RogoDigital.Lipsync {
 
-	[AddComponentMenu("Rogo Digital/LipSync")]
+	[AddComponentMenu("Rogo Digital/LipSync Pro")]
 	[DisallowMultipleComponent]
 	[HelpURL("http://updates.rogodigital.com/lipsync-api/class_rogo_digital_1_1_lipsync_1_1_lip_sync.html")]
 	public class LipSync : BlendSystemUser {
@@ -72,6 +70,16 @@ namespace RogoDigital.Lipsync {
 		public bool scaleAudioSpeed = true;
 
 		/// <summary>
+		/// How animation playback is timed. AudioPlayback is linked to the audio position. FixedFrameRate assumes a constant speed (useful for offline rendering).
+		/// </summary>
+		public AnimationTimingMode animationTimingMode = AnimationTimingMode.AudioPlayback;
+
+		/// <summary>
+		/// The framerate used for fixed framerate rendering.
+		/// </summary>
+		public int frameRate = 30;
+
+		/// <summary>
 		/// If there are no phonemes within this many seconds
 		/// of the previous one, a rest will be inserted.
 		/// </summary>
@@ -81,7 +89,7 @@ namespace RogoDigital.Lipsync {
 		/// The time, in seconds, that a shape will be held for
 		/// before blending to neutral when a rest is inserted.
 		/// </summary>
-		public float restHoldTime = 0.1f;
+		public float restHoldTime = 0.4f;
 
 		/// <summary>
 		/// The method used for generating curve tangents. Tight will ensure poses
@@ -96,6 +104,12 @@ namespace RogoDigital.Lipsync {
 		/// more natural but can can cause poses to be over-emphasized.
 		/// </summary>
 		public CurveGenerationMode emotionCurveGenerationMode = CurveGenerationMode.Tight;
+
+		/// <summary>
+		/// If true, any emotion marker that doesn't blend out before the end of the clip
+		/// will stay active when the clip finishes.
+		/// </summary>
+		public bool keepEmotionWhenFinished = false;
 
 		/// <summary>
 		/// Whether or not there is currently a LipSync animation playing.
@@ -133,6 +147,13 @@ namespace RogoDigital.Lipsync {
 		/// </summary>
 		public UnityEvent onFinishedPlaying;
 
+#if UNITY_EDITOR
+		/// <summary>
+		/// Used for updating Clip Editor previews. Only available in the editor.
+		/// </summary>
+		public BlendSystem.BlendSystemGenericDelegate onSettingsChanged;
+#endif
+
 		// Private Variables
 
 		private AudioClip audioClip;
@@ -144,6 +165,8 @@ namespace RogoDigital.Lipsync {
 		private float emotionTimer = 0;
 		private bool changingEmotion = false;
 		private int customEmotion = -1;
+		private float customTimer = 0;
+		private bool isDelaying = false;
 
 		// Marker Data
 		private List<PhonemeMarker> phonemeMarkers;
@@ -155,8 +178,7 @@ namespace RogoDigital.Lipsync {
 
 		// Curves
 		private List<int> indexBlendables;
-		private List<Object> referenceBlendables;
-		private List<AnimationCurve> animCurves;
+		public List<AnimationCurve> animCurves;
 
 		private List<Transform> bones;
 		private List<TransformAnimationCurve> boneCurves;
@@ -165,15 +187,16 @@ namespace RogoDigital.Lipsync {
 		private List<Quaternion> boneNeutralRotations;
 
 		// Used by the editor
-		public UnityEvent reset;
+		public ResetDelegate reset;
 		public float lastUsedVersion = 0;
 
-		void Reset() {
-			if (reset == null) reset = new UnityEvent();
-			reset.Invoke();
+		public delegate void ResetDelegate ();
+
+		void Reset () {
+			if(reset != null) reset.Invoke();
 		}
 
-		void Awake() {
+		void Awake () {
 
 			// Get reference to attached AudioSource
 			if (audioSource == null) audioSource = GetComponent<AudioSource>();
@@ -200,13 +223,15 @@ namespace RogoDigital.Lipsync {
 			// Cache Emotions for more performant cross-checking
 			emotionCache = new Dictionary<string, EmotionShape>();
 			foreach (EmotionShape emotionShape in emotions) {
-				emotionCache.Add(emotionShape.emotion, emotionShape);
+				if (emotionCache.ContainsKey(emotionShape.emotion)) {
+					Debug.LogWarning("[LipSync - " + gameObject.name + "] Project Settings contains more than 1 emotion called \"" + emotionShape.emotion + "\". Duplicates will be ignored.");
+				} else {
+					emotionCache.Add(emotionShape.emotion, emotionShape);
+				}
 			}
 
 			// Check validity of Gestures
-			if (gesturesAnimator == null) {
-				Debug.Log("[LipSync - " + gameObject.name + "] No Animator specified. Gestures won't be played.");
-			} else {
+			if (gesturesAnimator != null) {
 				foreach (GestureInstance gesture in gestures) {
 					if (!gesture.IsValid(gesturesAnimator)) {
 						Debug.LogWarning("[LipSync - " + gameObject.name + "] Animator does not contain a trigger called '" + gesture.triggerName + "'. This Gesture will be ignored.");
@@ -218,15 +243,35 @@ namespace RogoDigital.Lipsync {
 			if (playOnAwake && defaultClip != null) Play(defaultClip, defaultDelay);
 		}
 
-		void LateUpdate() {
+
+		void LateUpdate () {
 			if ((isPlaying && !isPaused) || changingEmotion) {
 				// Scale audio speed if set
 				if (scaleAudioSpeed && !changingEmotion) audioSource.pitch = Time.timeScale;
 
+				if (isDelaying) {
+					customTimer -= Time.deltaTime;
+					if (customTimer <= 0) isDelaying = false;
+					return;
+				}
+
 				float normalisedTimer = 0;
+
 				if (isPlaying) {
-					// Get normalised timer from audio playback
-					normalisedTimer = audioSource.time / audioSource.clip.length;
+					// Update timer based on animationTimingMode
+					if (animationTimingMode == AnimationTimingMode.AudioPlayback && audioClip != null) {
+						// Use AudioSource playback only if an audioClip is present.
+						normalisedTimer = audioSource.time / audioClip.length;
+					} else if (animationTimingMode == AnimationTimingMode.CustomTimer || (animationTimingMode == AnimationTimingMode.AudioPlayback && audioClip == null)) {
+						// Play at same rate, but don't tie to audioclip. Fallback for AnimationTimingMode.AudioPlayback when no clip is present.
+						customTimer += Time.deltaTime;
+						normalisedTimer = customTimer / fileLength;
+					} else if (animationTimingMode == AnimationTimingMode.FixedFrameRate) {
+						// Play animation at a fixed framerate for offline rendering.
+						customTimer += 1f / frameRate;
+						normalisedTimer = customTimer / fileLength;
+					}
+
 
 					// Gesture cues
 					if (gestures.Count > 0 && nextGesture < gestureMarkers.Count && gesturesAnimator != null) {
@@ -240,7 +285,7 @@ namespace RogoDigital.Lipsync {
 					}
 				} else {
 					// Get normalised timer from custom timer
-					emotionTimer += scaleAudioSpeed ? Time.deltaTime : Time.unscaledDeltaTime;
+					emotionTimer += Time.deltaTime;
 					normalisedTimer = emotionTimer / emotionBlendTime;
 				}
 
@@ -289,10 +334,18 @@ namespace RogoDigital.Lipsync {
 		/// </summary>
 		/// <param name="emotion">Emotion.</param>
 		/// <param name="blendTime">Blend time.</param>
-		public void SetEmotion(string emotion, float blendTime) {
+		public void SetEmotion (string emotion, float blendTime) {
 			if (!isPlaying && ready && enabled) {
+				EmotionShape emote = null;
 
-				if (emotions.IndexOf(emotionCache[emotion]) == customEmotion) return;
+				if (emotion == "") {
+					emote = new EmotionShape("temp");
+				} else {
+					if (emotions.IndexOf(emotionCache[emotion]) == customEmotion) return;
+
+					// Get Blendables
+					emote = emotionCache[emotion];
+				}
 
 				// Init Curves
 				animCurves = new List<AnimationCurve>();
@@ -302,9 +355,6 @@ namespace RogoDigital.Lipsync {
 					boneCurves = new List<TransformAnimationCurve>();
 					bones = new List<Transform>();
 				}
-
-				// Get Blendables
-				EmotionShape emote = emotionCache[emotion];
 
 				for (int b = 0; b < emote.blendShapes.Count; b++) {
 					indexBlendables.Add(emote.blendShapes[b]);
@@ -400,23 +450,47 @@ namespace RogoDigital.Lipsync {
 		}
 
 		/// <summary>
+		/// Resets a custom set emotion back to neutral.
+		/// </summary>
+		/// <param name="blendTime"></param>
+		public void ResetEmotion (float blendTime) {
+			SetEmotion("", blendTime);
+		}
+
+		/// <summary>
 		/// Loads a LipSyncData file if necessary and
 		/// then plays it on the current LipSync component.
 		/// </summary>
-		public void Play(LipSyncData dataFile, float delay) {
+		public void Play (LipSyncData dataFile, float delay) {
 			if (ready && enabled) {
 				// Load File if not already loaded
-				if (dataFile.GetInstanceID() != currentFileID) {
+				if (dataFile.GetInstanceID() != currentFileID || customEmotion > -1) {
 					LoadData(dataFile);
 					ProcessData();
 				}
 
-				if (gesturesAnimator != null) gesturesAnimator.SetLayerWeight(gesturesLayer, 1);
+				if (gesturesAnimator != null && gestures != null) {
+					if (gestures.Count > 0) {
+						gesturesAnimator.SetLayerWeight(gesturesLayer, 1);
+					}
+				} else {
+					if (dataFile.gestureData.Length > 0) {
+						Debug.Log("[LipSync - " + gameObject.name + "] Animator or Gestures are not set up. Gestures from this clip won't be played.");
+					}
+				}
 
 				// Set variables
 				isPlaying = true;
 				isPaused = false;
 				nextGesture = 0;
+
+				if(audioClip == null && delay > 0) {
+					isDelaying = true;
+					customTimer = delay;
+				} else {
+					isDelaying = false;
+					customTimer = 0;
+				}
 
 				// Play audio
 				audioSource.PlayDelayed(delay);
@@ -426,7 +500,7 @@ namespace RogoDigital.Lipsync {
 		/// <summary>
 		/// Overload of Play with no delay specified. For compatibility with pre 0.4 scripts.
 		/// </summary>
-		public void Play(LipSyncData dataFile) {
+		public void Play (LipSyncData dataFile) {
 			Play(dataFile, 0);
 		}
 
@@ -434,7 +508,7 @@ namespace RogoDigital.Lipsync {
 		/// Loads an XML file and parses LipSync data from it,
 		/// then plays it on the current LipSync component.
 		/// </summary>
-		public void Play(TextAsset xmlFile, AudioClip clip, float delay) {
+		public void Play (TextAsset xmlFile, AudioClip clip, float delay) {
 			if (ready && enabled) {
 				// Load File
 				LoadXML(xmlFile, clip);
@@ -448,6 +522,14 @@ namespace RogoDigital.Lipsync {
 
 				ProcessData();
 
+				if (audioClip == null && delay > 0) {
+					isDelaying = true;
+					customTimer = delay;
+				} else {
+					isDelaying = false;
+					customTimer = 0;
+				}
+
 				// Play audio
 				audioSource.PlayDelayed(delay);
 			}
@@ -456,7 +538,7 @@ namespace RogoDigital.Lipsync {
 		/// <summary>
 		/// Overload of Play with no delay specified. For compatibility with pre 0.4 scripts.
 		/// </summary>
-		public void Play(TextAsset xmlFile, AudioClip clip) {
+		public void Play (TextAsset xmlFile, AudioClip clip) {
 			Play(xmlFile, clip, 0);
 		}
 
@@ -465,10 +547,10 @@ namespace RogoDigital.Lipsync {
 		/// then plays it on the current LipSync component
 		/// from a certain point in seconds.
 		/// </summary>
-		public void PlayFromTime(LipSyncData dataFile, float delay, float time) {
+		public void PlayFromTime (LipSyncData dataFile, float delay, float time) {
 			if (ready && enabled) {
 				// Load File if not already loaded
-				if (dataFile.GetInstanceID() != currentFileID) {
+				if (dataFile.GetInstanceID() != currentFileID || customEmotion > -1) {
 					LoadData(dataFile);
 					ProcessData();
 				}
@@ -484,6 +566,8 @@ namespace RogoDigital.Lipsync {
 				// Set variables
 				isPlaying = true;
 				isPaused = false;
+				isDelaying = false;
+				customTimer = 0;
 				nextGesture = 0;
 
 				// Play audio
@@ -495,7 +579,7 @@ namespace RogoDigital.Lipsync {
 		/// <summary>
 		/// Overload of PlayFromTime with no delay specified.
 		/// </summary>
-		public void PlayFromTime(LipSyncData dataFile, float time) {
+		public void PlayFromTime (LipSyncData dataFile, float time) {
 			PlayFromTime(dataFile, 0, time);
 		}
 
@@ -504,7 +588,7 @@ namespace RogoDigital.Lipsync {
 		/// then plays it on the current LipSync component
 		/// from a certain point in seconds.
 		/// </summary>
-		public void PlayFromTime(TextAsset xmlFile, AudioClip clip, float delay, float time) {
+		public void PlayFromTime (TextAsset xmlFile, AudioClip clip, float delay, float time) {
 			if (ready && enabled) {
 				// Load File
 				LoadXML(xmlFile, clip);
@@ -520,6 +604,8 @@ namespace RogoDigital.Lipsync {
 				// Set variables
 				isPlaying = true;
 				isPaused = false;
+				isDelaying = false;
+				customTimer = 0;
 				nextGesture = 0;
 
 				ProcessData();
@@ -533,14 +619,14 @@ namespace RogoDigital.Lipsync {
 		/// <summary>
 		/// Overload of PlayFromTime with no delay specified.
 		/// </summary>
-		public void PlayFromTime(TextAsset xmlFile, AudioClip clip, float time) {
+		public void PlayFromTime (TextAsset xmlFile, AudioClip clip, float time) {
 			PlayFromTime(xmlFile, clip, 0, time);
 		}
 
 		/// <summary>
 		/// Pauses the currently playing animation.
 		/// </summary>
-		public void Pause() {
+		public void Pause () {
 			if (isPlaying && !isPaused && enabled) {
 				isPaused = true;
 				audioSource.Pause();
@@ -550,7 +636,7 @@ namespace RogoDigital.Lipsync {
 		/// <summary>
 		/// Resumes the current animation after pausing.
 		/// </summary>
-		public void Resume() {
+		public void Resume () {
 			if (isPlaying && isPaused && enabled) {
 				isPaused = false;
 				audioSource.UnPause();
@@ -561,12 +647,13 @@ namespace RogoDigital.Lipsync {
 		/// Completely stops the current animation to be
 		/// started again from the begining.
 		/// </summary>
-		public void Stop(bool stopAudio) {
+		public void Stop (bool stopAudio) {
 			if (isPlaying && enabled) {
 				isPlaying = false;
 				isPaused = false;
+				isDelaying = false;
 
-				PreviewAtTime(0);
+				PreviewAtTime(1);
 
 				// Stop Audio
 				if (stopAudio) audioSource.Stop();
@@ -581,7 +668,7 @@ namespace RogoDigital.Lipsync {
 		/// ProcessData must have already been called.
 		/// </summary>
 		/// <param name="time">Time.</param>
-		public void PreviewAtTime(float time) {
+		public void PreviewAtTime (float time) {
 			if (!isPlaying && enabled && animCurves != null) {
 				// Go through each animCurve and update blendables
 				for (int curve = 0; curve < animCurves.Count; curve++) {
@@ -604,7 +691,20 @@ namespace RogoDigital.Lipsync {
 		/// <param name="pData">Phoneme data.</param>
 		/// <param name="eData">Emotion data.</param>
 		/// <param name="clip">Audio Clip.</param>
-		public void TempLoad(List<PhonemeMarker> pData, List<EmotionMarker> eData, AudioClip clip, float duration) {
+		/// <param name="duration">File Duration.</param>
+		public void TempLoad (List<PhonemeMarker> pData, List<EmotionMarker> eData, AudioClip clip, float duration) {
+			TempLoad(pData.ToArray(), eData.ToArray(), clip, duration);
+		}
+
+		/// <summary>
+		/// Loads raw data instead of using a serialised asset.
+		/// Used for previewing animations in the editor.
+		/// </summary>
+		/// <param name="pData">Phoneme data.</param>
+		/// <param name="eData">Emotion data.</param>
+		/// <param name="clip">Audio Clip.</param>
+		/// <param name="duration">File Duration.</param>
+		public void TempLoad (PhonemeMarker[] pData, EmotionMarker[] eData, AudioClip clip, float duration) {
 			if (enabled) {
 				if (emotionCache == null) {
 					// Cache Emotions for more performant cross-checking
@@ -639,12 +739,12 @@ namespace RogoDigital.Lipsync {
 		/// Processes the data into readable animation curves.
 		/// Do not call before loading data.
 		/// </summary>
-		public void ProcessData() {
+		public void ProcessData () {
 			if (enabled) {
 
 				boneNeutralPositions = null;
 				boneNeutralRotations = null;
-				
+
 				List<Transform> tempEmotionBones = null;
 				List<TransformAnimationCurve> tempEmotionBoneCurves = null;
 
@@ -690,14 +790,14 @@ namespace RogoDigital.Lipsync {
 						foreach (int blendable in phonemes[(int)marker.phoneme].blendShapes) {
 							if (!tempIndexBlendables.Contains(blendable)) {
 								AnimationCurve curve = new AnimationCurve();
-								curve.postWrapMode = WrapMode.Loop;
+								curve.postWrapMode = WrapMode.Once;
 								tempCurves.Add(curve);
 								tempIndexBlendables.Add(blendable);
 							}
 
 							if (!indexBlendables.Contains(blendable)) {
 								AnimationCurve curve = new AnimationCurve();
-								curve.postWrapMode = WrapMode.Loop;
+								curve.postWrapMode = WrapMode.Once;
 								animCurves.Add(curve);
 								indexBlendables.Add(blendable);
 							}
@@ -707,14 +807,14 @@ namespace RogoDigital.Lipsync {
 							foreach (BoneShape boneShape in phonemes[(int)marker.phoneme].bones) {
 								if (!tempBones.Contains(boneShape.bone)) {
 									TransformAnimationCurve curve = new TransformAnimationCurve();
-									curve.postWrapMode = WrapMode.Loop;
+									curve.postWrapMode = WrapMode.Once;
 									tempBoneCurves.Add(curve);
 									tempBones.Add(boneShape.bone);
 								}
 
 								if (!bones.Contains(boneShape.bone)) {
 									TransformAnimationCurve curve = new TransformAnimationCurve();
-									curve.postWrapMode = WrapMode.Loop;
+									curve.postWrapMode = WrapMode.Once;
 									boneCurves.Add(curve);
 									bones.Add(boneShape.bone);
 
@@ -735,14 +835,14 @@ namespace RogoDigital.Lipsync {
 							foreach (int blendable in emotionCache[marker.emotion].blendShapes) {
 								if (!tempEmotionIndexBlendables.Contains(blendable)) {
 									AnimationCurve curve = new AnimationCurve();
-									curve.postWrapMode = WrapMode.Loop;
+									curve.postWrapMode = WrapMode.Once;
 									tempEmotionCurves.Add(curve);
 									tempEmotionIndexBlendables.Add(blendable);
 								}
 
 								if (!indexBlendables.Contains(blendable)) {
 									AnimationCurve curve = new AnimationCurve();
-									curve.postWrapMode = WrapMode.Loop;
+									curve.postWrapMode = WrapMode.Once;
 									animCurves.Add(curve);
 									indexBlendables.Add(blendable);
 								}
@@ -752,14 +852,14 @@ namespace RogoDigital.Lipsync {
 								foreach (BoneShape boneShape in emotionCache[marker.emotion].bones) {
 									if (!tempEmotionBones.Contains(boneShape.bone)) {
 										TransformAnimationCurve curve = new TransformAnimationCurve();
-										curve.postWrapMode = WrapMode.Loop;
+										curve.postWrapMode = WrapMode.Once;
 										tempEmotionBoneCurves.Add(curve);
 										tempEmotionBones.Add(boneShape.bone);
 									}
 
 									if (!bones.Contains(boneShape.bone)) {
 										TransformAnimationCurve curve = new TransformAnimationCurve();
-										curve.postWrapMode = WrapMode.Loop;
+										curve.postWrapMode = WrapMode.Once;
 										boneCurves.Add(curve);
 										bones.Add(boneShape.bone);
 
@@ -775,25 +875,117 @@ namespace RogoDigital.Lipsync {
 					}
 				}
 
-				// Add neutral start and end keys
-				for (int index = 0; index < tempCurves.Count; index++) {
-					tempCurves[index].AddKey(0, 0);
-					tempCurves[index].AddKey(1, 0);
+				// Add current set emotion if applicable
+				if (customEmotion > -1) {
+					if (!shapes.Contains(emotions[customEmotion])) {
+						shapes.Add(emotions[customEmotion]);
+
+						foreach (int blendable in emotions[customEmotion].blendShapes) {
+							if (!tempEmotionIndexBlendables.Contains(blendable)) {
+								AnimationCurve curve = new AnimationCurve();
+								curve.postWrapMode = WrapMode.Once;
+								tempEmotionCurves.Add(curve);
+								tempEmotionIndexBlendables.Add(blendable);
+							}
+
+							if (!indexBlendables.Contains(blendable)) {
+								AnimationCurve curve = new AnimationCurve();
+								curve.postWrapMode = WrapMode.Once;
+								animCurves.Add(curve);
+								indexBlendables.Add(blendable);
+							}
+						}
+
+						if (useBones) {
+							foreach (BoneShape boneShape in emotions[customEmotion].bones) {
+								if (!tempEmotionBones.Contains(boneShape.bone)) {
+									TransformAnimationCurve curve = new TransformAnimationCurve();
+									curve.postWrapMode = WrapMode.Once;
+									tempEmotionBoneCurves.Add(curve);
+									tempEmotionBones.Add(boneShape.bone);
+								}
+
+								if (!bones.Contains(boneShape.bone)) {
+									TransformAnimationCurve curve = new TransformAnimationCurve();
+									curve.postWrapMode = WrapMode.Once;
+									boneCurves.Add(curve);
+									bones.Add(boneShape.bone);
+
+									boneNeutralPositions.Add(boneShape.neutralPosition);
+									boneNeutralRotations.Add(Quaternion.Euler(boneShape.neutralRotation));
+								}
+							}
+						}
+					}
 				}
+
+				// Add neutral start and end keys, or get keys from current custom emotion
+				for (int index = 0; index < tempCurves.Count; index++) {
+					if (customEmotion == -1)
+						tempCurves[index].AddKey(0, 0);
+					if (!keepEmotionWhenFinished)
+						tempCurves[index].AddKey(1, 0);
+				}
+
 				for (int index = 0; index < tempEmotionCurves.Count; index++) {
-					tempEmotionCurves[index].AddKey(0, 0);
-					tempEmotionCurves[index].AddKey(1, 0);
+					if (customEmotion > -1) {
+						if (emotions[customEmotion].blendShapes.Contains(tempEmotionIndexBlendables[index])) {
+							tempEmotionCurves[index].AddKey(0, emotions[customEmotion].weights[emotions[customEmotion].blendShapes.IndexOf(tempEmotionIndexBlendables[index])]);
+						} else {
+							tempEmotionCurves[index].AddKey(0, 0);
+						}
+					} else {
+						tempEmotionCurves[index].AddKey(0, 0);
+					}
+
+					// Only add end emotion key if keepEmotionWhenFinished is false
+					if (!keepEmotionWhenFinished) {
+						tempEmotionCurves[index].AddKey(1, 0);
+					} else if (customEmotion > -1) {
+						if (emotions[customEmotion].blendShapes.Contains(tempEmotionIndexBlendables[index])) {
+							tempEmotionCurves[index].AddKey(1, emotions[customEmotion].weights[emotions[customEmotion].blendShapes.IndexOf(tempEmotionIndexBlendables[index])]);
+						}
+					}
 				}
 
 				if (useBones) {
 					for (int index = 0; index < tempBoneCurves.Count; index++) {
-						tempBoneCurves[index].AddKey(0, boneNeutralPositions[bones.IndexOf(tempBones[index])], boneNeutralRotations[bones.IndexOf(tempBones[index])], 0, 0);
-						tempBoneCurves[index].AddKey(1, boneNeutralPositions[bones.IndexOf(tempBones[index])], boneNeutralRotations[bones.IndexOf(tempBones[index])], 0, 0);
+						if (customEmotion == -1)
+							tempBoneCurves[index].AddKey(0, boneNeutralPositions[bones.IndexOf(tempBones[index])], boneNeutralRotations[bones.IndexOf(tempBones[index])], 0, 0);
+						if (!keepEmotionWhenFinished)
+							tempBoneCurves[index].AddKey(1, boneNeutralPositions[bones.IndexOf(tempBones[index])], boneNeutralRotations[bones.IndexOf(tempBones[index])], 0, 0);
 					}
 
 					for (int index = 0; index < tempEmotionBoneCurves.Count; index++) {
-						tempEmotionBoneCurves[index].AddKey(0, boneNeutralPositions[bones.IndexOf(tempEmotionBones[index])], boneNeutralRotations[bones.IndexOf(tempEmotionBones[index])], 0, 0);
-						tempEmotionBoneCurves[index].AddKey(1, boneNeutralPositions[bones.IndexOf(tempEmotionBones[index])], boneNeutralRotations[bones.IndexOf(tempEmotionBones[index])], 0, 0);
+						if (customEmotion > -1) {
+							if (emotions[customEmotion].HasBone(tempEmotionBones[index])) {
+								tempEmotionBoneCurves[index].AddKey(
+									0,
+									emotions[customEmotion].bones[emotions[customEmotion].IndexOfBone(tempEmotionBones[index])].endPosition,
+									Quaternion.Euler(emotions[customEmotion].bones[emotions[customEmotion].IndexOfBone(tempEmotionBones[index])].endRotation),
+									0,
+									0
+								);
+							} else {
+								tempEmotionBoneCurves[index].AddKey(0, boneNeutralPositions[bones.IndexOf(tempEmotionBones[index])], boneNeutralRotations[bones.IndexOf(tempEmotionBones[index])], 0, 0);
+							}
+						} else {
+							tempEmotionBoneCurves[index].AddKey(0, boneNeutralPositions[bones.IndexOf(tempEmotionBones[index])], boneNeutralRotations[bones.IndexOf(tempEmotionBones[index])], 0, 0);
+						}
+
+						if (!keepEmotionWhenFinished) {
+							tempEmotionBoneCurves[index].AddKey(1, boneNeutralPositions[bones.IndexOf(tempEmotionBones[index])], boneNeutralRotations[bones.IndexOf(tempEmotionBones[index])], 0, 0);
+						} else if (customEmotion > -1) {
+							if (emotions[customEmotion].HasBone(tempEmotionBones[index])) {
+								tempEmotionBoneCurves[index].AddKey(
+									1,
+									emotions[customEmotion].bones[emotions[customEmotion].IndexOfBone(tempEmotionBones[index])].endPosition,
+									Quaternion.Euler(emotions[customEmotion].bones[emotions[customEmotion].IndexOfBone(tempEmotionBones[index])].endRotation),
+									0,
+									0
+								);
+							}
+						}
 					}
 				}
 
@@ -837,7 +1029,7 @@ namespace RogoDigital.Lipsync {
 								tempEmotionCurves[index].AddKey(marker.endTime + marker.blendOutTime, shape.weights[b] * marker.intensity);
 								tempEmotionCurves[index].AddKey(marker.endTime, endWeight);
 							}
-							
+
 						} else {
 							if (emotionCurveGenerationMode == CurveGenerationMode.Tight) {
 								tempEmotionCurves[index].AddKey(new Keyframe(marker.startTime + marker.blendInTime, 0, 0, 0));
@@ -846,7 +1038,7 @@ namespace RogoDigital.Lipsync {
 								tempEmotionCurves[index].AddKey(marker.startTime + marker.blendInTime, 0);
 								tempEmotionCurves[index].AddKey(marker.endTime + marker.blendOutTime, 0);
 							}
-							
+
 							if (marker.blendToMarker) {
 								EmotionMarker nextMarker = emotionMarkers[emotionMarkers.IndexOf(marker) + 1];
 								EmotionShape nextShape = emotionCache[nextMarker.emotion];
@@ -945,13 +1137,15 @@ namespace RogoDigital.Lipsync {
 					bool addRest = false;
 
 					// Check for rests
-					if (m + 1 < phonemeMarkers.Count) {
-						if (phonemeMarkers[m + 1].time > marker.time + (restTime / fileLength) + (restHoldTime / fileLength)) {
+					if (!marker.sustain) {
+						if (m + 1 < phonemeMarkers.Count) {
+							if (phonemeMarkers[m + 1].time > marker.time + (restTime / fileLength) + (restHoldTime / fileLength)) {
+								addRest = true;
+							}
+						} else {
+							// Last marker, add rest after hold time
 							addRest = true;
 						}
-					} else {
-						// Last marker, add rest after hold time
-						addRest = true;
 					}
 
 					for (int index = 0; index < tempCurves.Count; index++) {
@@ -991,7 +1185,7 @@ namespace RogoDigital.Lipsync {
 									}
 								}
 							}
-							
+
 						} else {
 							// Blendable isn't in this marker
 							if (phonemeCurveGenerationMode == CurveGenerationMode.Tight) {
@@ -1060,14 +1254,12 @@ namespace RogoDigital.Lipsync {
 
 						for (int k = 0; k < tempCurves[pIndex].keys.Length; k++) {
 							Keyframe key = tempCurves[pIndex].keys[k];
-
 							animCurves[c].AddKey(key);
 						}
 
 						for (int k = 0; k < tempEmotionCurves[eIndex].keys.Length; k++) {
-							Keyframe key = tempEmotionCurves[eIndex].keys[k];
-
-							animCurves[c].AddKey(key);
+							Keyframe eKey = tempEmotionCurves[eIndex].keys[k];
+							animCurves[c].AddKey(eKey);
 						}
 
 					} else if (tempIndexBlendables.Contains(indexBlendables[c])) {
@@ -1104,12 +1296,17 @@ namespace RogoDigital.Lipsync {
 				}
 
 			}
+
+			if (customEmotion > -1) {
+				ClearDataCache();
+				customEmotion = -1;
+			}
 		}
 
 		/// <summary>
 		/// Clears the data cache, forcing the animation curves to be recalculated.
 		/// </summary>
-		public void ClearDataCache() {
+		public void ClearDataCache () {
 			currentFileID = 0;
 		}
 
@@ -1117,7 +1314,7 @@ namespace RogoDigital.Lipsync {
 		// Private Functions
 		// -----------------
 
-		void FixEmotionBlends(ref List<EmotionMarker> data) {
+		void FixEmotionBlends (ref List<EmotionMarker> data) {
 			EmotionMarker[] markers = data.ToArray();
 			FixEmotionBlends(ref markers);
 			data.Clear();
@@ -1127,7 +1324,7 @@ namespace RogoDigital.Lipsync {
 			}
 		}
 
-		void FixEmotionBlends(ref EmotionMarker[] data) {
+		void FixEmotionBlends (ref EmotionMarker[] data) {
 
 			foreach (EmotionMarker eMarker in data) {
 				eMarker.blendFromMarker = false;
@@ -1174,7 +1371,7 @@ namespace RogoDigital.Lipsync {
 			}
 		}
 
-		private void LoadXML(TextAsset xmlFile, AudioClip linkedClip) {
+		private void LoadXML (TextAsset xmlFile, AudioClip linkedClip) {
 			XmlDocument document = new XmlDocument();
 			document.LoadXml(xmlFile.text);
 
@@ -1295,7 +1492,7 @@ namespace RogoDigital.Lipsync {
 			gestureMarkers.Sort(SortTime);
 		}
 
-		private bool LoadData(LipSyncData dataFile) {
+		private bool LoadData (LipSyncData dataFile) {
 			// Check that the referenced file contains data
 			if (dataFile.phonemeData.Length > 0 || dataFile.emotionData.Length > 0 || dataFile.gestureData.Length > 0) {
 				// Store reference to the associated AudioClip.
@@ -1325,7 +1522,7 @@ namespace RogoDigital.Lipsync {
 
 					FixEmotionBlends(ref dataFile.emotionData);
 
-					if(dataFile.length == 0){
+					if (dataFile.length == 0) {
 						fileLength = audioClip.length;
 					}
 				}
@@ -1364,38 +1561,38 @@ namespace RogoDigital.Lipsync {
 			}
 		}
 
-		GestureInstance GetGesture(string name) {
+		GestureInstance GetGesture (string name) {
 			for (int a = 0; a < gestures.Count; a++) {
 				if (gestures[a].gesture == name) return gestures[a];
 			}
 			return null;
 		}
 
-		public LipSync() {
+		public LipSync () {
 			// Constructor used to set version value on new component
-			this.lastUsedVersion = 1.0f;
+			this.lastUsedVersion = 1.2f;
 		}
 
 		// Sort PhonemeMarker by timestamp
-		public static int SortTime(PhonemeMarker a, PhonemeMarker b) {
+		public static int SortTime (PhonemeMarker a, PhonemeMarker b) {
 			float sa = a.time;
 			float sb = b.time;
 
 			return sa.CompareTo(sb);
 		}
 
-		public static int SortTime(GestureMarker a, GestureMarker b) {
+		public static int SortTime (GestureMarker a, GestureMarker b) {
 			float sa = a.time;
 			float sb = b.time;
 
 			return sa.CompareTo(sb);
 		}
 
-		static int EmotionSort(EmotionMarker a, EmotionMarker b) {
+		static int EmotionSort (EmotionMarker a, EmotionMarker b) {
 			return a.startTime.CompareTo(b.startTime);
 		}
-
-		public static string ReadXML(XmlDocument xml, string parentElement, string elementName) {
+		
+		public static string ReadXML (XmlDocument xml, string parentElement, string elementName) {
 			XmlNode node = xml.SelectSingleNode("//" + parentElement + "//" + elementName);
 
 			if (node == null) {
@@ -1403,6 +1600,12 @@ namespace RogoDigital.Lipsync {
 			}
 
 			return node.InnerText;
+		}
+
+		public enum AnimationTimingMode {
+			AudioPlayback,
+			CustomTimer,
+			FixedFrameRate,
 		}
 
 		public enum CurveGenerationMode {

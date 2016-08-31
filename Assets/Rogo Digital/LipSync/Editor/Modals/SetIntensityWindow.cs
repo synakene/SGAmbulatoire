@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections;
 
 using RogoDigital;
-using RogoDigital.Lipsync;
 
 public class SetIntensityWindow : ModalWindow {
 	private LipSyncClipSetup setup;
@@ -11,12 +9,12 @@ public class SetIntensityWindow : ModalWindow {
 	private AnimationCurve remapCurve = new AnimationCurve();
 	private bool advanced;
 
-	void OnEnable() {
+	void OnEnable () {
 		remapCurve.AddKey(0, 0);
 		remapCurve.AddKey(1, 1);
 	}
 
-	void OnGUI() {
+	void OnGUI () {
 		GUILayout.Space(10);
 		GUILayout.BeginHorizontal();
 		GUILayout.Space(10);
@@ -24,7 +22,7 @@ public class SetIntensityWindow : ModalWindow {
 		GUILayout.Space(10);
 		GUILayout.EndHorizontal();
 		GUILayout.Space(15);
-		remapCurve = EditorGUILayout.CurveField("Remap Curve", remapCurve, Color.yellow, new Rect(0,0,1,1));
+		remapCurve = EditorGUILayout.CurveField("Remap Curve", remapCurve, Color.yellow, new Rect(0, 0, 1, 1));
 		GUILayout.FlexibleSpace();
 		GUILayout.BeginHorizontal();
 		GUILayout.FlexibleSpace();
@@ -41,15 +39,16 @@ public class SetIntensityWindow : ModalWindow {
 		GUILayout.Space(10);
 	}
 
-	void Begin() {
+	void Begin () {
 		for (int m = 0; m < setup.phonemeData.Count; m++) {
 			setup.phonemeData[m].intensity = remapCurve.Evaluate(GetRMS(4096, Mathf.RoundToInt(setup.phonemeData[m].time * setup.clip.samples)));
-			setup.changed = true;
-			setup.previewOutOfDate = true;
 		}
+
+		setup.changed = true;
+		setup.previewOutOfDate = true;
 	}
 
-	float GetRMS(int samples, int offset) {
+	float GetRMS (int samples, int offset) {
 		float[] sampleData = new float[samples];
 
 		setup.clip.GetData(sampleData, offset); // fill array with samples
@@ -62,8 +61,8 @@ public class SetIntensityWindow : ModalWindow {
 		return Mathf.Sqrt(sum / samples); // rms = square root of average
 	}
 
-	public static void CreateWindow(ModalParent parent, LipSyncClipSetup setup) {
-		SetIntensityWindow window = GetWindow<SetIntensityWindow>();
+	public static void CreateWindow (ModalParent parent, LipSyncClipSetup setup) {
+		SetIntensityWindow window = CreateInstance<SetIntensityWindow>();
 
 		window.position = new Rect(parent.center.x - 250, parent.center.y - 75, 500, 150);
 		window.minSize = new Vector2(500, 150);
