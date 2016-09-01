@@ -135,10 +135,25 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case "priseNote":
-                    helpText.text = "Afin de poser un diagnostique dans les meilleures conditions, une prise de note a été effectué, visible en cliquant sur le bouton du carnet situé en haut à gauche.";
+                    helpText.text = "Afin de poser un diagnostic dans les meilleures conditions, une prise de note a été effectuée, visible en cliquant sur le bouton du carnet situé en haut à gauche.";
                     titre.text = "Information";
                     helpText.alignment = TextAnchor.MiddleLeft;
                     break;
+				case "ord1":
+					helpText.text = "Vous avez effectué les vérifications d'hygiène dans le bon ordre.";
+					titre.text = "Bonne réponse";
+					helpText.alignment = TextAnchor.MiddleCenter;
+					break;
+				case "ord2":
+					helpText.text = "La dépilation chimique doit être faite avant la douche. De plus, il est important qu’aucun bijou ne soit présent au moment de la douche.";
+					titre.text = "Mauvaise réponse";
+					helpText.alignment = TextAnchor.MiddleCenter;
+					break;
+				case "ord3":
+					helpText.text = "La dépilation chimique doit être faite avant la douche.";
+					titre.text = "Mauvaise réponse";
+					helpText.alignment = TextAnchor.MiddleCenter;
+					break;
             }
             Stop();
         }
