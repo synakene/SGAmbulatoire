@@ -127,8 +127,8 @@ public class SimplePDF : MonoBehaviour {
         /*Set Cellpadding*/
         myTable.cellpadding = 5;
 
-        page.addTable(myDoc, pages, myTable, 16, 610, 665);
-        page.addSuccessTable(myDoc, pages, SuccessTable, 8, 610, 665, myTable);
+        page.addTable(myDoc, pages, myTable, 16, 610, 680);
+        page.addSuccessTable(myDoc, pages, SuccessTable, 8, 610, 680, myTable);
 
         /* Add header to each pages */
         for (int i = 1; i < pages.Count; i++)
