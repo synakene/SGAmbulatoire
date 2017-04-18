@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,12 +18,30 @@ namespace Scorm {
         public event LogHandler OnMessageLogged;
 
         void Awake() {
+            if (!instance)
+            {
+                instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+
+        }
+
+        public void Destroy()
+        {
+            instance = null;
+        }
+
+        public void Initialize()
+        {
             instance = this;
         }
 
-        void OnDestroy() {
-            instance = null;
-        }
+        //void OnDestroy() {
+        //    instance = null;
+        //}
         #endregion
 
         #region LearnerId
@@ -33,7 +52,8 @@ namespace Scorm {
         /// Identifies the learner on behalf of whom the SCO was launched.
         /// </summary>
         public void GetLearnerId() {
-            CallUnityMethod("CallLearnerId", "getLearnerId");
+            StartCoroutine("CallLearnerId", "getLearnerId");
+            //CallUnityMethod("CallLearnerId", "getLearnerId");
         }
 
         private void CallLearnerId(string learnerId) {
@@ -51,7 +71,8 @@ namespace Scorm {
         /// Name provided for the learner by the LMS.
         /// </summary>
         public void GetLearnerName() {
-            CallUnityMethod("CallLearnerName", "getLearnerName");
+            StartCoroutine(CallUnityMethod("CallLearnerName", "getLearnerName"));
+            //CallUnityMethod("CallLearnerName", "getLearnerName");
         }
 
         private void CallLearnerName(string learnerName) {
@@ -69,7 +90,8 @@ namespace Scorm {
         /// The learner’s current location in the SCO.
         /// </summary>
         public void GetLessonLocation() {
-            CallUnityMethod("CallLessonLocation", "getLessonLocation");
+            StartCoroutine(CallUnityMethod("CallLessonLocation", "getLessonLocation"));
+            //CallUnityMethod("CallLessonLocation", "getLessonLocation");
         }
 
         /// <summary>
@@ -77,7 +99,8 @@ namespace Scorm {
         /// </summary>
         /// <param name="lessonLocation">The learner’s current location in the SCO.</param>
         public void SetLessonLocation(string lessonLocation) {
-            CallJavascriptMethod("setLessonLocation", lessonLocation);
+            StartCoroutine(CallJavascriptMethod("setLessonLocation", lessonLocation));
+            //CallJavascriptMethod("setLessonLocation", lessonLocation);
         }
 
         private void CallLessonLocation(string lessonLocation) {
@@ -141,7 +164,8 @@ namespace Scorm {
         /// Indicates whether the learner has completed and satisfied the requirements for the SCO.
         /// </summary>
         public void GetLessonStatus() {
-            CallUnityMethod("CallLessonStatus", "getLessonStatus");
+            StartCoroutine(CallUnityMethod("CallLessonStatus", "getLessonStatus"));
+            //CallUnityMethod("CallLessonStatus", "getLessonStatus");
         }
 
         private void CallLessonStatus(string lessonStatus) {
@@ -158,8 +182,8 @@ namespace Scorm {
         /// <param name="lessonStatus">The learner’s lesson status.</param>
         public void SetLessonStatus(LessonStatus lessonStatus) {
             string status = LessonStatusToString(lessonStatus);
-
-            CallJavascriptMethod("setLessonStatus", status);
+            StartCoroutine(CallJavascriptMethod("setLessonStatus", status));
+            //CallJavascriptMethod("setLessonStatus", status);
         }
 
         private static LessonStatus StringToLessonStatus(string lessonStatus) {
@@ -225,7 +249,8 @@ namespace Scorm {
         /// Asserts whether the learner has previously accessed the SCO.
         /// </summary>
         public void GetEntry() {
-            CallUnityMethod("CallEntry", "getEntry");
+            StartCoroutine(CallUnityMethod("CallEntry", "getEntry"));
+            //CallUnityMethod("CallEntry", "getEntry");
         }
 
         private void CallEntry(string entry) {
@@ -259,7 +284,8 @@ namespace Scorm {
         /// Number that reflects the performance of the learner relative to the range bounded by the values of min and max.
         /// </summary>
         public void GetRawScore() {
-            CallUnityMethod("CallRawScore", "getRawScore");
+            StartCoroutine(CallUnityMethod("CallRawScore", "getRawScore"));
+            //CallUnityMethod("CallRawScore", "getRawScore");
         }
 
         private void CallRawScore(string rawScore) {
@@ -283,7 +309,8 @@ namespace Scorm {
         /// </summary>
         /// <param name="rawScore">The learner's raw score.</param>
         public void SetRawScore(float rawScore) {
-            CallJavascriptMethod("setRawScore", rawScore);
+            StartCoroutine(CallJavascriptMethod("setRawScore", rawScore));
+            //CallJavascriptMethod("setRawScore", rawScore);
         }
         #endregion
 
@@ -295,7 +322,8 @@ namespace Scorm {
         /// Maximum value in the range for the raw score.
         /// </summary>
         public void GetMaxScore() {
-            CallUnityMethod("CallMaxScore", "getMaxScore");
+            StartCoroutine(CallUnityMethod("CallMaxScore", "getMaxScore"));
+            //CallUnityMethod("CallMaxScore", "getMaxScore");
         }
 
         private void CallMaxScore(string maxScore) {
@@ -319,7 +347,8 @@ namespace Scorm {
         /// </summary>
         /// <param name="maxScore">The learner's max score.</param>
         public void SetMaxScore(float maxScore) {
-            CallJavascriptMethod("setMaxScore", maxScore);
+            StartCoroutine(CallJavascriptMethod("setMaxScore", maxScore));
+            //CallJavascriptMethod("setMaxScore", maxScore);
         }
         #endregion
 
@@ -331,7 +360,8 @@ namespace Scorm {
         /// Minimum value in the range for the raw score.
         /// </summary>
         public void GetMinScore() {
-            CallUnityMethod("CallMinScore", "getMinScore");
+            StartCoroutine(CallUnityMethod("CallMinScore", "getMinScore"));
+            //CallUnityMethod("CallMinScore", "getMinScore");
         }
 
         private void CallMinScore(string minScore) {
@@ -355,7 +385,8 @@ namespace Scorm {
         /// </summary>
         /// <param name="minScore">The learner's min score.</param>
         public void SetMinScore(float minScore) {
-            CallJavascriptMethod("setMinScore", minScore);
+            StartCoroutine(CallJavascriptMethod("setMinScore", minScore));
+            //CallJavascriptMethod("setMinScore", minScore);
         }
         #endregion
 
@@ -367,7 +398,8 @@ namespace Scorm {
         /// Sum of all of the learner’s session times accumulated in the current learner attempt.
         /// </summary>
         public void GetTotalTime() {
-            CallUnityMethod("CallTotalTime", "getTotalTime");
+            StartCoroutine(CallUnityMethod("CallTotalTime", "getTotalTime"));
+            //CallUnityMethod("CallTotalTime", "getTotalTime");
         }
 
         private void CallTotalTime(string totalTimeInCentiseconds) {
@@ -401,7 +433,8 @@ namespace Scorm {
         /// Identifies one of three possible modes in which the SCO may be presented to the learner.
         /// </summary>
         public void GetLessonMode() {
-            CallUnityMethod("CallLessonMode", "getLessonMode");
+            StartCoroutine(CallUnityMethod("CallLessonMode", "getLessonMode"));
+            //CallUnityMethod("CallLessonMode", "getLessonMode");
         }
 
         private void CallLessonMode(string lessonMode) {
@@ -433,7 +466,8 @@ namespace Scorm {
         /// </summary>
         /// <param name="milliseconds">Time in milliseconds.</param>
         public void SetSessionTime(int milliseconds) {
-            CallJavascriptMethod("setSessionTime", milliseconds / 10f); // To Centiseconds
+            StartCoroutine(CallJavascriptMethod("setSessionTime", milliseconds / 10f));
+            //CallJavascriptMethod("setSessionTime", milliseconds / 10f); // To Centiseconds
         }
         #endregion
 
@@ -445,7 +479,8 @@ namespace Scorm {
         /// Textual input from the learner about the SCO.
         /// </summary>
         public void GetComments() {
-            CallUnityMethod("CallComments", "getComments");
+            StartCoroutine(CallUnityMethod("CallComments", "getComments"));
+            //CallUnityMethod("CallComments", "getComments");
         }
 
         private void CallComments(string comments) {
@@ -463,7 +498,8 @@ namespace Scorm {
         /// Comments or annotations associated with a SCO.
         /// </summary>
         public void GetCommentsFromLMS() {
-            CallUnityMethod("CallCommentsFromLMS", "getCommentsFromLMS");
+            StartCoroutine(CallUnityMethod("CallCommentsFromLMS", "getCommentsFromLMS"));
+            //CallUnityMethod("CallCommentsFromLMS", "getCommentsFromLMS");
         }
 
         private void CallCommentsFromLMS(string commentsFromLMS) {
@@ -575,7 +611,8 @@ namespace Scorm {
         /// Get the objectives.
         /// </summary>
         public void GetObjectives() {
-            CallUnityMethod("CallObjectives", "getObjectives");
+            StartCoroutine(CallUnityMethod("CallObjectives", "getObjectives"));
+            //CallUnityMethod("CallObjectives", "getObjectives");
         }
 
         private void CallObjectives(string data) {
@@ -606,8 +643,8 @@ namespace Scorm {
         /// <param name="description">The objective description.</param>
         public void SetObjective(string id, float minScore, float maxScore, float rawScore, float scaledScore, LessonStatus successStatus, LessonStatus completionStatus, float progressMeasure, string description) {
             ObjectiveData objectiveData = new ObjectiveData(id, minScore, maxScore, rawScore, scaledScore, successStatus, completionStatus, progressMeasure, description);
-
-            CallJavascriptMethod("setObjective", objectiveData);
+            StartCoroutine(CallJavascriptMethod("setObjective", objectiveData));
+            //CallJavascriptMethod("setObjective", objectiveData);
         }
         #endregion
 
@@ -619,7 +656,8 @@ namespace Scorm {
         /// The learner’s preferred language for SCOs with multilingual capability.
         /// </summary>
         public void GetLanguage() {
-            CallUnityMethod("CallLanguage", "getLanguage");
+            StartCoroutine(CallUnityMethod("CallLanguage", "getLanguage"));
+            //CallUnityMethod("CallLanguage", "getLanguage");
         }
 
         private void CallLanguage(string language) {
@@ -637,7 +675,8 @@ namespace Scorm {
         /// Provides space to store and retrieve data between learner session
         /// </summary>
         public void GetSuspendData() {
-            CallUnityMethod("CallSuspendData", "getSuspendData");
+            StartCoroutine(CallUnityMethod("CallSuspendData", "getSuspendData"));
+            //CallUnityMethod("CallSuspendData", "getSuspendData");
         }
 
         private void CallSuspendData(string data) {
@@ -651,7 +690,8 @@ namespace Scorm {
         /// </summary>
         /// <param name="data">Data to store.</param>
         public void SetSuspendData(string data) {
-            CallJavascriptMethod("setSuspendData", data);
+            StartCoroutine(CallJavascriptMethod("setSuspendData", data));
+            //CallJavascriptMethod("setSuspendData", data);
         }
         #endregion
 
@@ -666,7 +706,8 @@ namespace Scorm {
         public event InitHandler OnInitialized;
 
         public void Init() {
-            CallUnityMethod("CallInit", "initialize");
+            StartCoroutine(CallUnityMethod("CallInit", "initialize"));
+            //CallUnityMethod("CallInit", "initialize");
         }
 
         private void CallInit(string result) {
@@ -688,7 +729,8 @@ namespace Scorm {
         }
 
         public void Commit() {
-            CallJavascriptMethod("commit");
+            StartCoroutine(CallJavascriptMethod("commit"));
+            //CallJavascriptMethod("commit");
         }
 
         public enum ExitReason {
@@ -713,17 +755,18 @@ namespace Scorm {
                 default:
                     throw new Exception("[ScormAPI] No valid exit reason value: '" + reason + "'");
             }
-
-            CallJavascriptMethod("exit", exit);
+            StartCoroutine(CallJavascriptMethod("exit", exit));
+            //CallJavascriptMethod("exit", exit);
         }
 
         public void Finish() {
-            CallJavascriptMethod("finish");
+            StartCoroutine(CallJavascriptMethod("finish"));
+            //CallJavascriptMethod("finish");
         }
         #endregion
 
         #region Helpers
-        private static void CallUnityMethod(string unityMethodName, string javascriptMethodName) {
+        private static IEnumerator CallUnityMethod(string unityMethodName, string javascriptMethodName) {
             string returnMethod = string.Format("scorm.{0}()", javascriptMethodName);
 
             string script = null;
@@ -739,30 +782,35 @@ namespace Scorm {
 #endif
 
             Application.ExternalEval(script);
+            yield return true;
         }
 
-        private static void CallJavascriptMethod(string methodName) {
+        private static IEnumerator CallJavascriptMethod(string methodName) {
             string script = string.Format("scorm.{0}();", methodName);
 
             Application.ExternalEval(script);
+            yield return true;
         }
 
-        private static void CallJavascriptMethod(string methodName, string arg) {
+        private static IEnumerator CallJavascriptMethod(string methodName, string arg) {
             string script = string.Format("scorm.{0}(\"{1}\");", methodName, arg);
 
             Application.ExternalEval(script);
+            yield return true;
         }
 
-        private static void CallJavascriptMethod<T>(string methodName, T arg) {
+        private static IEnumerator CallJavascriptMethod<T>(string methodName, T arg) {
             string script = string.Format("scorm.{0}({1});", methodName, JsonUtility.ToJson(arg));
 
             Application.ExternalEval(script);
+            yield return true;
         }
 
-        private static void CallJavascriptMethod(string methodName, float arg) {
+        private static IEnumerator CallJavascriptMethod(string methodName, float arg) {
             string script = string.Format("scorm.{0}({1});", methodName, arg);
 
             Application.ExternalEval(script);
+            yield return true;
         }
         #endregion
 

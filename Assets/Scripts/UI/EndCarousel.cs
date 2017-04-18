@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using PixelCrushers.DialogueSystem;
+using Scorm;
 
 public class EndCarousel : MonoBehaviour {
 
@@ -47,7 +48,12 @@ public class EndCarousel : MonoBehaviour {
 	public void genPDF()
 	{
 		gameObject.transform.FindDeepChild ("PDFGen").gameObject.SetActive(true);
-	}
+    }
+
+    public void ScormCommit()
+    {
+        GameObject.FindGameObjectWithTag("DialogueManager").GetComponent<ScormControler>().ScormCommit();
+    }
 
     public void OnValueChange()
     {

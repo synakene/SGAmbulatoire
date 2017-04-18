@@ -72,7 +72,14 @@ public static class Data {
     public static int MaxScoreObj2 = 17;
     public static int MaxScoreObj3 = 15;
 
-    public static float MaxTotal = 41f;
+    public static float MaxTotal = (float)(MaxScoreObj1 + MaxScoreObj2 + MaxScoreObj3);
+
+    public static float ScormScoreRetrived = 0;
+
+    public static int getAverageScore()
+    {
+        return Mathf.RoundToInt(((curScoreObj1 + curScoreObj2 + curScoreObj3) / MaxTotal) * 100);
+    }
 
     public static void reinitFeedback()
     {

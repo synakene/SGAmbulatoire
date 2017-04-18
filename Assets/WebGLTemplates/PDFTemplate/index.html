@@ -7,12 +7,35 @@
     <title>Chirurgie ambulatoire</title>
     <link rel="stylesheet" href="TemplateData/style.css">
     <link rel="shortcut icon" href="TemplateData/favicon.ico" />
+    <script type="text/javascript" src="js/ostynscormtime.js"></script>
+    <script type="text/javascript" src="js/scorm.js"></script>
     <script src="genpdf.js" type="text/javascript"></script>
     <script type="text/javascript" src="TemplateData/tweenjs-0.6.2.min.js"></script>
-	<script type="text/javascript" src="TemplateData/CSSPlugin.js"></script>
-	<script type="text/javascript" src="js/ostynscormtime.js"></script>
-	<script type="text/javascript" src="js/scorm.js"></script>
+  	<script type="text/javascript" src="TemplateData/CSSPlugin.js"></script>
     <script src="TemplateData/UnityProgress.js"></script>
+
+    <script type="text/javascript">
+	    var processedUnload = false;
+	  
+	    var scorm = new Scorm("Scorm %UNITY_CUSTOM_SCORM_VERSION%");
+	    
+	    window.onbeforeunload = function(e) {
+	      doUnload();
+	    };
+
+	    window.onunload = function(e) {
+	      doUnload();
+	    };
+
+	    function doUnload() {
+	      if (processedUnload) return;
+
+	      processedUnload = true;
+
+	      SendMessage("ScormAPI", "Close");
+	    }
+  	</script>
+
   </head>
   <body class="template">
     <div id="PDFButton" style="text-align: center"></div>
