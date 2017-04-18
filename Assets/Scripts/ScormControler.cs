@@ -33,7 +33,7 @@ public class ScormControler : MonoBehaviour {
             ScormAPI.Instance.OnInitialized += () =>
             {
                 ScormAPI.Instance.SetMinScore(0f);
-                ScormAPI.Instance.SetMinScore(100f);
+                ScormAPI.Instance.SetMaxScore(100f);
                 ScormAPI.Instance.GetRawScore();
                 ScormAPI.Instance.Commit();
             };
