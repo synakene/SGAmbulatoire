@@ -1,0 +1,141 @@
+<scoreSG>
+  <user>
+    <id />
+    <lastname />
+    <firstname />
+  </user>
+  <APIkey>4H534-5J1FX-BFHZW-DEVRE</APIkey>
+  <scores>
+    <score>
+      <name>obj1</name>
+      <value>6</value>
+      <maxValue>9</maxValue>
+    </score>
+    <score>
+      <name>obj2</name>
+      <value>8</value>
+      <maxValue>17</maxValue>
+    </score>
+    <score>
+      <name>obj3</name>
+      <value>7</value>
+      <maxValue>15</maxValue>
+    </score>
+    <score>
+      <name>obj4</name>
+      <value>0</value>
+      <maxValue>0</maxValue>
+    </score>
+  </scores>
+  <time>0</time>
+  <totalScore>51</totalScore>
+  <data>
+    <question valid="false">
+      <asked>Comment entamez-vous la conversation ? [pic=2]</asked>
+      <answer>Bonjour, je viens procéder au recueil des données.</answer>
+      <goodAnswer>Bonjour, je suis Margaux, étudiante infirmière.</goodAnswer>
+      <feedback>- Vocabulaire inadapté. 
+ 
+- Ne pas se présenter engendre une situation anxiogène pour le patient.</feedback>
+    </question>
+    <question valid="true">
+      <asked>Bonjour, je viens procéder au recueil des données.</asked>
+      <answer>Je me présente.</answer>
+      <goodAnswer>Je me présente.</goodAnswer>
+      <feedback>- Instaure la relation de confiance. 
+ 
+- Rassure le patient.</feedback>
+    </question>
+    <question valid="false">
+      <asked>Excusez-moi. Je me présente, je suis Margaux, étudiante infirmière.</asked>
+      <answer>Je cherche à m’installer afin de réaliser le recueil de données.</answer>
+      <goodAnswer>J’explique au patient pourquoi je suis dans sa chambre.</goodAnswer>
+      <feedback>- N’explique pas le but de l’entretien, le patient sera moins attentif.</feedback>
+    </question>
+    <question valid="true">
+      <asked>Je viens vous poser quelques questions afin d'avoir les informations nécessaires avant votre opération.</asked>
+      <answer>Demander au patient de déplacer ses affaires. </answer>
+      <goodAnswer>Demander au patient de déplacer ses affaires. </goodAnswer>
+      <feedback>- Respect des effets personnels. 
+ 
+- Installation propice à une bonne communication (hauteur, distance des interlocuteurs).</feedback>
+    </question>
+    <question valid="true">
+      <asked>Margaux est interrompue par la sonnerie de téléphone du patient.</asked>
+      <answer>Demander au patient de poser son téléphone et de prêter attention aux questions.</answer>
+      <goodAnswer>Demander au patient de poser son téléphone et de prêter attention aux questions.</goodAnswer>
+      <feedback>Une attitude parfois dirigiste est nécessaire afin positionner votre interlocuteur comme patient.</feedback>
+    </question>
+    <question valid="true">
+      <asked>Comment procéder pour recueillir les informations ? [pic=2]</asked>
+      <answer>Vérifier l’identité du patient.</answer>
+      <goodAnswer>Vérifier l’identité du patient.</goodAnswer>
+      <feedback>
+      </feedback>
+    </question>
+    <question valid="true">
+      <asked>Vous devez vérifier l’identité du patient, comment procéder vous ? [pic=2]</asked>
+      <answer>Pour commencer, pouvez-vous me dire votre nom et pourquoi vous êtes ici ?</answer>
+      <goodAnswer>Pour commencer, pouvez-vous me dire votre nom et pourquoi vous êtes ici ?</goodAnswer>
+      <feedback>
+      </feedback>
+    </question>
+    <question valid="false">
+      <asked>Très bien M. Sainte-Marie, je vais maintenant vous examiner. [pic=3]</asked>
+      <answer>Prendre les paramètres vitaux.</answer>
+      <goodAnswer>Demander au patient s’il va bien.</goodAnswer>
+      <feedback>Vous n’avez pas porté suffisamment d’attention au patient et n’avez pas traité sa douleur.</feedback>
+    </question>
+    <question valid="true">
+      <asked>Suite à la prise des paramètres vitaux, vous constatez :
+- Tension artérielle : 150/100mmHg
+- Température : 36,2°C
+- Fréquence cardiaque : 95 batt/min
+- Saturation : 99 %
+D’après-vous, quel diagnostic peut être réalisé ? [pic=2]</asked>
+      <answer>Le patient a une hypertension et une tachycardie.</answer>
+      <goodAnswer>Le patient a une hypertension et une tachycardie.</goodAnswer>
+      <feedback>Effectivement, ce diagnostic est en adéquation avec la prise des paramètres vitaux.</feedback>
+    </question>
+    <question valid="true">
+      <asked>Posez un diagnostic. [pic=2]</asked>
+      <answer>Anxiété.</answer>
+      <goodAnswer>Anxiété.</goodAnswer>
+      <feedback>Vous avez bien repéré les signes de l’anxiété chez Mr Sainte-Marie, tremblements, se ronge les ongles, sueurs, douleurs abdominales, troubles du sommeil, tachycardie et hypertension.</feedback>
+    </question>
+    <question valid="true">
+      <asked>Vous savez maintenant que le patient est anxieux, que faites-vous ? [pic=2]</asked>
+      <answer>Vous essayer de connaître les raisons de son anxiété.</answer>
+      <goodAnswer>Vous essayer de connaître les raisons de son anxiété.</goodAnswer>
+      <feedback>
+      </feedback>
+    </question>
+    <question valid="true">
+      <asked>Dans quel ordre effectuez-vous la vérification des mesures d’hygiène ? [pic=2]</asked>
+      <answer>Enlever les bijoux du patient, dépilation chimique de la partie opérée, douche, tenue.</answer>
+      <goodAnswer>Enlever les bijoux du patient, dépilation chimique de la partie opérée, douche, tenue.</goodAnswer>
+      <feedback>
+      </feedback>
+    </question>
+    <question valid="true">
+      <asked>Que faire ? [pic=2]</asked>
+      <answer>Insister auprès de M. Sainte Marie pour qu'il enlève son bijou </answer>
+      <goodAnswer>Insister auprès de M. Sainte Marie pour qu'il enlève son bijou </goodAnswer>
+      <feedback>
+      </feedback>
+    </question>
+    <question valid="true">
+      <asked>Que faire ? [pic=2]</asked>
+      <answer>Expliquer le risque infectieux.</answer>
+      <goodAnswer>Expliquer le risque infectieux.</goodAnswer>
+      <feedback>Pour prévenir le risque infectieux, les deux douches sont obligatoires.</feedback>
+    </question>
+    <question valid="true">
+      <asked>Quel est votre diagnostic ? [pic=2]</asked>
+      <answer>Réaction allergique à l’iode.</answer>
+      <goodAnswer>Réaction allergique à l’iode.</goodAnswer>
+      <feedback>
+      </feedback>
+    </question>
+  </data>
+</scoreSG>

@@ -47,6 +47,8 @@ public static class Data {
     public static List<Feedback> allFeedback;
     public static CompleteFeedback CompleteFeedback;
     public static string playerName = "";
+	public static string learnerName = "";
+	public static string learnerId = "";
 
     // Description scenes (for feedbacks)
     public static string S1 = "Présentation du patient";

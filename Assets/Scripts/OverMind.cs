@@ -19,7 +19,10 @@ public class OverMind : MonoBehaviour {
     // Models
     public BlockNote blockNote;
 
+	private float startTime;
+
 	void Awake () {
+		startTime = Time.time;
         // Feedback
         Data.CompleteFeedback = new CompleteFeedback();
         Parser.ParseFeedback();
@@ -33,7 +36,15 @@ public class OverMind : MonoBehaviour {
         ScoreView = new ScoreView();
     }
 
-    public void QCM (string num)
+	private void OnDestroy()
+	{
+		float time = Time.time - startTime;
+		Data.min = (int) time / 60;
+		Data.sec = (int) time % 60;
+		print(Data.min + " min " + Data.sec);
+	}
+
+	public void QCM (string num)
     {
         canvasDialogue.GetComponent<Canvas>().enabled = false;
         headerCanvas.GetComponent<Canvas>().enabled = false;
