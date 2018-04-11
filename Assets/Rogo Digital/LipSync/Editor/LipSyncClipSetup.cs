@@ -1,22 +1,27 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections;
 using System.Collections.Generic;
 using RogoDigital;
 using RogoDigital.Lipsync;
 using System;
 using System.IO;
 using System.Xml;
-using System.Text;
 
 public class LipSyncClipSetup : ModalParent {
+	public static LipSyncClipEditorMenuDelegate onDrawTopMenuBar;
+	public static LipSyncClipEditorMenuItemDelegate onDrawFileMenu;
+	public static LipSyncClipEditorMenuItemDelegate onDrawEditMenu;
+	public static LipSyncClipEditorMenuItemDelegate onDrawAutoSyncMenu;
+	public static LipSyncClipEditorMenuItemDelegate onDrawHelpMenu;
 
 	public AudioClip clip;
 
-	private const float version = 1;
-	private const string versionNumber = "Pro 1.0";
+	private const float version = 1.2f;
+	private const string versionNumber = "Pro 1.201";
 
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
 	private Texture2D waveform;
+#endif
 	private float seekPosition;
 
 	private bool isPlaying = false;
@@ -44,6 +49,7 @@ public class LipSyncClipSetup : ModalParent {
 	private float[] selectionOffsets;
 	private float[] sequentialStartOffsets;
 	private float[] sequentialEndOffsets;
+	private Rect selectionRect = new Rect(0, 0, 0, 0);
 
 	private int currentMarker = -1;
 	private int highlightedMarker = -1;
@@ -67,10 +73,8 @@ public class LipSyncClipSetup : ModalParent {
 	private EmotionMarker previousMarker = null;
 
 	private string lastLoad = "";
-	private string fileName = "Untitled";
+	public string fileName = "Untitled";
 	public bool changed = false;
-
-	private bool waitingForKeyUp;
 
 	private Texture2D playhead_top;
 	private Texture2D playhead_line;
@@ -88,6 +92,7 @@ public class LipSyncClipSetup : ModalParent {
 	private Texture2D marker_normal;
 	private Texture2D marker_hover;
 	private Texture2D marker_selected;
+	private Texture2D marker_sustained;
 	private Texture2D marker_line;
 
 	private Texture2D emotion_start;
@@ -123,6 +128,8 @@ public class LipSyncClipSetup : ModalParent {
 
 	private LipSyncProject settings;
 	private bool settingsOpen = false;
+	private Vector2 settingsScroll;
+	private int settingsTab = 0;
 
 	private bool visualPreview = false;
 	private LipSync previewTarget = null;
@@ -138,15 +145,21 @@ public class LipSyncClipSetup : ModalParent {
 	private float snappingDistance;
 	private bool snapping;
 	private bool setViewportOnLoad;
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
 	private int maxWaveformWidth;
+#endif
 	private bool showExtensionsOnLoad;
 	private bool showTimeline;
 	private float scrubLength;
 	private float volume;
 
-	private Vector2 settingsScroll;
+	private RDEditorShortcut.Action[] shortcutActions;
+	private RDEditorShortcut[] keyboardShortcuts;
+	private bool shortcutsChanged;
 
-	void OnEnable() {
+	private Rect previewRect;
+
+	void OnEnable () {
 		//Load Resources;
 		playhead_top = (Texture2D)EditorGUIUtility.Load("Rogo Digital/LipSync/Playhead_top.png");
 		playhead_line = (Texture2D)EditorGUIUtility.Load("Rogo Digital/LipSync/Playhead_middle.png");
@@ -155,6 +168,7 @@ public class LipSyncClipSetup : ModalParent {
 		marker_normal = (Texture2D)EditorGUIUtility.Load("Rogo Digital/LipSync/marker.png");
 		marker_hover = (Texture2D)EditorGUIUtility.Load("Rogo Digital/LipSync/marker-selected.png");
 		marker_selected = (Texture2D)EditorGUIUtility.Load("Rogo Digital/LipSync/marker-highlight.png");
+		marker_sustained = (Texture2D)EditorGUIUtility.Load("Rogo Digital/LipSync/marker-sustain.png");
 		marker_line = (Texture2D)EditorGUIUtility.Load("Rogo Digital/Shared/white.png");
 		indicator = (Texture2D)EditorGUIUtility.Load("Rogo Digital/LipSync/indicator.png");
 
@@ -197,7 +211,17 @@ public class LipSyncClipSetup : ModalParent {
 		}
 
 		//Get Settings File
-		settings = (LipSyncProject)AssetDatabase.LoadAssetAtPath("Assets/Rogo Digital/LipSync/ProjectSettings.asset", typeof(LipSyncProject));
+		string[] guids = AssetDatabase.FindAssets("ProjectSettings t:LipSyncProject");
+		string path = "";
+
+		if (guids.Length > 0) {
+			path = AssetDatabase.GUIDToAssetPath(guids[0]);
+
+			if (guids.Length > 1) Debug.LogWarning("LipSync: Multiple LipSyncProject files found. Only one will be used.");
+		}
+
+		settings = (LipSyncProject)AssetDatabase.LoadAssetAtPath(path, typeof(LipSyncProject));
+
 		if (settings == null) {
 			settings = ScriptableObject.CreateInstance<LipSyncProject>();
 
@@ -219,7 +243,9 @@ public class LipSyncClipSetup : ModalParent {
 		setViewportOnLoad = EditorPrefs.GetBool("LipSync_SetViewportOnLoad", true);
 		showTimeline = EditorPrefs.GetBool("LipSync_ShowTimeline", true);
 		showExtensionsOnLoad = EditorPrefs.GetBool("LipSync_ShowExtensionsOnLoad", true);
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
 		maxWaveformWidth = EditorPrefs.GetInt("LipSync_MaxWaveformWidth", 2048);
+#endif
 		scrubLength = EditorPrefs.GetFloat("LipSync_ScrubLength", 0.075f);
 		volume = EditorPrefs.GetFloat("LipSync_Volume", 1f);
 		defaultLanguageModel = EditorPrefs.GetInt("LipSync_DefaultLanguageModel", 0);
@@ -244,29 +270,94 @@ public class LipSyncClipSetup : ModalParent {
 			snapping = false;
 		}
 
+		// Define Rebindable Actions
+		shortcutActions = new RDEditorShortcut.Action[] {
+			new RDEditorShortcut.Action("New File", OnNewClick),
+			new RDEditorShortcut.Action("Open File", OnLoadClick),
+			new RDEditorShortcut.Action("Import XML", OnXMLImport),
+			new RDEditorShortcut.Action("Save", OnSaveClick),
+			new RDEditorShortcut.Action("Save As", OnSaveAsClick),
+			new RDEditorShortcut.Action("Export (Unitypackage)", OnUnityExport),
+			new RDEditorShortcut.Action("Export (XML)", OnXMLExport),
+			new RDEditorShortcut.Action("Show Project Settings", ShowProjectSettings),
+			new RDEditorShortcut.Action("Close Window", Close),
+			new RDEditorShortcut.Action("Select All", SelectAll),
+			new RDEditorShortcut.Action("Select None", SelectNone),
+			new RDEditorShortcut.Action("Invert Selection", InvertSelection),
+			new RDEditorShortcut.Action("Show Clip Settings", ClipSettings),
+			new RDEditorShortcut.Action("AutoSync (Default Settings)", StartAutoSync),
+			new RDEditorShortcut.Action("AutoSync (Custom Settings)", ()=> { OpenAutoSyncWindow(0); }),
+			new RDEditorShortcut.Action("AutoSync Batch Process", ()=> { OpenAutoSyncWindow(1); }),
+			new RDEditorShortcut.Action("Open Extensions Window", RDExtensionWindow.ShowWindow),
+			new RDEditorShortcut.Action("Seek Backwards 1%", ()=> { seekPosition -= 0.01f; }),
+			new RDEditorShortcut.Action("Seek Forwards 1%", ()=> { seekPosition += 0.01f; }),
+			new RDEditorShortcut.Action("Add AI Phoneme", ()=> { PhonemePicked(new object[] { Phoneme.AI, seekPosition }); }),
+			new RDEditorShortcut.Action("Add E Phoneme", ()=> { PhonemePicked(new object[] { Phoneme.E, seekPosition }); }),
+			new RDEditorShortcut.Action("Add U Phoneme", ()=> { PhonemePicked(new object[] { Phoneme.U, seekPosition }); }),
+			new RDEditorShortcut.Action("Add O Phoneme", ()=> { PhonemePicked(new object[] { Phoneme.O, seekPosition }); }),
+			new RDEditorShortcut.Action("Add CDG...etc Phoneme", ()=> { PhonemePicked(new object[] { Phoneme.CDGKNRSThYZ, seekPosition }); }),
+			new RDEditorShortcut.Action("Add FV Phoneme", ()=> { PhonemePicked(new object[] { Phoneme.FV, seekPosition }); }),
+			new RDEditorShortcut.Action("Add L Phoneme", ()=> { PhonemePicked(new object[] { Phoneme.L, seekPosition }); }),
+			new RDEditorShortcut.Action("Add MBP Phoneme", ()=> { PhonemePicked(new object[] { Phoneme.MBP, seekPosition }); }),
+			new RDEditorShortcut.Action("Add WQ Phoneme", ()=> { PhonemePicked(new object[] { Phoneme.WQ, seekPosition }); }),
+			new RDEditorShortcut.Action("Go To Phonemes Tab", ()=> { markerTab = 0; }),
+			new RDEditorShortcut.Action("Go To Emotions Tab", ()=> { markerTab = 1; }),
+			new RDEditorShortcut.Action("Go To Gestures Tab", ()=> { markerTab = 2; }),
+			new RDEditorShortcut.Action("Toggle Settings Page", ()=> { settingsOpen = !settingsOpen; }),
+			new RDEditorShortcut.Action("Play/Pause", PlayPause),
+			new RDEditorShortcut.Action("Stop", Stop),
+			new RDEditorShortcut.Action("Loop", ()=> { looping = !looping; })
+		};
+
+		// Set Default Shortcuts
+		SetDefaultShortcuts();
+
+		keyboardShortcuts = RDEditorShortcut.Deserialize("LipSync", shortcutActions, keyboardShortcuts);
+		if (keyboardShortcuts == null) keyboardShortcuts = new RDEditorShortcut[0];
+
 		if (languageModelNames == null) {
 			languageModelNames = AutoSyncLanguageModel.FindModels();
 		}
 
+
 		SceneView.onSceneGUIDelegate += OnSceneGUI;
-		
+
 		selection = new List<int>();
+		selectionOffsets = new float[0];
 		oldPos = this.position;
 		oldClip = clip;
 	}
 
-	void OnDisable() {
+	private void SetDefaultShortcuts () {
+		keyboardShortcuts = new RDEditorShortcut[] {
+			new RDEditorShortcut(9, KeyCode.A, EventModifiers.Control),
+			new RDEditorShortcut(3, KeyCode.S, EventModifiers.Control),
+			new RDEditorShortcut(17, KeyCode.Comma, EventModifiers.Shift),
+			new RDEditorShortcut(18, KeyCode.Period, EventModifiers.Shift),
+			new RDEditorShortcut(19, KeyCode.A, (EventModifiers.Control | EventModifiers.Shift)),
+			new RDEditorShortcut(20, KeyCode.E, (EventModifiers.Control | EventModifiers.Shift)),
+			new RDEditorShortcut(21, KeyCode.U, (EventModifiers.Control | EventModifiers.Shift)),
+			new RDEditorShortcut(22, KeyCode.O, (EventModifiers.Control | EventModifiers.Shift)),
+			new RDEditorShortcut(23, KeyCode.C, (EventModifiers.Control | EventModifiers.Shift)),
+			new RDEditorShortcut(24, KeyCode.F, (EventModifiers.Control | EventModifiers.Shift)),
+			new RDEditorShortcut(25, KeyCode.L, (EventModifiers.Control | EventModifiers.Shift)),
+			new RDEditorShortcut(26, KeyCode.M, (EventModifiers.Control | EventModifiers.Shift)),
+			new RDEditorShortcut(27, KeyCode.W, (EventModifiers.Control | EventModifiers.Shift)),
+		};
+	}
+
+	void OnDisable () {
 		if (previewTarget != null) {
 			UpdatePreview(0);
 			previewTarget = null;
 		}
 	}
 
-	void OnSceneGUI(SceneView sceneView) {
+	void OnSceneGUI (SceneView sceneView) {
 		if (visualPreview) {
 			Camera cam = sceneView.camera;
 			Handles.BeginGUI();
-			
+
 			Rect bottom = new Rect(0, cam.pixelHeight - 3, cam.pixelWidth, 3);
 			GUI.DrawTexture(bottom, preview_bar);
 
@@ -275,67 +366,9 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	public override void OnModalGUI() {
+	public override void OnModalGUI () {
 		GUIStyle centeredStyle = new GUIStyle(EditorStyles.whiteLabel);
 		centeredStyle.alignment = TextAnchor.MiddleCenter;
-
-		// Keyboard Shortucts
-		if (Event.current.type != EventType.Repaint) {
-			Event e = Event.current;
-
-			if (!waitingForKeyUp) {
-				if (e.modifiers == EventModifiers.Control) {
-					if (e.keyCode == KeyCode.A) {
-						SelectAll();
-						waitingForKeyUp = true;
-					} else if (e.keyCode == KeyCode.S) {
-						OnSaveClick();
-						waitingForKeyUp = true;
-					}
-				} else if (e.modifiers == EventModifiers.Shift) {
-					if (e.keyCode == KeyCode.Comma) {
-						seekPosition = Mathf.Clamp01(seekPosition - 0.01f);
-						waitingForKeyUp = true;
-					} else if (e.keyCode == KeyCode.Period) {
-						seekPosition = Mathf.Clamp01(seekPosition + 0.01f);
-						waitingForKeyUp = true;
-					}
-				} else if (e.modifiers == (EventModifiers.Control | EventModifiers.Shift)) {
-					if (e.keyCode == KeyCode.A) {
-						PhonemePicked(new object[] { Phoneme.AI, seekPosition });
-						waitingForKeyUp = true;
-					} else if (e.keyCode == KeyCode.E) {
-						PhonemePicked(new object[] { Phoneme.E, seekPosition });
-						waitingForKeyUp = true;
-					} else if (e.keyCode == KeyCode.U) {
-						PhonemePicked(new object[] { Phoneme.U, seekPosition });
-						waitingForKeyUp = true;
-					} else if (e.keyCode == KeyCode.O) {
-						PhonemePicked(new object[] { Phoneme.O, seekPosition });
-						waitingForKeyUp = true;
-					} else if (e.keyCode == KeyCode.C) {
-						PhonemePicked(new object[] { Phoneme.CDGKNRSThYZ, seekPosition });
-						waitingForKeyUp = true;
-					} else if (e.keyCode == KeyCode.F) {
-						PhonemePicked(new object[] { Phoneme.FV, seekPosition });
-						waitingForKeyUp = true;
-					} else if (e.keyCode == KeyCode.L) {
-						PhonemePicked(new object[] { Phoneme.L, seekPosition });
-						waitingForKeyUp = true;
-					} else if (e.keyCode == KeyCode.M) {
-						PhonemePicked(new object[] { Phoneme.MBP, seekPosition });
-						waitingForKeyUp = true;
-					} else if (e.keyCode == KeyCode.W) {
-						PhonemePicked(new object[] { Phoneme.WQ, seekPosition });
-						waitingForKeyUp = true;
-					}
-				}
-			} else {
-				if (e.type == EventType.KeyUp) {
-					waitingForKeyUp = false;
-				}
-			}
-		}
 
 		//Toolbar
 		Rect topToolbarRect = EditorGUILayout.BeginHorizontal();
@@ -348,7 +381,7 @@ public class LipSyncClipSetup : ModalParent {
 			fileMenu.AddItem(new GUIContent("Open File"), false, OnLoadClick);
 			fileMenu.AddItem(new GUIContent("Import XML"), false, OnXMLImport);
 			fileMenu.AddSeparator("");
-			if (clip && phonemeData.Count > 0 || clip && emotionData.Count > 0) {
+			if (phonemeData.Count > 0 || emotionData.Count > 0 || gestureData.Count > 0) {
 				fileMenu.AddItem(new GUIContent("Save"), false, OnSaveClick);
 				fileMenu.AddItem(new GUIContent("Save As"), false, OnSaveAsClick);
 				fileMenu.AddItem(new GUIContent("Export"), false, OnUnityExport);
@@ -360,6 +393,12 @@ public class LipSyncClipSetup : ModalParent {
 				fileMenu.AddDisabledItem(new GUIContent("Export XML"));
 			}
 			fileMenu.AddSeparator("");
+
+			if (onDrawFileMenu != null) {
+				onDrawFileMenu.Invoke(this, fileMenu);
+				fileMenu.AddSeparator("");
+			}
+
 			fileMenu.AddItem(new GUIContent("Project Settings"), false, ShowProjectSettings);
 			fileMenu.AddSeparator("");
 			fileMenu.AddItem(new GUIContent("Exit"), false, Close);
@@ -380,7 +419,7 @@ public class LipSyncClipSetup : ModalParent {
 				} else {
 					editMenu.AddDisabledItem(new GUIContent("Set Intensity From Volume"));
 				}
-				
+
 				editMenu.AddItem(new GUIContent("Reset Intensities"), false, ResetIntensities);
 			} else if (markerTab == 1) {
 				editMenu.AddItem(new GUIContent("Remove Missing Emotions"), false, RemoveMissingEmotions);
@@ -390,6 +429,12 @@ public class LipSyncClipSetup : ModalParent {
 			}
 			editMenu.AddSeparator("");
 			editMenu.AddItem(new GUIContent("Clip Settings"), false, ClipSettings);
+			if (onDrawEditMenu != null) {
+				editMenu.AddSeparator("");
+				onDrawEditMenu.Invoke(this, editMenu);
+				editMenu.AddSeparator("");
+			}
+
 			editMenu.DropDown(editRect);
 		}
 		GUILayout.EndHorizontal();
@@ -402,13 +447,13 @@ public class LipSyncClipSetup : ModalParent {
 			autoMenu.AddSeparator("");
 			if (clip != null) {
 				autoMenu.AddItem(new GUIContent("Start (Default Settings)"), false, StartAutoSync);
-				autoMenu.AddItem(new GUIContent("Custom Settings"), false, StartAutoSyncText , 0);
+				autoMenu.AddItem(new GUIContent("Custom Settings"), false, OpenAutoSyncWindow, 0);
 			} else {
 				autoMenu.AddDisabledItem(new GUIContent("Start (Default Settings)"));
 				autoMenu.AddDisabledItem(new GUIContent("Custom Settings"));
 			}
 			autoMenu.AddSeparator("");
-			autoMenu.AddItem(new GUIContent("Batch Process"), false, StartAutoSyncText, 1);
+			autoMenu.AddItem(new GUIContent("Batch Process"), false, OpenAutoSyncWindow, 1);
 			autoMenu.DropDown(autoRect);
 		}
 		GUILayout.EndHorizontal();
@@ -419,14 +464,19 @@ public class LipSyncClipSetup : ModalParent {
 			helpMenu.AddDisabledItem(new GUIContent("LipSync " + versionNumber));
 			helpMenu.AddDisabledItem(new GUIContent("© Rogo Digital " + DateTime.Now.Year.ToString()));
 			helpMenu.AddSeparator("");
-			helpMenu.AddItem(new GUIContent("Get LipSync Extensions"), false, RDExtensionWindow.ShowWindowGeneric, "LipSync");
+			helpMenu.AddItem(new GUIContent("Get LipSync Extensions"), false, RDExtensionWindow.ShowWindowGeneric, "LipSync_Pro");
 			helpMenu.AddSeparator("");
 			helpMenu.AddItem(new GUIContent("Forum Thread"), false, OpenURL, "http://forum.unity3d.com/threads/beta-lipsync-a-flexible-lipsyncing-and-facial-animation-system.309324/");
 			helpMenu.AddItem(new GUIContent("Email Support"), false, OpenURL, "mailto:contact@rogodigital.com");
-
+			if (onDrawHelpMenu != null) {
+				helpMenu.AddSeparator("");
+				onDrawHelpMenu.Invoke(this, helpMenu);
+				helpMenu.AddSeparator("");
+			}
 			helpMenu.DropDown(helpRect);
 		}
 		GUILayout.EndHorizontal();
+		if (onDrawTopMenuBar != null) onDrawTopMenuBar.Invoke(this);
 		GUILayout.FlexibleSpace();
 		if (changed == true) {
 			GUILayout.Box(fileName + "*", EditorStyles.label);
@@ -436,10 +486,21 @@ public class LipSyncClipSetup : ModalParent {
 		GUILayout.FlexibleSpace();
 
 		settingsOpen = GUILayout.Toggle(settingsOpen, new GUIContent(settingsIcon, "Settings"), EditorStyles.toolbarButton, GUILayout.MaxWidth(40));
-		bool oldPreview = visualPreview;
-		visualPreview = GUILayout.Toggle(visualPreview, new GUIContent(previewIcon, "Realtime Preview"), EditorStyles.toolbarButton, GUILayout.MaxWidth(40));
-		if (visualPreview != oldPreview) {
-			SceneView.RepaintAll();
+
+		bool newPreviewState = GUILayout.Toggle(visualPreview, new GUIContent(previewIcon, "Realtime Preview"), EditorStyles.toolbarButton, GUILayout.MaxWidth(40));
+		if (visualPreview != newPreviewState) {
+			GenericMenu previewMenu = new GenericMenu();
+
+			previewMenu.AddDisabledItem(new GUIContent("Choose a target"));
+
+			LipSync[] targets = GameObject.FindObjectsOfType<LipSync>();
+
+			previewMenu.AddItem(new GUIContent("No Preview"), !visualPreview, TargetChosen, null);
+			foreach (LipSync t in targets) {
+				previewMenu.AddItem(new GUIContent(t.name), previewTarget == t ? true : false, TargetChosen, t);
+			}
+
+			previewMenu.ShowAsContext();
 		}
 
 		GUILayout.Space(20);
@@ -447,129 +508,223 @@ public class LipSyncClipSetup : ModalParent {
 		GUILayout.Box("", EditorStyles.toolbar);
 		EditorGUILayout.EndHorizontal();
 
+		// Keyboard Shortucts
+		if (Event.current.type == EventType.KeyUp) {
+			Event e = Event.current;
+
+			for (int i = 0; i < keyboardShortcuts.Length; i++) {
+				if (e.keyCode == keyboardShortcuts[i].key && e.modifiers == keyboardShortcuts[i].modifiers) {
+					shortcutActions[keyboardShortcuts[i].action].action.Invoke();
+					e.Use();
+					break;
+				}
+			}
+		}
+
 		if (settingsOpen) {
 			//Settings Screen
+			GUILayout.Space(10);
+			LipSyncEditorExtensions.BeginPaddedHorizontal(20);
+			settingsTab = GUILayout.Toolbar(settingsTab, new string[] { "General", "Editing", "Keyboard Shortcuts" }, GUILayout.MaxWidth(700));
+			LipSyncEditorExtensions.EndPaddedHorizontal(20);
 			settingsScroll = GUILayout.BeginScrollView(settingsScroll);
 			GUILayout.Space(10);
-			GUILayout.Box("Settings", EditorStyles.largeLabel);
-			GUILayout.Space(15);
-			GUILayout.Box("Emotion Editing", EditorStyles.boldLabel);
-			EditorGUILayout.BeginHorizontal();
-			bool oldsnapping = snapping;
-			snapping = GUILayout.Toggle(snapping, "Emotion Snapping");
-			if (oldsnapping != snapping) {
-				EditorPrefs.SetBool("LipSync_Snapping", snapping);
-				snappingDistance = 0;
-			}
-			if (snapping) {
-				GUILayout.Space(10);
-				float oldSnappingDistance = snappingDistance;
-				snappingDistance = EditorGUILayout.Slider(new GUIContent("Snapping Distance", "The strength of the emotion snapping."), (snappingDistance * 200), 0, 10) / 200;
-				GUILayout.FlexibleSpace();
-				if (oldSnappingDistance != snappingDistance) {
-					EditorPrefs.SetFloat("LipSync_SnappingDistance", snappingDistance);
-				}
-			}
-			EditorGUILayout.EndHorizontal();
-			EditorGUILayout.BeginHorizontal();
-			bool oldcolors = useColors;
-			useColors = GUILayout.Toggle(useColors, "Use Emotion Colors");
-			if (oldcolors != useColors) {
-				EditorPrefs.SetBool("LipSync_UseColors", useColors);
-			}
-			if (!useColors) {
-				GUILayout.Space(10);
-				int oldColour = defaultColor;
-				defaultColor = ColorToHex(EditorGUILayout.ColorField("Default Color", HexToColor(defaultColor)));
-				GUILayout.FlexibleSpace();
-				if (oldColour != defaultColor) {
-					EditorPrefs.SetInt("LipSync_DefaultColor", defaultColor);
-				}
-			}
-			EditorGUILayout.EndHorizontal();
-			GUILayout.Space(15);
-			GUILayout.Box("AutoSync Settings", EditorStyles.boldLabel);
-			if (languageModelNames.Length > 0) {
-				int oldLanguageModel = defaultLanguageModel;
-				defaultLanguageModel = EditorGUILayout.Popup("Default Language Model", defaultLanguageModel, languageModelNames, GUILayout.MaxWidth(300));
-				if (oldLanguageModel != defaultLanguageModel) {
-					EditorPrefs.SetInt("LipSync_DefaultLanguageModel", defaultLanguageModel);
-				}
-			} else {
-				EditorGUILayout.HelpBox("No language models found. You can download language models from the extensions window or the LipSync website.", MessageType.Warning);
-			}
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Label("SoX Path");
-			GUILayout.Space(5);
-			GUI.color = soXAvailable ? Color.green : Color.red;
-			GUILayout.Box(new GUIContent(indicator, soXAvailable?"SoX is installed. Audio conversion available.":"SoX is not installed."), GUIStyle.none);
-			GUI.color = Color.white;
-			GUILayout.Space(10);
-			soXPath = EditorGUILayout.TextField(soXPath);
-			if (GUILayout.Button("Browse")) {
-				string path = EditorUtility.OpenFilePanel("Find SoX Application", "", "");
-				if (!string.IsNullOrEmpty(path)) soXPath = path;
-			}
-			GUILayout.Space(5);
-			if (GUILayout.Button("Verify")) {
-				EditorPrefs.SetString("LipSync_SoXPath", soXPath);
+			switch (settingsTab) {
+				case 0:
+					GUILayout.Box("General Settings", EditorStyles.boldLabel);
+					bool oldUpdate = continuousUpdate;
+					continuousUpdate = GUILayout.Toggle(continuousUpdate, new GUIContent("Continuous Update", "Whether to update the window every frame. This makes editing more responsive, but may be taxing on low-powered systems."));
+					if (oldUpdate != continuousUpdate) {
+						EditorPrefs.SetBool("LipSync_ContinuousUpdate", continuousUpdate);
+					}
 
-				soXAvailable = AutoSync.CheckSoX();
-				EditorPrefs.SetBool("LipSync_SoXAvailable", soXAvailable);
+					bool oldSetViewportOnLoad = setViewportOnLoad;
+					setViewportOnLoad = GUILayout.Toggle(setViewportOnLoad, new GUIContent("Set Viewport on File Load", "Whether to set the viewport to show the entire clip when a new file is loaded."));
+					if (oldSetViewportOnLoad != setViewportOnLoad) {
+						EditorPrefs.SetBool("LipSync_SetViewportOnLoad", setViewportOnLoad);
+					}
 
-				if (soXAvailable) {
-					ShowNotification(new GUIContent("Verification Successful. SoX is installed."));
-				} else {
-					ShowNotification(new GUIContent("Verification Failed. Incorrect File."));
-				}
-			}
-			GUILayout.FlexibleSpace();
-			EditorGUILayout.EndHorizontal();
+					bool oldShowTimeline = showTimeline;
+					showTimeline = GUILayout.Toggle(showTimeline, new GUIContent("Show Time Markers", "Whether to show time markers under the timeline."));
+					if (oldShowTimeline != showTimeline) {
+						EditorPrefs.SetBool("LipSync_ShowTimeline", showTimeline);
+					}
 
-			GUILayout.Space(15);
-			GUILayout.Box("General Settings", EditorStyles.boldLabel);
-			bool oldUpdate = continuousUpdate;
-			continuousUpdate = GUILayout.Toggle(continuousUpdate, new GUIContent("Continuous Update", "Whether to update the window every frame. This makes editing more responsive, but may be taxing on low-powered systems."));
-			if (oldUpdate != continuousUpdate) {
-				EditorPrefs.SetBool("LipSync_ContinuousUpdate", continuousUpdate);
-			}
+					float oldScrubLength = scrubLength;
+					scrubLength = EditorGUILayout.FloatField(new GUIContent("Scrubbing Preview Length", "The duration, in seconds, the clip will be played for when scrubbing."), scrubLength, GUILayout.MaxWidth(300));
+					if (oldScrubLength != scrubLength) {
+						EditorPrefs.SetFloat("LipSync_ScrubLength", scrubLength);
+					}
 
-			bool oldSetViewportOnLoad = setViewportOnLoad;
-			setViewportOnLoad = GUILayout.Toggle(setViewportOnLoad, new GUIContent("Set Viewport on File Load", "Whether to set the viewport to show the entire clip when a new file is loaded."));
-			if (oldSetViewportOnLoad != setViewportOnLoad) {
-				EditorPrefs.SetBool("LipSync_SetViewportOnLoad", setViewportOnLoad);
-			}
+					float oldVolume = volume;
+					volume = EditorGUILayout.Slider(new GUIContent("Preview Volume"), volume, 0, 1, GUILayout.MaxWidth(300));
+					if (oldVolume != volume) {
+						EditorPrefs.SetFloat("LipSync_Volume", volume);
+						AudioUtility.SetVolume(volume);
+					}
+					GUILayout.Space(10);
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
+					int oldMaxWaveformWidth = maxWaveformWidth;
+					maxWaveformWidth = EditorGUILayout.IntField(new GUIContent("Max Waveform Width", "The Maximum width for the waveform preview image. Warning: very high values can cause crashes when zooming in on the clip."), maxWaveformWidth, GUILayout.MaxWidth(300));
+					if (oldMaxWaveformWidth != maxWaveformWidth) {
+						EditorPrefs.SetInt("LipSync_MaxWaveformWidth", maxWaveformWidth);
+					}
+#endif
+					bool oldShowExtensionsOnLoad = showExtensionsOnLoad;
+					showExtensionsOnLoad = GUILayout.Toggle(showExtensionsOnLoad, new GUIContent("Show Extensions Window", "Whether to automatically dock an extensions window to this one when it is opened."));
+					if (oldShowExtensionsOnLoad != showExtensionsOnLoad) {
+						EditorPrefs.SetBool("LipSync_ShowExtensionsOnLoad", showExtensionsOnLoad);
+					}
+					GUILayout.Space(15);
+					GUILayout.Box("AutoSync Settings", EditorStyles.boldLabel);
+					if (languageModelNames.Length > 0) {
+						int oldLanguageModel = defaultLanguageModel;
+						defaultLanguageModel = EditorGUILayout.Popup("Default Language Model", defaultLanguageModel, languageModelNames, GUILayout.MaxWidth(300));
+						if (oldLanguageModel != defaultLanguageModel) {
+							EditorPrefs.SetInt("LipSync_DefaultLanguageModel", defaultLanguageModel);
+						}
+					} else {
+						EditorGUILayout.HelpBox("No language models found. You can download language models from the extensions window or the LipSync website.", MessageType.Warning);
+					}
+					EditorGUILayout.BeginHorizontal();
+					GUILayout.Label("SoX Path");
+					GUILayout.Space(5);
+					GUI.color = soXAvailable ? Color.green : Color.red;
+					GUILayout.Box(new GUIContent(indicator, soXAvailable ? "SoX is installed. Audio conversion available." : "SoX is not installed."), GUIStyle.none);
+					GUI.color = Color.white;
+					GUILayout.Space(10);
+					soXPath = EditorGUILayout.TextField(soXPath);
+					if (GUILayout.Button("Browse")) {
+						string path = EditorUtility.OpenFilePanel("Find SoX Application", "", "");
+						if (!string.IsNullOrEmpty(path)) soXPath = path;
+					}
+					GUILayout.Space(5);
+					if (GUILayout.Button("Verify")) {
+						EditorPrefs.SetString("LipSync_SoXPath", soXPath);
 
-			bool oldShowTimeline = showTimeline;
-			showTimeline = GUILayout.Toggle(showTimeline, new GUIContent("Show Time Markers", "Whether to show time markers under the timeline."));
-			if (oldShowTimeline != showTimeline) {
-				EditorPrefs.SetBool("LipSync_ShowTimeline", showTimeline);
-			}
+						soXAvailable = AutoSync.CheckSoX();
+						EditorPrefs.SetBool("LipSync_SoXAvailable", soXAvailable);
 
-			float oldScrubLength = scrubLength;
-			scrubLength = EditorGUILayout.FloatField(new GUIContent("Scrubbing Preview Length", "The duration, in seconds, the clip will be played for when scrubbing."), scrubLength, GUILayout.MaxWidth(300));
-			if (oldScrubLength != scrubLength) {
-				EditorPrefs.SetFloat("LipSync_ScrubLength", scrubLength);
-			}
+						if (soXAvailable) {
+							ShowNotification(new GUIContent("Verification Successful. SoX is installed."));
+						} else {
+							ShowNotification(new GUIContent("Verification Failed. Incorrect File."));
+						}
+					}
+					GUILayout.FlexibleSpace();
+					EditorGUILayout.EndHorizontal();
+					break;
+				case 1:
+					GUILayout.Box("Emotion Editing", EditorStyles.boldLabel);
+					EditorGUILayout.BeginHorizontal();
+					bool oldsnapping = snapping;
+					snapping = GUILayout.Toggle(snapping, "Emotion Snapping");
+					if (oldsnapping != snapping) {
+						EditorPrefs.SetBool("LipSync_Snapping", snapping);
+						snappingDistance = 0;
+					}
+					if (snapping) {
+						GUILayout.Space(10);
+						float oldSnappingDistance = snappingDistance;
+						snappingDistance = EditorGUILayout.Slider(new GUIContent("Snapping Distance", "The strength of the emotion snapping."), (snappingDistance * 200), 0, 10) / 200;
+						GUILayout.FlexibleSpace();
+						if (oldSnappingDistance != snappingDistance) {
+							EditorPrefs.SetFloat("LipSync_SnappingDistance", snappingDistance);
+						}
+					}
+					EditorGUILayout.EndHorizontal();
+					EditorGUILayout.BeginHorizontal();
+					bool oldcolors = useColors;
+					useColors = GUILayout.Toggle(useColors, "Use Emotion Colors");
+					if (oldcolors != useColors) {
+						EditorPrefs.SetBool("LipSync_UseColors", useColors);
+					}
+					if (!useColors) {
+						GUILayout.Space(10);
+						int oldColour = defaultColor;
+						defaultColor = ColorToHex(EditorGUILayout.ColorField("Default Color", HexToColor(defaultColor)));
+						GUILayout.FlexibleSpace();
+						if (oldColour != defaultColor) {
+							EditorPrefs.SetInt("LipSync_DefaultColor", defaultColor);
+						}
+					}
+					EditorGUILayout.EndHorizontal();
+					break;
+				case 2:
+					GUILayout.Box("Keyboard Shortcut Rebinding", EditorStyles.boldLabel);
+					GUILayout.Space(7);
+					if (shortcutsChanged) EditorGUILayout.HelpBox("You have made changes to the keyboard shortcuts. Press Save Shortcuts to avoid losing them.", MessageType.Warning);
+					GUILayout.Space(7);
+					if (keyboardShortcuts.Length == 0) GUILayout.Box("No Keyboard Shortcuts!", EditorStyles.centeredGreyMiniLabel);
 
-			float oldVolume = volume;
-			volume = EditorGUILayout.Slider(new GUIContent("Preview Volume"), volume, 0, 1, GUILayout.MaxWidth(300));
-			if (oldVolume != volume) {
-				EditorPrefs.SetFloat("LipSync_Volume", volume);
-				AudioUtility.SetVolume(volume);
-			}
-			GUILayout.Space(10);
+					for (int i = 0; i < keyboardShortcuts.Length; i++) {
+						Rect lineRect = EditorGUILayout.BeginHorizontal(GUILayout.Height(25));
+						if (i % 2 == 0) {
+							GUI.Box(lineRect, "", (GUIStyle)"hostview");
+						}
+						GUILayout.Space(10);
+						GUILayout.Label("Action");
+						EditorGUI.BeginChangeCheck();
+						keyboardShortcuts[i].action = EditorGUILayout.Popup(keyboardShortcuts[i].action, Array.ConvertAll(shortcutActions, item => (string)item));
+						GUILayout.FlexibleSpace();
+						GUILayout.Label("Shortcut");
+						//todo: Clean this up, it feels hacky.
+						keyboardShortcuts[i].modifiers = (EventModifiers)((int)(EventModifiers)EditorGUILayout.EnumMaskField((EventModifiers)((int)keyboardShortcuts[i].modifiers << 1)) >> 1);
+						GUILayout.Space(5);
+						keyboardShortcuts[i].key = (KeyCode)EditorGUILayout.EnumPopup(keyboardShortcuts[i].key);
+						if (EditorGUI.EndChangeCheck()) {
+							shortcutsChanged = true;
+						}
+						GUILayout.Space(5);
+						if (GUILayout.Button("X")) {
+							RDEditorShortcut[] newArray = new RDEditorShortcut[keyboardShortcuts.Length - 1];
+							int b = 0;
+							for (int a = 0; a < keyboardShortcuts.Length; a++) {
+								if (a != i) {
+									newArray[b] = keyboardShortcuts[a];
+									b++;
+								}
+							}
+							shortcutsChanged = true;
+							keyboardShortcuts = newArray;
+							break;
+						}
+						GUILayout.Space(10);
+						EditorGUILayout.EndHorizontal();
+					}
+					GUILayout.Space(5);
+					EditorGUILayout.BeginHorizontal();
+					GUILayout.Space(53);
+					if (GUILayout.Button("Add Shortcut", GUILayout.MaxWidth(200))) {
+						GenericMenu menu = new GenericMenu();
+						for (int i = 0; i < shortcutActions.Length; i++) {
+							menu.AddItem(new GUIContent(shortcutActions[i].name), false, (object choice) => {
+								RDEditorShortcut[] newArray = new RDEditorShortcut[keyboardShortcuts.Length + 1];
+								for (int a = 0; a < keyboardShortcuts.Length; a++) {
+									newArray[a] = keyboardShortcuts[a];
+								}
+								newArray[newArray.Length - 1] = new RDEditorShortcut((int)choice, KeyCode.None, EventModifiers.None);
+								shortcutsChanged = true;
+								keyboardShortcuts = newArray;
+							}, i);
+						}
+						menu.ShowAsContext();
+					}
+					GUILayout.FlexibleSpace();
+					if (GUILayout.Button("Save Shortcuts")) {
+						shortcutsChanged = false;
+						RDEditorShortcut.Serialize("LipSync", keyboardShortcuts);
+					}
 
-			int oldMaxWaveformWidth = maxWaveformWidth;
-			maxWaveformWidth = EditorGUILayout.IntField(new GUIContent("Max Waveform Width", "The Maximum width for the waveform preview image. Warning: very high values can cause crashes when zooming in on the clip."), maxWaveformWidth, GUILayout.MaxWidth(300));
-			if (oldMaxWaveformWidth != maxWaveformWidth) {
-				EditorPrefs.SetInt("LipSync_MaxWaveformWidth", maxWaveformWidth);
-			}
-
-			bool oldShowExtensionsOnLoad = showExtensionsOnLoad;
-			showExtensionsOnLoad = GUILayout.Toggle(showExtensionsOnLoad, new GUIContent("Show Extensions Window", "Whether to automatically dock an extensions window to this one when it is opened."));
-			if (oldShowExtensionsOnLoad != showExtensionsOnLoad) {
-				EditorPrefs.SetBool("LipSync_ShowExtensionsOnLoad", showExtensionsOnLoad);
+					if (GUILayout.Button("Revert to Saved")) {
+						shortcutsChanged = false;
+						SetDefaultShortcuts();
+						keyboardShortcuts = RDEditorShortcut.Deserialize("LipSync", shortcutActions, keyboardShortcuts);
+					}
+					GUILayout.Space(10);
+					EditorGUILayout.EndHorizontal();
+					if (shortcutsChanged) EditorGUILayout.HelpBox("You have made changes to the keyboard shortcuts. Press Save Shortcuts to avoid losing them.", MessageType.Warning);
+					break;
 			}
 			GUILayout.Space(20);
 			GUILayout.EndScrollView();
@@ -584,7 +739,9 @@ public class LipSyncClipSetup : ModalParent {
 		EditorGUI.BeginChangeCheck();
 		clip = (AudioClip)EditorGUILayout.ObjectField("Audio Clip", clip, typeof(AudioClip), false, GUILayout.MaxWidth(800));
 		if (EditorGUI.EndChangeCheck()) {
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
 			DestroyImmediate(waveform);
+#endif
 			changed = true;
 		}
 		GUILayout.Space(20);
@@ -615,12 +772,12 @@ public class LipSyncClipSetup : ModalParent {
 		GUILayout.Space(40);
 		//Preview Box
 		GUILayout.Box("", (GUIStyle)"PreBackground", GUILayout.Width(position.width), GUILayout.Height((position.height - waveformHeight) - 18));
-		Rect previewRect = GUILayoutUtility.GetLastRect();
+		if (Event.current.type == EventType.Repaint) previewRect = GUILayoutUtility.GetLastRect();
 
 		//Right Click Menu
 		if (Event.current.type == EventType.ContextClick && previewRect.Contains(Event.current.mousePosition)) {
 			GenericMenu previewMenu = new GenericMenu();
-			float cursorTime = (viewportStart + (Event.current.mousePosition.x / pixelsPerSecond))/fileLength;
+			float cursorTime = (viewportStart + (Event.current.mousePosition.x / pixelsPerSecond)) / fileLength;
 
 			if (markerTab == 0) {
 				for (int a = 0; a < 9; a++) {
@@ -647,8 +804,11 @@ public class LipSyncClipSetup : ModalParent {
 		}
 
 		waveformHeight = (int)previewRect.y;
+#if UNITY_5_3_6 || UNITY_5_4_OR_NEWER
+		if (clip != null) AudioUtility.DrawWaveForm(clip, 0, new Rect(-(viewportStart * pixelsPerSecond), previewRect.y + 3, clip.length * pixelsPerSecond, (position.height - waveformHeight) - 33));
+#else
 		if (clip != null && waveform != null) GUI.DrawTexture(new Rect(-(viewportStart * pixelsPerSecond), previewRect.y + 3, clip.length * pixelsPerSecond, (position.height - waveformHeight) - 33), waveform);
-
+#endif
 		//Playhead
 		if (Event.current.button != 1) {
 			if (clip != null) {
@@ -664,50 +824,27 @@ public class LipSyncClipSetup : ModalParent {
 
 		GUI.DrawTexture(new Rect(0, previewRect.y - 35, position.width, 36), track_top);
 
-		//Time Lines
+		// Time Lines
 		// todo: show/hide markers based on length/zoom
 		if (showTimeline) {
-			float timeOffset = (viewportStart % 1) * pixelsPerSecond;
-			for (int a = 0; a < viewportSeconds + 1; a++) {
-				GUI.DrawTexture(new Rect((a * pixelsPerSecond) - timeOffset, previewRect.y + 1, 1, 12), marker_line);
-				GUI.Box(new Rect((a * pixelsPerSecond) - (timeOffset - 5), previewRect.y, 30, 20), ((Mathf.FloorToInt(viewportStart) + a) % 60).ToString().PadLeft(2, '0') + "s", EditorStyles.whiteMiniLabel);
-			}
+			LipSyncEditorExtensions.DrawTimeline(previewRect.y, viewportStart, viewportEnd, position.width);
 		}
 
-		//Preview Warning
+		// Preview Warning
 		if (visualPreview) {
-			bool error = true;
-			if (Selection.activeGameObject != null) {
-				if (previewTarget == null) {
-					previewTarget = Selection.activeGameObject.GetComponent<LipSync>();
-					if (previewTarget != null) {
-						error = false;
-					}
-				} else if (previewTarget.gameObject != Selection.activeGameObject) {
-					previewTarget = Selection.activeGameObject.GetComponent<LipSync>();
-					if (previewTarget != null) {
-						error = false;
-					}
-				} else {
-					error = false;
-				}
-			}
-
-			if (error) {
-				EditorGUI.HelpBox(new Rect(20, previewRect.y + previewRect.height - 45, position.width - 40, 25), "Preview mode active. Select a GameObject with a valid LipSync component in the scene to preview.", MessageType.Warning);
-			} else {
-				EditorGUI.HelpBox(new Rect(20, previewRect.y + previewRect.height - 45, position.width - 40, 25), "Preview mode active. Note: only Phonemes and Emotions will be shown in the preview.", MessageType.Info);
-			}
+			EditorGUI.HelpBox(new Rect(20, previewRect.y + previewRect.height - 45, position.width - 40, 25), "Preview mode active. Note: only Phonemes and Emotions will be shown in the preview.", MessageType.Info);
 		} else if (previewTarget != null) {
 			UpdatePreview(0);
 			previewTarget = null;
 		}
 
 		// Viewport Scrolling
-		if (MinMaxScrollbar(new Rect(0, (previewRect.y + previewRect.height) - 15, previewRect.width, 15), previewRect, ref viewportStart, ref viewportEnd, 0, fileLength , 0.5f)) {
+		if (MinMaxScrollbar(new Rect(0, (previewRect.y + previewRect.height) - 15, previewRect.width, 15), previewRect, ref viewportStart, ref viewportEnd, 0, fileLength, 0.5f)) {
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
 			if (fileLength * pixelsPerSecond <= maxWaveformWidth) {
 				DestroyImmediate(waveform);
 			}
+#endif
 		}
 
 		GUIContent tip = null;
@@ -715,7 +852,7 @@ public class LipSyncClipSetup : ModalParent {
 
 		if (markerTab == 0) {
 
-			//Phoneme Markers
+			// Phoneme Markers
 			if (currentModal == null) {
 				highlightedMarker = -1;
 			}
@@ -724,7 +861,7 @@ public class LipSyncClipSetup : ModalParent {
 				foreach (PhonemeMarker marker in phonemeData) {
 					if ((filterMask & phonemeFlags[(int)marker.phoneme]) == phonemeFlags[(int)marker.phoneme]) {
 						Rect markerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.time * (fileLength * pixelsPerSecond)) - 12.5f, previewRect.y - 25, 25, 26);
-						if (mouseX > markerRect.x + 5 && mouseX < markerRect.x + markerRect.width - 5 && mouseY > markerRect.y && mouseY < markerRect.y + markerRect.height - 4 && currentMarker == -1) {
+						if (mouseX > markerRect.x + 5 && mouseX < markerRect.x + markerRect.width - 5 && mouseY > markerRect.y && mouseY < markerRect.y + markerRect.height - 4 && currentMarker == -1 && selectionRect.width < 2 && selectionRect.width > -2) {
 							highlightedMarker = phonemeData.IndexOf(marker);
 						}
 					}
@@ -734,14 +871,18 @@ public class LipSyncClipSetup : ModalParent {
 			if (dragging == false && highlightedMarker > -1 && focusedWindow == this) {
 				PhonemeMarker cm = phonemeData[highlightedMarker];
 
-				if (Event.current.type == EventType.MouseDrag) {
+				if (Event.current.type == EventType.MouseDrag && selectionRect.width < 2 && selectionRect.width > -2) {
 					currentMarker = highlightedMarker;
 					startOffset = cm.time - ((Event.current.mousePosition.x + (viewportStart * pixelsPerSecond)) / (fileLength * pixelsPerSecond));
 
 					if (selection.Count > 0) {
-						selectionOffsets = new float[selection.Count];
-						for (int marker = 0; marker < selectionOffsets.Length; marker++) {
-							selectionOffsets[marker] = phonemeData[currentMarker].time - phonemeData[selection[marker]].time;
+						if (!selection.Contains(highlightedMarker)) {
+							selection.Clear();
+						} else {
+							selectionOffsets = new float[selection.Count];
+							for (int marker = 0; marker < selectionOffsets.Length; marker++) {
+								selectionOffsets[marker] = phonemeData[currentMarker].time - phonemeData[selection[marker]].time;
+							}
 						}
 					}
 
@@ -801,11 +942,23 @@ public class LipSyncClipSetup : ModalParent {
 						} else {
 							markerMenu.AddItem(new GUIContent("Delete"), false, DeleteMarker, cm);
 						}
-						
+
 						for (int a = 0; a < 9; a++) {
 							Phoneme phon = (Phoneme)a;
-							markerMenu.AddItem(new GUIContent("Change/" + phon.ToString()), false, ChangeMarkerPicked, new List<int> { phonemeData.IndexOf(cm), a });
+							markerMenu.AddItem(new GUIContent("Change/" + phon.ToString()), false, ChangeMarkerPicked, new List<int> { highlightedMarker, a });
 						}
+
+						if (highlightedMarker + 1 < phonemeData.Count) {
+							if (phonemeData[highlightedMarker + 1].phoneme == cm.phoneme) {
+								markerMenu.AddItem(new GUIContent("Sustain Marker"), cm.sustain, ToggleSustain, cm);
+							} else {
+								markerMenu.AddDisabledItem(new GUIContent("Sustain Marker"));
+							}
+						} else {
+							markerMenu.AddDisabledItem(new GUIContent("Sustain Marker"));
+						}
+
+
 						markerMenu.AddSeparator("");
 						markerMenu.AddItem(new GUIContent("Marker Settings"), false, PhonemeMarkerSettings, cm);
 					}
@@ -817,7 +970,7 @@ public class LipSyncClipSetup : ModalParent {
 					}
 				}
 			} else if (dragging == false && focusedWindow == this) {
-				if (Event.current.type == EventType.MouseUp && !(Event.current.modifiers == EventModifiers.Control || Event.current.modifiers == EventModifiers.Shift)) {
+				if (Event.current.type == EventType.MouseUp && !(Event.current.modifiers == EventModifiers.Control || Event.current.modifiers == EventModifiers.Shift) && selectionRect.width > -2 && selectionRect.width < 2) {
 					selection.Clear();
 				} else if (Event.current.type == EventType.KeyUp && selection.Count > 0) {
 					if (Event.current.keyCode == KeyCode.Delete) {
@@ -826,20 +979,26 @@ public class LipSyncClipSetup : ModalParent {
 				}
 			}
 
-			foreach (PhonemeMarker marker in phonemeData) {
+			for (int m = 0; m < phonemeData.Count; m++) {
+				PhonemeMarker marker = phonemeData[m];
+
 				if ((filterMask & phonemeFlags[(int)marker.phoneme]) == phonemeFlags[(int)marker.phoneme]) {
 					Rect markerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.time * (fileLength * pixelsPerSecond)) - 12.5f, previewRect.y - 25, 25, 26);
 
+					if (marker.sustain) {
+						GUI.DrawTexture(new Rect(markerRect.x + 12.5f, markerRect.y + 7, ((-(viewportStart * pixelsPerSecond)) + (phonemeData[m + 1].time * (fileLength * pixelsPerSecond))) - (markerRect.x + 12.5f), 1), marker_line);
+					}
+
 					GUI.color = Color.Lerp(Color.gray, Color.white, marker.intensity);
-					if (currentMarker == phonemeData.IndexOf(marker)) {
+					if (currentMarker == m) {
 						GUI.Box(markerRect, marker_selected, GUIStyle.none);
 						GUI.DrawTexture(new Rect(markerRect.x + 12, previewRect.y, 1, previewRect.height - 15), marker_line);
-						tip = new GUIContent(marker.phoneme.ToString()+" - "+Mathf.RoundToInt(marker.intensity * 100f).ToString()+"%");
-					} else if (highlightedMarker == phonemeData.IndexOf(marker)) {
+						tip = new GUIContent(marker.phoneme.ToString() + " - " + Mathf.RoundToInt(marker.intensity * 100f).ToString() + "%");
+					} else if (highlightedMarker == m) {
 						GUI.Box(markerRect, marker_hover, GUIStyle.none);
 						GUI.DrawTexture(new Rect(markerRect.x + 12, previewRect.y, 1, previewRect.height - 15), marker_line);
 						tip = new GUIContent(marker.phoneme.ToString() + " - " + Mathf.RoundToInt(marker.intensity * 100f).ToString() + "%");
-					} else if (selection.Contains(phonemeData.IndexOf(marker))) {
+					} else if (selection.Contains(m)) {
 						GUI.Box(markerRect, marker_selected, GUIStyle.none);
 						GUI.DrawTexture(new Rect(markerRect.x + 12, previewRect.y, 1, previewRect.height - 15), marker_line);
 					} else {
@@ -847,56 +1006,67 @@ public class LipSyncClipSetup : ModalParent {
 					}
 
 					GUI.color = Color.white;
+
+					if (marker.sustain) {
+						GUI.Box(markerRect, marker_sustained, GUIStyle.none);
+					}
 				}
 			}
 		} else if (markerTab == 1) {
+
+			// Emotion Markers
 			if (currentModal == null) {
 				highlightedMarker = -1;
 			}
 			int highlightComponent = -1;
 
-			foreach (EmotionMarker marker in unorderedEmotionData) {
-				Rect markerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.startTime * (fileLength * pixelsPerSecond)), previewRect.y - 30, (marker.endTime - marker.startTime) * (fileLength * pixelsPerSecond), 31);
-				Rect startMarkerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.startTime * (fileLength * pixelsPerSecond)) - 6, previewRect.y - 30, 25, 31);
-				Rect endMarkerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.endTime * (fileLength * pixelsPerSecond)) - 20, previewRect.y - 30, 25, 31);
+			if (dragging == false) {
+				foreach (EmotionMarker marker in unorderedEmotionData) {
+					Rect markerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.startTime * (fileLength * pixelsPerSecond)), previewRect.y - 30, (marker.endTime - marker.startTime) * (fileLength * pixelsPerSecond), 31);
+					Rect startMarkerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.startTime * (fileLength * pixelsPerSecond)) - 6, previewRect.y - 30, 25, 31);
+					Rect endMarkerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.endTime * (fileLength * pixelsPerSecond)) - 20, previewRect.y - 30, 25, 31);
 
-				if (focusedWindow == this) {
-					// Blend In/Out Handles
-					if (mouseX > startMarkerRect.x + (marker.blendInTime * (fileLength * pixelsPerSecond)) && mouseX < startMarkerRect.x + (marker.blendInTime * (fileLength * pixelsPerSecond)) + startMarkerRect.width && mouseY > startMarkerRect.y && mouseY < startMarkerRect.y + startMarkerRect.height - 4 && currentMarker == -1 && !marker.blendFromMarker) {
-						EditorGUIUtility.AddCursorRect(new Rect(startMarkerRect.x + (marker.blendInTime * (fileLength * pixelsPerSecond)), startMarkerRect.y, startMarkerRect.width, startMarkerRect.height), MouseCursor.SlideArrow);
-						highlightedMarker = emotionData.IndexOf(marker);
-						highlightComponent = 3;
-					} else if (mouseX > endMarkerRect.x + (marker.blendOutTime * (fileLength * pixelsPerSecond)) && mouseX < endMarkerRect.x + (marker.blendOutTime * (fileLength * pixelsPerSecond)) + endMarkerRect.width && mouseY > endMarkerRect.y && mouseY < endMarkerRect.y + endMarkerRect.height - 4 && currentMarker == -1 && !marker.blendToMarker) {
-						EditorGUIUtility.AddCursorRect(new Rect(endMarkerRect.x + (marker.blendOutTime * (fileLength * pixelsPerSecond)), endMarkerRect.y, endMarkerRect.width, endMarkerRect.height), MouseCursor.SlideArrow);
-						highlightedMarker = emotionData.IndexOf(marker);
-						highlightComponent = 4;
-					}else if (mouseX > markerRect.x && mouseX < markerRect.x + markerRect.width && mouseY > markerRect.y && mouseY < markerRect.y + markerRect.height - 4 && currentMarker == -1) {
-						// Bars
-						highlightedMarker = emotionData.IndexOf(marker);
-						highlightComponent = 1;
+					if (focusedWindow == this) {
+						// Blend In/Out Handles
+						if (mouseX > startMarkerRect.x + (marker.blendInTime * (fileLength * pixelsPerSecond)) && mouseX < startMarkerRect.x + (marker.blendInTime * (fileLength * pixelsPerSecond)) + startMarkerRect.width && mouseY > startMarkerRect.y && mouseY < startMarkerRect.y + startMarkerRect.height - 4 && currentMarker == -1 && !marker.blendFromMarker && selectionRect.width < 2 && selectionRect.width > -2) {
+							EditorGUIUtility.AddCursorRect(new Rect(startMarkerRect.x + (marker.blendInTime * (fileLength * pixelsPerSecond)), startMarkerRect.y, startMarkerRect.width, startMarkerRect.height), MouseCursor.SlideArrow);
+							highlightedMarker = emotionData.IndexOf(marker);
+							highlightComponent = 3;
+						} else if (mouseX > endMarkerRect.x + (marker.blendOutTime * (fileLength * pixelsPerSecond)) && mouseX < endMarkerRect.x + (marker.blendOutTime * (fileLength * pixelsPerSecond)) + endMarkerRect.width && mouseY > endMarkerRect.y && mouseY < endMarkerRect.y + endMarkerRect.height - 4 && currentMarker == -1 && !marker.blendToMarker && selectionRect.width < 2 && selectionRect.width > -2) {
+							EditorGUIUtility.AddCursorRect(new Rect(endMarkerRect.x + (marker.blendOutTime * (fileLength * pixelsPerSecond)), endMarkerRect.y, endMarkerRect.width, endMarkerRect.height), MouseCursor.SlideArrow);
+							highlightedMarker = emotionData.IndexOf(marker);
+							highlightComponent = 4;
+						} else if (mouseX > markerRect.x && mouseX < markerRect.x + markerRect.width && mouseY > markerRect.y && mouseY < markerRect.y + markerRect.height - 4 && currentMarker == -1 && selectionRect.width < 2 && selectionRect.width > -2) {
+							// Bars
+							highlightedMarker = emotionData.IndexOf(marker);
+							highlightComponent = 1;
 
-						if (marker.invalid) {
-							tip = new GUIContent("Markers are not allowed inside one another.");
-							tipType = MessageType.Error;
+							if (marker.invalid) {
+								tip = new GUIContent("Markers are not allowed inside one another.");
+								tipType = MessageType.Error;
+							}
 						}
 					}
 				}
 			}
 
-			foreach (EmotionMarker marker in unorderedEmotionData) {
-				Rect startMarkerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.startTime * (fileLength * pixelsPerSecond)) - 6, previewRect.y - 30, 25, 31);
-				Rect endMarkerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.endTime * (fileLength * pixelsPerSecond)) - 20, previewRect.y - 30, 25, 31);
+			// Done in a separate loop to allow selecting through other bars
+			if (dragging == false) {
+				foreach (EmotionMarker marker in unorderedEmotionData) {
+					Rect startMarkerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.startTime * (fileLength * pixelsPerSecond)) - 6, previewRect.y - 30, 25, 31);
+					Rect endMarkerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.endTime * (fileLength * pixelsPerSecond)) - 20, previewRect.y - 30, 25, 31);
 
-				if (focusedWindow == this) {
-					// Start/End Handles
-					if (mouseX > startMarkerRect.x && mouseX < startMarkerRect.x + startMarkerRect.width - 7 && mouseY > startMarkerRect.y && mouseY < startMarkerRect.y + startMarkerRect.height - 4 && currentMarker == -1) {
-						highlightedMarker = emotionData.IndexOf(marker);
-						highlightComponent = 0;
-						EditorGUIUtility.AddCursorRect(startMarkerRect, MouseCursor.ResizeHorizontal);
-					} else if (mouseX > endMarkerRect.x + 7 && mouseX < endMarkerRect.x + endMarkerRect.width && mouseY > endMarkerRect.y && mouseY < endMarkerRect.y + endMarkerRect.height - 4 && currentMarker == -1) {
-						highlightedMarker = emotionData.IndexOf(marker);
-						highlightComponent = 2;
-						EditorGUIUtility.AddCursorRect(endMarkerRect, MouseCursor.ResizeHorizontal);
+					if (focusedWindow == this) {
+						// Start/End Handles
+						if (mouseX > startMarkerRect.x && mouseX < startMarkerRect.x + startMarkerRect.width - 7 && mouseY > startMarkerRect.y && mouseY < startMarkerRect.y + startMarkerRect.height - 4 && currentMarker == -1 && selectionRect.width < 2 && selectionRect.width > -2) {
+							highlightedMarker = emotionData.IndexOf(marker);
+							highlightComponent = 0;
+							EditorGUIUtility.AddCursorRect(startMarkerRect, MouseCursor.ResizeHorizontal);
+						} else if (mouseX > endMarkerRect.x + 7 && mouseX < endMarkerRect.x + endMarkerRect.width && mouseY > endMarkerRect.y && mouseY < endMarkerRect.y + endMarkerRect.height - 4 && currentMarker == -1 && selectionRect.width < 2 && selectionRect.width > -2) {
+							highlightedMarker = emotionData.IndexOf(marker);
+							highlightComponent = 2;
+							EditorGUIUtility.AddCursorRect(endMarkerRect, MouseCursor.ResizeHorizontal);
+						}
 					}
 				}
 			}
@@ -904,7 +1074,7 @@ public class LipSyncClipSetup : ModalParent {
 			if (dragging == false && highlightedMarker > -1 && focusedWindow == this) {
 				EmotionMarker em = emotionData[highlightedMarker];
 
-				if (Event.current.type == EventType.MouseDrag) {
+				if (Event.current.type == EventType.MouseDrag && selectionRect.width < 2 && selectionRect.width > -2) {
 					dragging = true;
 					currentMarker = highlightedMarker;
 					currentComponent = highlightComponent;
@@ -915,14 +1085,18 @@ public class LipSyncClipSetup : ModalParent {
 					}
 
 					if (selection.Count > 0) {
-						selectionOffsets = new float[selection.Count];
-						sequentialStartOffsets = new float[selection.Count];
-						sequentialEndOffsets = new float[selection.Count];
+						if (!selection.Contains(highlightedMarker)) {
+							selection.Clear();
+						} else {
+							selectionOffsets = new float[selection.Count];
+							sequentialStartOffsets = new float[selection.Count];
+							sequentialEndOffsets = new float[selection.Count];
 
-						for (int marker = 0; marker < selectionOffsets.Length; marker++) {
-							selectionOffsets[marker] = em.startTime - emotionData[selection[marker]].startTime;
-							sequentialStartOffsets[marker] = emotionData[selection[marker]].startTime - emotionData[selection[0]].startTime;
-							sequentialEndOffsets[marker] = emotionData[selection[selection.Count - 1]].endTime - emotionData[selection[marker]].endTime;
+							for (int marker = 0; marker < selectionOffsets.Length; marker++) {
+								selectionOffsets[marker] = em.startTime - emotionData[selection[marker]].startTime;
+								sequentialStartOffsets[marker] = emotionData[selection[marker]].startTime - emotionData[selection[0]].startTime;
+								sequentialEndOffsets[marker] = emotionData[selection[selection.Count - 1]].endTime - emotionData[selection[marker]].endTime;
+							}
 						}
 					}
 
@@ -943,7 +1117,7 @@ public class LipSyncClipSetup : ModalParent {
 							}
 						} else {
 							if (currentMarker > 0) {
-								for (int m = currentMarker-1; m >= 0; m--) {
+								for (int m = currentMarker - 1; m >= 0; m--) {
 									if (!selection.Contains(m)) {
 										lowSnapPoint = emotionData[m].endTime + snappingDistance;
 									}
@@ -951,19 +1125,19 @@ public class LipSyncClipSetup : ModalParent {
 							}
 
 							if (currentMarker < emotionData.Count - 1) {
-								for (int m = currentMarker+1; m < emotionData.Count; m++) {
+								for (int m = currentMarker + 1; m < emotionData.Count; m++) {
 									if (!selection.Contains(m)) {
 										highSnapPoint = emotionData[m].startTime - snappingDistance;
 									}
 								}
 							}
 						}
-						
+
 					} else {
 						startOffset = (em.blendInTime) - ((Event.current.mousePosition.x + (viewportStart * pixelsPerSecond)) / (fileLength * pixelsPerSecond));
 						endOffset = (em.blendOutTime) - ((Event.current.mousePosition.x + (viewportStart * pixelsPerSecond)) / (fileLength * pixelsPerSecond));
 					}
-					
+
 					previousMarker = null;
 					nextMarker = null;
 				} else if (Event.current.type == EventType.MouseUp && Event.current.button == 0) {
@@ -1018,7 +1192,7 @@ public class LipSyncClipSetup : ModalParent {
 					} else {
 						markerMenu.AddItem(new GUIContent("Delete"), false, DeleteEmotion, emotionData[highlightedMarker]);
 					}
-					
+
 					for (int a = 0; a < settings.emotions.Length; a++) {
 						string emote = settings.emotions[a];
 						markerMenu.AddItem(new GUIContent("Change/" + emote), false, ChangeEmotionPicked, new List<object> { emotionData[highlightedMarker], emote });
@@ -1058,14 +1232,32 @@ public class LipSyncClipSetup : ModalParent {
 						}
 
 						if (emotionData.IndexOf(marker) - 1 >= 0) {
-							if (settings.emotions[em] == emotionData[emotionData.IndexOf(marker) - 1].emotion && emotionData[emotionData.IndexOf(marker) - 1].endTime > marker.startTime) {
-								lastColor = settings.emotionColors[em];
+							int prevMarker = emotionData.IndexOf(marker) - 1;
+							if (settings.emotions[em] == emotionData[prevMarker].emotion && emotionData[prevMarker].endTime > marker.startTime) {
+								if (currentComponent != 1 && highlightComponent != 1) {
+									lastColor = Color.Lerp(Color.gray, settings.emotionColors[em], emotionData[prevMarker].intensity);
+								} else if (prevMarker == highlightedMarker) {
+									lastColor = Color.white;
+								} else if (prevMarker == currentMarker) {
+									lastColor = new Color(0.4f, 0.6f, 1f);
+								} else {
+									lastColor = Color.Lerp(Color.gray, settings.emotionColors[em], emotionData[prevMarker].intensity);
+								}
 							}
 						}
 
 						if (emotionData.IndexOf(marker) + 1 < emotionData.Count) {
-							if (settings.emotions[em] == emotionData[emotionData.IndexOf(marker) + 1].emotion && emotionData[emotionData.IndexOf(marker) + 1].startTime < marker.endTime) {
-								nextColor = settings.emotionColors[em];
+							int nextMarker = emotionData.IndexOf(marker) + 1;
+							if (settings.emotions[em] == emotionData[nextMarker].emotion && emotionData[nextMarker].startTime < marker.endTime) {
+								if (currentComponent != 1 && highlightComponent != 1) {
+									nextColor = Color.Lerp(Color.gray, settings.emotionColors[em], emotionData[nextMarker].intensity);
+								} else if (nextMarker == highlightedMarker) {
+									nextColor = Color.white;
+								} else if (nextMarker == currentMarker) {
+									nextColor = new Color(0.4f, 0.6f, 1f);
+								} else {
+									nextColor = Color.Lerp(Color.gray, settings.emotionColors[em], emotionData[nextMarker].intensity);
+								}
 							}
 						}
 					}
@@ -1095,13 +1287,13 @@ public class LipSyncClipSetup : ModalParent {
 					GUI.color = Color.white;
 					GUI.DrawTexture(markerRect, emotion_area);
 				} else {
-					GUI.color = barColor;
+					GUI.color = Color.Lerp(Color.gray, barColor, marker.intensity);
 					GUI.DrawTexture(markerRect, emotion_area);
 				}
 
 				// Blends
 				GUI.color = lastColor;
-				GUI.DrawTexture(new Rect(markerRect.x, markerRect.y, marker.blendInTime * (fileLength * pixelsPerSecond), markerRect.height), marker.blendFromMarker?emotion_blend_in:emotion_blend_out);
+				GUI.DrawTexture(new Rect(markerRect.x, markerRect.y, marker.blendInTime * (fileLength * pixelsPerSecond), markerRect.height), marker.blendFromMarker ? emotion_blend_in : emotion_blend_out);
 				GUI.color = nextColor;
 				GUI.DrawTexture(new Rect(markerRect.x + markerRect.width, markerRect.y, marker.blendOutTime * (fileLength * pixelsPerSecond), markerRect.height), emotion_blend_out);
 				GUI.color = Color.white;
@@ -1133,36 +1325,126 @@ public class LipSyncClipSetup : ModalParent {
 				}
 
 				if (marker.invalid) {
-					GUI.DrawTexture(new Rect(markerRect.x+10, markerRect.y+8, 14, 14), emotion_error);
+					GUI.DrawTexture(new Rect(markerRect.x + 10, markerRect.y + 8, 14, 14), emotion_error);
+				}
+			}
+
+			// Draw labels in seperate pass to avoid clipping
+			foreach (EmotionMarker marker in unorderedEmotionData) {
+				Rect markerRect = new Rect(((-(viewportStart * pixelsPerSecond)) + (marker.startTime * (fileLength * pixelsPerSecond))) + (marker.blendInTime / 2) * (fileLength * pixelsPerSecond) + 6, previewRect.y - 30, ((marker.endTime - marker.startTime) * (fileLength * pixelsPerSecond)) - ((marker.blendInTime / 2) * (fileLength * pixelsPerSecond)) + ((marker.blendOutTime / 2) * (fileLength * pixelsPerSecond)) - 12, 31);
+
+				Color barColor = Color.gray;
+				if (useColors) {
+					for (int em = 0; em < settings.emotions.Length; em++) {
+						if (settings.emotions[em] == marker.emotion) {
+							barColor = settings.emotionColors[em];
+						}
+					}
+				} else {
+					barColor = HexToColor(defaultColor);
 				}
 
+				// Labels
 				float lum = (0.299f * barColor.r + 0.587f * barColor.g + 0.114f * barColor.b);
-				if (lum > 0.5f || highlightedMarker == emotionData.IndexOf(marker) && highlightComponent == 1) {
-					GUI.contentColor = Color.black;
-					GUI.Box(new Rect(markerRect.x, markerRect.y + 2, markerRect.width, markerRect.height - 9), marker.emotion, centeredStyle);
-					GUI.contentColor = Color.white;
+				if (GUI.skin.label.CalcSize(new GUIContent(marker.emotion + " - " + (marker.intensity * 100f).ToString() + "%")).x > markerRect.width) {
+					if (highlightedMarker == emotionData.IndexOf(marker) && (tip == null || tip != null && tipType != MessageType.Error)) {
+						tipType = MessageType.None;
+						tip = new GUIContent(marker.emotion + " - " + (marker.intensity * 100f).ToString() + "%");
+					}
+
+					if (lum > 0.5f || highlightedMarker == emotionData.IndexOf(marker) && highlightComponent == 1) {
+						GUI.contentColor = Color.black;
+						GUI.Box(new Rect(markerRect.x, markerRect.y + 2, markerRect.width, markerRect.height - 9), "...", centeredStyle);
+						GUI.contentColor = Color.white;
+					} else {
+						GUI.Box(new Rect(markerRect.x, markerRect.y + 2, markerRect.width, markerRect.height - 9), "...", centeredStyle);
+					}
 				} else {
-					GUI.Box(new Rect(markerRect.x, markerRect.y + 2, markerRect.width, markerRect.height - 9), marker.emotion, centeredStyle);
+					if (lum > 0.5f || highlightedMarker == emotionData.IndexOf(marker) && highlightComponent == 1) {
+						GUI.contentColor = Color.black;
+						GUI.Box(new Rect(markerRect.x, markerRect.y + 2, markerRect.width, markerRect.height - 9), marker.emotion + " - " + (marker.intensity * 100f).ToString() + "%", centeredStyle);
+						GUI.contentColor = Color.white;
+					} else {
+						GUI.Box(new Rect(markerRect.x, markerRect.y + 2, markerRect.width, markerRect.height - 9), marker.emotion + " - " + (marker.intensity * 100f).ToString() + "%", centeredStyle);
+					}
 				}
 			}
 		} else if (markerTab == 2) {
 			//Gesture Markers
 			int highlightedMarker = -1;
 
-			foreach (GestureMarker marker in gestureData) {
-				Rect markerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.time * (fileLength * pixelsPerSecond)) - 12.5f, previewRect.y - 25, 25, 26);
-				if (mouseX > markerRect.x + 5 && mouseX < markerRect.x + markerRect.width - 5 && mouseY > markerRect.y && mouseY < markerRect.y + markerRect.height - 4 && currentMarker == -1) {
-					highlightedMarker = gestureData.IndexOf(marker);
+			if (dragging == false) {
+				foreach (GestureMarker marker in gestureData) {
+					Rect markerRect = new Rect((-(viewportStart * pixelsPerSecond)) + (marker.time * (fileLength * pixelsPerSecond)) - 12.5f, previewRect.y - 25, 25, 26);
+					if (mouseX > markerRect.x + 5 && mouseX < markerRect.x + markerRect.width - 5 && mouseY > markerRect.y && mouseY < markerRect.y + markerRect.height - 4 && currentMarker == -1) {
+						highlightedMarker = gestureData.IndexOf(marker);
+					}
 				}
 			}
-
 			if (dragging == false && highlightedMarker > -1 && focusedWindow == this) {
 				GestureMarker cm = gestureData[highlightedMarker];
 
-				if (Event.current.type == EventType.MouseDrag) {
-					currentMarker = gestureData.IndexOf(cm);
-					dragging = true;
+				if (Event.current.type == EventType.MouseDrag && selectionRect.width < 2 && selectionRect.width > -2) {
+					currentMarker = highlightedMarker;
 					startOffset = cm.time - ((Event.current.mousePosition.x + (viewportStart * pixelsPerSecond)) / (fileLength * pixelsPerSecond));
+
+					if (selection.Count > 0) {
+						if (!selection.Contains(highlightedMarker)) {
+							selection.Clear();
+						} else {
+							selectionOffsets = new float[selection.Count];
+							for (int marker = 0; marker < selectionOffsets.Length; marker++) {
+								selectionOffsets[marker] = gestureData[currentMarker].time - gestureData[selection[marker]].time;
+							}
+						}
+					}
+
+					dragging = true;
+				} else if (Event.current.type == EventType.MouseUp && Event.current.button == 0) {
+					if (Event.current.modifiers == EventModifiers.Shift) {
+						if (selection.Count > 0) {
+							List<GestureMarker> tempData = new List<GestureMarker>(gestureData);
+							tempData.Sort(LipSync.SortTime);
+
+							int tempIndex = tempData.IndexOf(cm);
+							int tempStart = tempData.IndexOf(gestureData[firstSelection]);
+							selection.Clear();
+
+							if (tempStart > tempIndex) {
+								for (int m = tempIndex; m <= tempStart; m++) {
+									int realIndex = gestureData.IndexOf(tempData[m]);
+
+									selection.Add(realIndex);
+								}
+							} else if (tempStart < tempIndex) {
+								for (int m = tempStart; m <= tempIndex; m++) {
+									int realIndex = gestureData.IndexOf(tempData[m]);
+
+									selection.Add(realIndex);
+								}
+							}
+						} else {
+							firstSelection = highlightedMarker;
+							selection.Add(highlightedMarker);
+						}
+					} else if (Event.current.modifiers == EventModifiers.Control) {
+						if (!selection.Contains(highlightedMarker)) {
+							selection.Add(highlightedMarker);
+							if (cm.time < gestureData[firstSelection].time || selection.Count == 1) {
+								firstSelection = highlightedMarker;
+							}
+						} else {
+							selection.Remove(highlightedMarker);
+							if (highlightedMarker == firstSelection) {
+								firstSelection = 0;
+							}
+						}
+						selection.Sort(SortInt);
+					} else {
+						selection.Clear();
+						selection.Add(highlightedMarker);
+						firstSelection = highlightedMarker;
+					}
 				} else if (Event.current.type == EventType.ContextClick) {
 					GenericMenu markerMenu = new GenericMenu();
 					markerMenu.AddItem(new GUIContent("Delete"), false, DeleteGesture, cm);
@@ -1194,6 +1476,68 @@ public class LipSyncClipSetup : ModalParent {
 					}
 				}
 			}
+		}
+
+		// Rect Selection
+		if (Event.current.type == EventType.MouseDown && new Rect(0, previewRect.y - 35, position.width, 36).Contains(Event.current.mousePosition)) {
+			selectionRect = new Rect(Event.current.mousePosition, Vector2.zero);
+		} else if ((Event.current.type == EventType.MouseUp || currentMarker > -1)) {
+			if (selectionRect.width < -2 || selectionRect.width > 2) {
+				if (selectionRect.width < 0) {
+					selectionRect = new Rect(selectionRect.x + selectionRect.width, selectionRect.y, -selectionRect.width, selectionRect.height);
+				}
+
+				if (Event.current.modifiers != EventModifiers.Shift && Event.current.modifiers != EventModifiers.Control) {
+					selection.Clear();
+				}
+
+				if (markerTab == 0) {
+					for (int i = 0; i < phonemeData.Count; i++) {
+						float screenPos = (-(viewportStart * pixelsPerSecond)) + (phonemeData[i].time * (fileLength * pixelsPerSecond));
+						if (screenPos > selectionRect.x && screenPos < selectionRect.x + selectionRect.width) {
+							if (selection.Contains(i)) {
+								selection.Remove(i);
+							} else {
+								selection.Add(i);
+							}
+
+						}
+					}
+				} else if (markerTab == 1) {
+					for (int i = 0; i < emotionData.Count; i++) {
+						float startPos = (-(viewportStart * pixelsPerSecond)) + (emotionData[i].startTime * (fileLength * pixelsPerSecond));
+						float endPos = (-(viewportStart * pixelsPerSecond)) + (emotionData[i].endTime * (fileLength * pixelsPerSecond));
+						if ((startPos > selectionRect.x && startPos < selectionRect.x + selectionRect.width) || (endPos > selectionRect.x && endPos < selectionRect.x + selectionRect.width)) {
+							if (selection.Contains(i)) {
+								selection.Remove(i);
+							} else {
+								selection.Add(i);
+							}
+
+						}
+					}
+				} else if (markerTab == 2) {
+					for (int i = 0; i < gestureData.Count; i++) {
+						float screenPos = (-(viewportStart * pixelsPerSecond)) + (gestureData[i].time * (fileLength * pixelsPerSecond));
+						if (screenPos > selectionRect.x && screenPos < selectionRect.x + selectionRect.width) {
+							if (selection.Contains(i)) {
+								selection.Remove(i);
+							} else {
+								selection.Add(i);
+							}
+
+						}
+					}
+				}
+			}
+
+			selectionRect = new Rect(0, 0, 0, 0);
+		}
+
+		// Update and Draw Selection Rect
+		if (selectionRect != new Rect(0, 0, 0, 0)) {
+			selectionRect = Rect.MinMaxRect(selectionRect.position.x, selectionRect.y, Event.current.mousePosition.x, Mathf.Clamp(Event.current.mousePosition.y, previewRect.y - 35, previewRect.y - 3));
+			EditorGUI.DrawRect(selectionRect, new Color(0.2f, 0.4f, 1f, 0.5f));
 		}
 
 		if (tip != null && dragging == false) {
@@ -1256,7 +1600,7 @@ public class LipSyncClipSetup : ModalParent {
 
 					if (emotionData[currentMarker].startTime <= lowSnapPoint && emotionData[currentMarker].startTime >= lowSnapPoint - (snappingDistance * 2)) {
 						emotionData[currentMarker].startTime = (lowSnapPoint - snappingDistance);
-					} 
+					}
 				} else if (currentComponent == 1) {
 					if (selection.Count > 1) {
 						selection.Sort(SortInt);
@@ -1312,7 +1656,7 @@ public class LipSyncClipSetup : ModalParent {
 					previewOutOfDate = true;
 
 					float tempChange = ((Event.current.mousePosition.x / (fileLength * pixelsPerSecond)) + (viewportStart / fileLength)) + startOffset;
-					emotionData[currentMarker].blendInTime = Mathf.Clamp(tempChange, 0, (emotionData[currentMarker].endTime - emotionData[currentMarker].startTime)+emotionData[currentMarker].blendOutTime);
+					emotionData[currentMarker].blendInTime = Mathf.Clamp(tempChange, 0, (emotionData[currentMarker].endTime - emotionData[currentMarker].startTime) + emotionData[currentMarker].blendOutTime);
 
 					if (selection.Count > 1) {
 						for (int m = 0; m < selection.Count; m++) {
@@ -1347,8 +1691,38 @@ public class LipSyncClipSetup : ModalParent {
 
 		if (Event.current.type == EventType.MouseUp && dragging == true) {
 			dragging = false;
+
+			if (markerTab == 0) {
+				phonemeData.Sort(LipSync.SortTime);
+
+				for (int i = 0; i < phonemeData.Count; i++) {
+					PhonemeMarker m = phonemeData[i];
+
+					if (i + 1 < phonemeData.Count) {
+						if (m.sustain && phonemeData[i + 1].phoneme != m.phoneme) {
+							m.sustain = false;
+							if (i - 1 >= 0) {
+								if (phonemeData[i - 1].phoneme == m.phoneme) {
+									phonemeData[i - 1].sustain = true;
+								}
+							}
+						}
+					} else if (i - 1 >= 0) {
+						if (m.sustain && phonemeData[i - 1].phoneme == m.phoneme) {
+							m.sustain = false;
+							phonemeData[i - 1].sustain = true;
+						} else {
+							m.sustain = false;
+						}
+					} else {
+						m.sustain = false;
+					}
+				}
+			} else {
+				emotionData.Sort(EmotionSort);
+			}
+
 			currentMarker = -1;
-			emotionData.Sort(EmotionSort);
 		}
 
 		//Controls
@@ -1373,35 +1747,11 @@ public class LipSyncClipSetup : ModalParent {
 			ClipSettings();
 		}
 		GUILayout.FlexibleSpace();
-		if (isPlaying) {
-			if (isPaused) {
-				if (GUILayout.Button(playIcon, EditorStyles.toolbarButton, GUILayout.Width(50))) {
-					AudioUtility.ResumeClip(clip);
-					isPaused = false;
-					isPlaying = true;
-				}
-			} else {
-				if (GUILayout.Button(pauseIcon, EditorStyles.toolbarButton, GUILayout.Width(50))) {
-					AudioUtility.PauseClip(clip);
-					isPaused = true;
-				}
-			}
-		} else {
-			if (GUILayout.Button(playIcon, EditorStyles.toolbarButton, GUILayout.Width(50))) {
-				AudioUtility.PlayClip(clip);
-				isPaused = false;
-				isPlaying = true;
-			}
+		if (GUILayout.Button(isPlaying && !isPaused ? pauseIcon : playIcon, EditorStyles.toolbarButton, GUILayout.Width(50))) {
+			PlayPause();
 		}
 		if (GUILayout.Button(stopIcon, EditorStyles.toolbarButton, GUILayout.Width(50))) {
-			isPaused = true;
-			isPlaying = false;
-			if (clip) AudioUtility.StopClip(clip);
-			seekPosition = 0;
-			oldSeekPosition = seekPosition;
-			float vpDiff = viewportEnd - viewportStart;
-			viewportStart = 0;
-			viewportEnd = vpDiff;
+			Stop();
 		}
 		looping = GUILayout.Toggle(looping, loopIcon, EditorStyles.toolbarButton, GUILayout.Width(50));
 
@@ -1460,19 +1810,71 @@ public class LipSyncClipSetup : ModalParent {
 		GUILayout.Space(1);
 	}
 
+	void Stop () {
+		isPaused = true;
+		isPlaying = false;
+		if (clip) AudioUtility.StopClip(clip);
+		seekPosition = 0;
+		oldSeekPosition = seekPosition;
+		float vpDiff = viewportEnd - viewportStart;
+		viewportStart = 0;
+		viewportEnd = vpDiff;
+	}
+
+	void PlayPause () {
+		if (isPlaying && !isPaused) {
+			AudioUtility.PauseClip(clip);
+			isPaused = true;
+		} else {
+			if (isPaused) {
+				AudioUtility.ResumeClip(clip);
+			} else {
+				AudioUtility.PlayClip(clip);
+			}
+
+			isPaused = false;
+			isPlaying = true;
+		}
+	}
+
 	//Context Menu Functions
-	void PhonemePicked(object raw) {
+	void PhonemePicked (object raw) {
 		object[] data = (object[])raw;
 		Phoneme picked = (Phoneme)data[0];
 		float time = (float)data[1];
-
 		Undo.RecordObject(this, "Add Phoneme Marker");
 		phonemeData.Add(new PhonemeMarker(picked, time));
+		phonemeData.Sort(LipSync.SortTime);
+
+		for (int i = 0; i < phonemeData.Count; i++) {
+			PhonemeMarker m = phonemeData[i];
+
+			if (i + 1 < phonemeData.Count) {
+				if (m.sustain && phonemeData[i + 1].phoneme != m.phoneme) {
+					m.sustain = false;
+					if (i - 1 >= 0) {
+						if (phonemeData[i - 1].phoneme == m.phoneme) {
+							phonemeData[i - 1].sustain = true;
+						}
+					}
+				}
+			} else if (i - 1 >= 0) {
+				if (m.sustain && phonemeData[i - 1].phoneme == m.phoneme) {
+					m.sustain = false;
+					phonemeData[i - 1].sustain = true;
+				} else {
+					m.sustain = false;
+				}
+			} else {
+				m.sustain = false;
+			}
+		}
+
 		changed = true;
 		previewOutOfDate = true;
 	}
 
-	void EmotionPicked(object raw) {
+	void EmotionPicked (object raw) {
 		object[] data = (object[])raw;
 		string picked = (string)data[0];
 		float time = (float)data[1];
@@ -1489,7 +1891,7 @@ public class LipSyncClipSetup : ModalParent {
 		previewOutOfDate = true;
 	}
 
-	void GesturePicked(object raw) {
+	void GesturePicked (object raw) {
 		object[] data = (object[])raw;
 		string picked = (string)data[0];
 		float time = (float)data[1];
@@ -1500,7 +1902,7 @@ public class LipSyncClipSetup : ModalParent {
 		changed = true;
 	}
 
-	void OnNewClick() {
+	void OnNewClick () {
 		if (changed) {
 			if (EditorUtility.DisplayDialog("Unsaved Data", "You have made changes to the current file, are you sure you want to clear it?", "Yes", "No")) {
 				lastLoad = "";
@@ -1509,7 +1911,6 @@ public class LipSyncClipSetup : ModalParent {
 				seekPosition = 0;
 				oldSeekPosition = 0;
 				clip = null;
-				DestroyImmediate(waveform);
 				phonemeData = new List<PhonemeMarker>();
 				emotionData = new List<EmotionMarker>();
 				unorderedEmotionData = new List<EmotionMarker>();
@@ -1518,7 +1919,10 @@ public class LipSyncClipSetup : ModalParent {
 				fileLength = 10;
 				transcript = "";
 				previewOutOfDate = true;
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
 				waveform = null;
+				DestroyImmediate(waveform);
+#endif
 				fileLength = 10;
 			}
 		} else {
@@ -1537,7 +1941,7 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void OnLoadClick() {
+	void OnLoadClick () {
 		string loadPath = EditorUtility.OpenFilePanel("Load LipSync Data File", "Assets", "asset");
 
 		if (loadPath != "") {
@@ -1546,9 +1950,9 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void OnSaveClick() {
+	void OnSaveClick () {
 		if (lastLoad != "") {
-			string savePath = "Assets" + lastLoad + clip.name + ".asset";
+			string savePath = lastLoad;
 			SaveFile(savePath, false);
 			changed = false;
 		} else {
@@ -1556,7 +1960,7 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void OnSaveAsClick() {
+	void OnSaveAsClick () {
 		string defaultName = "New Asset";
 
 		if (clip != null) {
@@ -1572,9 +1976,16 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void OnUnityExport() {
+	void OnUnityExport () {
 		string savePath = EditorUtility.SaveFilePanel("Export LipSync Data and audio", "Assets" + lastLoad, clip.name + ".unitypackage", "unitypackage");
 		if (savePath != "") {
+			if (!savePath.Contains("Assets/")) {
+				if (EditorUtility.DisplayDialog("Invalid Save Path", "Cannot export outside the assets folder. Do you want to pick a different folder?", "yes", "no")) {
+					OnUnityExport();
+				}
+				return;
+			}
+
 			savePath = "Assets" + savePath.Substring(Application.dataPath.Length);
 			string folderPath = savePath.Remove(savePath.Length - Path.GetFileName(savePath).Length) + Path.GetFileNameWithoutExtension(savePath);
 			AssetDatabase.CreateFolder(savePath.Remove(savePath.Length - (Path.GetFileName(savePath).Length + 1)), Path.GetFileNameWithoutExtension(savePath));
@@ -1612,7 +2023,7 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void OnXMLExport() {
+	void OnXMLExport () {
 		string savePath = EditorUtility.SaveFilePanel("Export LipSync Data to XML", "Assets" + lastLoad, clip.name + ".xml", "xml");
 		if (savePath != "") {
 			savePath = "Assets" + savePath.Substring(Application.dataPath.Length);
@@ -1620,7 +2031,7 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void OnXMLImport() {
+	void OnXMLImport () {
 		string xmlPath = EditorUtility.OpenFilePanel("Import LipSync Data from XML", "Assets" + lastLoad, "xml");
 		string audioPath = EditorUtility.OpenFilePanel("Load AudioClip", "Assets" + lastLoad, "wav;*.mp3;*.ogg");
 
@@ -1634,7 +2045,22 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void SelectAll() {
+	void TargetChosen (object data) {
+		if (data == null) {
+			visualPreview = false;
+		} else {
+			LipSync target = (LipSync)data;
+			visualPreview = true;
+			previewTarget = target;
+			target.onSettingsChanged += () => {
+				previewOutOfDate = true;
+			};
+			previewOutOfDate = true;
+			SceneView.RepaintAll();
+		}
+	}
+
+	void SelectAll () {
 		if (markerTab == 0) {
 			if (phonemeData.Count > 0) {
 				selection.Clear();
@@ -1662,12 +2088,12 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void SelectNone() {
+	void SelectNone () {
 		selection.Clear();
 		firstSelection = 0;
 	}
 
-	void InvertSelection() {
+	void InvertSelection () {
 		if (markerTab == 0) {
 			if (phonemeData.Count > 0) {
 				List<int> tempSelection = new List<int>();
@@ -1710,7 +2136,7 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void SetIntensitiesVolume() {
+	void SetIntensitiesVolume () {
 		SetIntensityWindow.CreateWindow(this, this);
 	}
 
@@ -1724,44 +2150,59 @@ public class LipSyncClipSetup : ModalParent {
 				emotionData[m].intensity = 1;
 			}
 		}
+
+		changed = true;
+		previewOutOfDate = true;
 	}
 
-	void ClipSettings() {
+	void ClipSettings () {
 		ClipSettingsWindow.CreateWindow(this, this);
 	}
 
-	void OpenURL(object url) {
+	void OpenURL (object url) {
 		Application.OpenURL((string)url);
 	}
 
-	void ShowProjectSettings() {
-		LipSyncProject settings = (LipSyncProject)AssetDatabase.LoadAssetAtPath("Assets/Rogo Digital/LipSync/ProjectSettings.asset", typeof(LipSyncProject));
-		if (settings == null) {
-			settings = ScriptableObject.CreateInstance<LipSyncProject>();
-
-			LipSyncProject newSettings = ScriptableObject.CreateInstance<LipSyncProject>();
-			newSettings.emotions = new string[] { "default" };
-			newSettings.emotionColors = new Color[] { new Color(1f, 0.7f, 0.1f) };
-
-			EditorUtility.CopySerialized(newSettings, settings);
-			AssetDatabase.CreateAsset(settings, "Assets/Rogo Digital/LipSync/ProjectSettings.asset");
-			AssetDatabase.Refresh();
-			DestroyImmediate(newSettings);
-		}
-		Selection.activeObject = settings;
+	void ShowProjectSettings () {
+		LipSyncProjectSettings.ShowWindow();
 	}
 
-	void ChangeMarkerPicked(object info) {
+	void ChangeMarkerPicked (object info) {
 		Undo.RecordObject(this, "Change Phoneme Marker");
 		List<int> finalInfo = (List<int>)info;
 
 		PhonemeMarker marker = phonemeData[finalInfo[0]];
 		marker.phoneme = (Phoneme)finalInfo[1];
+
+		for (int i = 0; i < phonemeData.Count; i++) {
+			PhonemeMarker m = phonemeData[i];
+
+			if (i + 1 < phonemeData.Count) {
+				if (m.sustain && phonemeData[i + 1].phoneme != m.phoneme) {
+					m.sustain = false;
+					if (i - 1 >= 0) {
+						if (phonemeData[i - 1].phoneme == m.phoneme) {
+							phonemeData[i - 1].sustain = true;
+						}
+					}
+				}
+			} else if (i - 1 >= 0) {
+				if (m.sustain && phonemeData[i - 1].phoneme == m.phoneme) {
+					m.sustain = false;
+					phonemeData[i - 1].sustain = true;
+				} else {
+					m.sustain = false;
+				}
+			} else {
+				m.sustain = false;
+			}
+		}
+
 		changed = true;
 		previewOutOfDate = true;
 	}
 
-	void ChangeGesturePicked(object info) {
+	void ChangeGesturePicked (object info) {
 		Undo.RecordObject(this, "Change Gesture Marker");
 		List<object> finalInfo = (List<object>)info;
 
@@ -1770,19 +2211,19 @@ public class LipSyncClipSetup : ModalParent {
 		changed = true;
 	}
 
-	void PhonemeMarkerSettings(object info) {
+	void PhonemeMarkerSettings (object info) {
 		PhonemeMarker marker = (PhonemeMarker)info;
 		highlightedMarker = phonemeData.IndexOf(marker);
 		MarkerSettingsWindow.CreateWindow(this, this, marker);
 	}
 
-	void EmotionMarkerSettings(object info) {
+	void EmotionMarkerSettings (object info) {
 		EmotionMarker marker = (EmotionMarker)info;
 		highlightedMarker = emotionData.IndexOf(marker);
 		MarkerSettingsWindow.CreateWindow(this, this, marker);
 	}
 
-	void RemoveMissingEmotions() {
+	void RemoveMissingEmotions () {
 		foreach (EmotionMarker marker in emotionData) {
 			bool verified = false;
 			foreach (string emotion in settings.emotions) {
@@ -1794,9 +2235,12 @@ public class LipSyncClipSetup : ModalParent {
 				DeleteEmotion(marker);
 			}
 		}
+
+		changed = true;
+		previewOutOfDate = true;
 	}
 
-	void RemoveMissingGestures() {
+	void RemoveMissingGestures () {
 		foreach (GestureMarker marker in gestureData) {
 			bool verified = false;
 			foreach (string gesture in settings.gestures) {
@@ -1810,7 +2254,7 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void ChangeEmotionPicked(object info) {
+	void ChangeEmotionPicked (object info) {
 		Undo.RecordObject(this, "Change Emotion Marker");
 		List<object> finalInfo = (List<object>)info;
 
@@ -1820,8 +2264,14 @@ public class LipSyncClipSetup : ModalParent {
 		previewOutOfDate = true;
 	}
 
-	void DeleteMarker(object marker) {
+	void DeleteMarker (object marker) {
 		Undo.RecordObject(this, "Delete Phoneme Marker");
+		int i = phonemeData.IndexOf((PhonemeMarker)marker);
+
+		if (i - 1 >= 0) {
+			phonemeData[i - 1].sustain = false;
+		}
+
 		phonemeData.Remove((PhonemeMarker)marker);
 		selection.Clear();
 		firstSelection = 0;
@@ -1829,9 +2279,16 @@ public class LipSyncClipSetup : ModalParent {
 		previewOutOfDate = true;
 	}
 
-	void DeleteSelectedMarkers() {
+	void DeleteSelectedMarkers () {
 		Undo.RecordObject(this, "Delete Phoneme Markers");
 		selection.Sort(SortInt);
+
+		int i = phonemeData.IndexOf(phonemeData[selection[0]]);
+
+		if (i - 1 >= 0) {
+			phonemeData[i - 1].sustain = false;
+		}
+
 		for (int marker = selection.Count - 1; marker >= 0; marker--) {
 			phonemeData.Remove((phonemeData[selection[marker]]));
 		}
@@ -1841,7 +2298,7 @@ public class LipSyncClipSetup : ModalParent {
 		previewOutOfDate = true;
 	}
 
-	void DeleteGesture(object marker) {
+	void DeleteGesture (object marker) {
 		Undo.RecordObject(this, "Delete Gesture Marker");
 		gestureData.Remove((GestureMarker)marker);
 		changed = true;
@@ -1849,7 +2306,7 @@ public class LipSyncClipSetup : ModalParent {
 		firstSelection = 0;
 	}
 
-	void DeleteSelectedGestures() {
+	void DeleteSelectedGestures () {
 		Undo.RecordObject(this, "Delete Gesture Markers");
 		selection.Sort(SortInt);
 		for (int marker = selection.Count - 1; marker >= 0; marker--) {
@@ -1860,7 +2317,7 @@ public class LipSyncClipSetup : ModalParent {
 		changed = true;
 	}
 
-	void DeleteEmotion(object marker) {
+	void DeleteEmotion (object marker) {
 		Undo.RecordObject(this, "Delete Emotion Marker");
 		currentMarker = emotionData.IndexOf((EmotionMarker)marker);
 		changed = true;
@@ -1888,7 +2345,7 @@ public class LipSyncClipSetup : ModalParent {
 		FixEmotionBlends();
 	}
 
-	void DeleteSelectedEmotions() {
+	void DeleteSelectedEmotions () {
 		Undo.RecordObject(this, "Delete Emotion Markers");
 		selection.Sort(SortInt);
 
@@ -1923,7 +2380,15 @@ public class LipSyncClipSetup : ModalParent {
 		previewOutOfDate = true;
 	}
 
-	void Update() {
+	void ToggleSustain (object marker) {
+		PhonemeMarker m = (PhonemeMarker)marker;
+		m.sustain = !m.sustain;
+
+		changed = true;
+		previewOutOfDate = true;
+	}
+
+	void Update () {
 		float deltaTime = Time.realtimeSinceStartup - prevTime;
 		prevTime = Time.realtimeSinceStartup;
 
@@ -1955,7 +2420,9 @@ public class LipSyncClipSetup : ModalParent {
 		//Check for clip change
 		if (oldClip != clip) {
 			Undo.RecordObject(this, "Change AudioClip");
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
 			DestroyImmediate(waveform);
+#endif
 			oldClip = clip;
 			if (setViewportOnLoad) {
 				if (clip) fileLength = clip.length;
@@ -1967,7 +2434,9 @@ public class LipSyncClipSetup : ModalParent {
 		//Check for resize;
 		if (oldPos.width != this.position.width || oldPos.height != this.position.height) {
 			oldPos = this.position;
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
 			if (clip) DestroyImmediate(waveform);
+#endif
 		}
 
 		//Check for Seek Position change
@@ -1995,13 +2464,13 @@ public class LipSyncClipSetup : ModalParent {
 		if (clip != null) {
 			seekPosition = AudioUtility.GetClipPosition(clip) / fileLength;
 		} else if (isPlaying && !isPaused) {
-			seekPosition += deltaTime/fileLength;
+			seekPosition += deltaTime / fileLength;
 			if (seekPosition >= 1) {
 				isPlaying = false;
 				seekPosition = 0;
 			}
 		}
-		
+
 		oldSeekPosition = seekPosition;
 
 		if (previewing) {
@@ -2019,27 +2488,27 @@ public class LipSyncClipSetup : ModalParent {
 				}
 			}
 		}
-
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
 		if (waveform == null && waveformHeight > 0 && clip != null) {
-			waveform = AudioUtility.GetWaveForm(clip, 0, (int)(fileLength * (position.width / (viewportEnd - viewportStart))), (position.height - waveformHeight) - 18);
+			waveform = AudioUtility.GetWaveForm(clip, 0, (int)Mathf.Clamp(fileLength * (position.width / (viewportEnd - viewportStart)), 0, maxWaveformWidth), (position.height - waveformHeight) - 18);
 			Repaint();
 		}
-
+#endif
 		if (isPlaying && !isPaused && visualPreview || previewing && visualPreview) {
 			UpdatePreview(seekPosition);
 		}
 	}
 
 	[MenuItem("Window/Rogo Digital/LipSync Pro/Open Clip Editor %&a", false, 11)]
-	public static LipSyncClipSetup ShowWindow() {
+	public static LipSyncClipSetup ShowWindow () {
 		return ShowWindow("", false, "", "", 0, 0);
 	}
 
-	public static LipSyncClipSetup ShowWindow(string loadPath, bool newWindow) {
+	public static LipSyncClipSetup ShowWindow (string loadPath, bool newWindow) {
 		return ShowWindow(loadPath, newWindow, "", "", 0, 0);
 	}
 
-	public static LipSyncClipSetup ShowWindow(string loadPath, bool newWindow, string oldFileName, string oldLastLoad, int oldMarkerTab, float oldSeekPosition) {
+	public static LipSyncClipSetup ShowWindow (string loadPath, bool newWindow, string oldFileName, string oldLastLoad, int oldMarkerTab, float oldSeekPosition) {
 		LipSyncClipSetup window;
 
 		UnityEngine.Object[] current = Selection.GetFiltered(typeof(AudioClip), SelectionMode.Assets);
@@ -2054,7 +2523,9 @@ public class LipSyncClipSetup : ModalParent {
 		if (current.Length > 0) {
 			window.clip = (AudioClip)current[0];
 			window.fileLength = window.clip.length;
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
 			window.waveform = null;
+#endif
 		} else if (loadPath == "") {
 			current = Selection.GetFiltered(typeof(LipSyncData), SelectionMode.Assets);
 			if (current.Length > 0) {
@@ -2129,8 +2600,8 @@ public class LipSyncClipSetup : ModalParent {
 			window.markerTab = oldMarkerTab;
 			window.seekPosition = oldSeekPosition;
 			window.oldSeekPosition = oldSeekPosition;
-			if(window.clip != null) AudioUtility.SetClipSamplePosition(window.clip, (int)(window.seekPosition * AudioUtility.GetSampleCount(window.clip)));
-			AssetDatabase.DeleteAsset("Assets/Rogo Digital/LipSync/AUTOSAVE.asset");
+			if (window.clip != null) AudioUtility.SetClipSamplePosition(window.clip, (int)(window.seekPosition * AudioUtility.GetSampleCount(window.clip)));
+			AssetDatabase.DeleteAsset("Assets/LIPSYNC_AUTOSAVE.asset");
 		}
 
 		if (EditorPrefs.GetBool("LipSync_SetViewportOnLoad", true)) {
@@ -2143,7 +2614,7 @@ public class LipSyncClipSetup : ModalParent {
 		return window;
 	}
 
-	void LoadFile(string path) {
+	void LoadFile (string path) {
 		if (changed) {
 			int choice = EditorUtility.DisplayDialogComplex("Save Changes", "You have made changes to the current file, do you want to save them before closing?", "Yes", "No", "Cancel");
 
@@ -2155,13 +2626,15 @@ public class LipSyncClipSetup : ModalParent {
 		}
 		LipSyncData file = (LipSyncData)AssetDatabase.LoadAssetAtPath(path, typeof(LipSyncData));
 
-		if(file.clip != null) clip = file.clip;
+		if (file.clip != null) clip = file.clip;
 		oldClip = clip;
-		if (clip != null)  waveform = AudioUtility.GetWaveForm(clip, 0, (int)(fileLength * (position.width / (viewportEnd - viewportStart))), (position.height - waveformHeight) - 18);
+#if !(UNITY_5_3_6 || UNITY_5_4_OR_NEWER)
+		if (clip != null) waveform = AudioUtility.GetWaveForm(clip, 0, (int)(fileLength * (position.width / (viewportEnd - viewportStart))), (position.height - waveformHeight) - 18);
+#endif
 		fileName = file.name + ".Asset";
 
 		fileLength = file.length;
-		if(file.transcript != null) transcript = file.transcript;
+		if (file.transcript != null) transcript = file.transcript;
 
 		if (setViewportOnLoad) {
 			if (clip != null) fileLength = clip.length;
@@ -2171,13 +2644,16 @@ public class LipSyncClipSetup : ModalParent {
 
 		phonemeData = new List<PhonemeMarker>();
 		foreach (PhonemeMarker marker in file.phonemeData) {
-			phonemeData.Add(new PhonemeMarker(marker.phoneme, marker.time));
+			PhonemeMarker newMarker = new PhonemeMarker(marker.phoneme, marker.time);
+			newMarker.intensity = marker.intensity;
+			phonemeData.Add(newMarker);
 		}
 
 		emotionData = new List<EmotionMarker>();
 		unorderedEmotionData = new List<EmotionMarker>();
 		foreach (EmotionMarker marker in file.emotionData) {
 			EmotionMarker newMarker = new EmotionMarker(marker.emotion, marker.startTime, marker.endTime, marker.blendInTime, marker.blendOutTime, marker.blendToMarker, marker.blendFromMarker, marker.customBlendIn, marker.customBlendOut);
+			newMarker.intensity = marker.intensity;
 			emotionData.Add(newMarker);
 			unorderedEmotionData.Add(newMarker);
 		}
@@ -2198,12 +2674,10 @@ public class LipSyncClipSetup : ModalParent {
 		}
 
 		FixEmotionBlends();
-
-		string[] pathParts = path.Split(new string[] { "/" }, StringSplitOptions.None);
-		lastLoad = path.Remove(path.Length - pathParts[pathParts.Length - 1].Length).Substring(6);
+		lastLoad = path;
 	}
 
-	private void LoadXML(TextAsset xmlFile, AudioClip linkedClip) {
+	private void LoadXML (TextAsset xmlFile, AudioClip linkedClip) {
 		XmlDocument document = new XmlDocument();
 		document.LoadXml(xmlFile.text);
 
@@ -2309,7 +2783,7 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void SaveFile(string path, bool isXML) {
+	void SaveFile (string path, bool isXML) {
 		if (isXML) {
 			XmlWriterSettings settings = new XmlWriterSettings { Indent = true, IndentChars = "\t" };
 			XmlWriter writer = XmlWriter.Create(path, settings);
@@ -2393,7 +2867,7 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void UpdatePreview(float time) {
+	void UpdatePreview (float time) {
 		if (previewTarget != null) {
 			if (previewTarget.blendSystem != null) {
 				if (previewTarget.blendSystem.isReady) {
@@ -2411,7 +2885,7 @@ public class LipSyncClipSetup : ModalParent {
 	}
 
 	//Save Changes
-	void OnDestroy() {
+	void OnDestroy () {
 		AudioUtility.StopAllClips();
 		SceneView.onSceneGUIDelegate -= OnSceneGUI;
 
@@ -2419,21 +2893,21 @@ public class LipSyncClipSetup : ModalParent {
 			string oldName = fileName;
 			string oldLastLoad = lastLoad;
 			float localOldSeekPosition = seekPosition; ;
-			SaveFile("Assets/Rogo Digital/LipSync/AUTOSAVE.asset", false);
+			SaveFile("Assets/LIPSYNC_AUTOSAVE.asset", false);
 			int choice = EditorUtility.DisplayDialogComplex("Save Changes", "You have made changes to the current file, do you want to save them before closing?", "Yes", "No", "Cancel");
 
 			if (choice == 0) {
 				OnSaveClick();
-				AssetDatabase.DeleteAsset("Assets/Rogo Digital/LipSync/AUTOSAVE.asset");
+				AssetDatabase.DeleteAsset("Assets/LIPSYNC_AUTOSAVE.asset");
 			} else if (choice == 1) {
-				AssetDatabase.DeleteAsset("Assets/Rogo Digital/LipSync/AUTOSAVE.asset");
+				AssetDatabase.DeleteAsset("Assets/LIPSYNC_AUTOSAVE.asset");
 			} else {
-				ShowWindow("Assets/Rogo Digital/LipSync/AUTOSAVE.asset", true, oldName, oldLastLoad, markerTab, localOldSeekPosition);
+				ShowWindow("Assets/LIPSYNC_AUTOSAVE.asset", true, oldName, oldLastLoad, markerTab, localOldSeekPosition);
 			}
 		}
 	}
 
-	public void StartAutoSync() {
+	public void StartAutoSync () {
 		if (languageModelNames.Length > 0) {
 			AutoSync.ProcessAudio(clip, languageModelNames[defaultLanguageModel], OnAutoSyncDataReady, EditorPrefs.GetBool("LipSync_SoXAvailable", false));
 		} else {
@@ -2441,7 +2915,7 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	void OnAutoSyncDataReady(AudioClip clip, List<PhonemeMarker> markers) {
+	void OnAutoSyncDataReady (AudioClip clip, List<PhonemeMarker> markers) {
 		if (markers.Count > 0) {
 			phonemeData = markers;
 			changed = true;
@@ -2449,13 +2923,13 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	public void StartAutoSyncText(object mode) {
+	public void OpenAutoSyncWindow (object mode) {
 		AutoSyncWindow.CreateWindow(this, this, (int)mode);
 	}
 
-	void UpdateFile(float version) {
+	void UpdateFile (float version) {
 		switch (version.ToString()) {
-			default:
+			case "0":
 				// Pre 1.0 - Update Emotion Markers
 				emotionData.Sort(EmotionSort);
 				for (int e = 0; e < emotionData.Count; e++) {
@@ -2479,12 +2953,14 @@ public class LipSyncClipSetup : ModalParent {
 				previewOutOfDate = true;
 				changed = true;
 				break;
+			default:
+				break;
 		}
 		Repaint();
 		EditorUtility.DisplayDialog("Loading Old File", "This file was created in an old version of LipSync. It has been automatically updated to work with the current version, but the original file has not been overwritten.", "Ok");
 	}
 
-	public bool MinMaxScrollbar(Rect position, Rect viewportRect, ref float minValue, ref float maxValue, float minLimit, float maxLimit , float minThumbSize) {
+	public bool MinMaxScrollbar (Rect position, Rect viewportRect, ref float minValue, ref float maxValue, float minLimit, float maxLimit, float minThumbSize) {
 		float thumbWidth = (maxValue - minValue) / (maxLimit - minLimit);
 		Rect thumbRect = new Rect((position.x + 32) + ((position.width - 64) * (minValue / maxLimit)), position.y, (position.width - 64) * thumbWidth, position.height);
 		Rect thumbLeftRect = new Rect(thumbRect.x - 15, thumbRect.y, 15, thumbRect.height);
@@ -2564,7 +3040,7 @@ public class LipSyncClipSetup : ModalParent {
 				maxValue = maxLimit;
 			}
 			maxValue = Mathf.Clamp(maxValue, minValue + minThumbSize, fileLength);
-			
+
 			Event.current.Use();
 		}
 
@@ -2577,7 +3053,7 @@ public class LipSyncClipSetup : ModalParent {
 
 			minValue += Event.current.delta.y > 0 ? -t : t;
 			maxValue += Event.current.delta.y > 0 ? t : -t;
-			
+
 			var pointerTimeB = minValue + (Event.current.mousePosition.x / pixelsPerSecond);
 			var diff = pointerTimeA - pointerTimeB;
 
@@ -2599,7 +3075,7 @@ public class LipSyncClipSetup : ModalParent {
 		return false;
 	}
 
-	void FixEmotionBlends() {
+	void FixEmotionBlends () {
 		unorderedEmotionData.Sort(EmotionSortSize);
 
 		foreach (EmotionMarker eMarker in emotionData) {
@@ -2647,22 +3123,22 @@ public class LipSyncClipSetup : ModalParent {
 		}
 	}
 
-	static int EmotionSort(EmotionMarker a, EmotionMarker b) {
+	static int EmotionSort (EmotionMarker a, EmotionMarker b) {
 		return a.startTime.CompareTo(b.startTime);
 	}
 
-	static int EmotionSortSize(EmotionMarker a, EmotionMarker b) {
+	static int EmotionSortSize (EmotionMarker a, EmotionMarker b) {
 		float aLength = a.endTime - a.startTime;
 		float bLength = b.endTime - b.startTime;
 
 		return bLength.CompareTo(aLength);
 	}
 
-	static int SortInt(int a, int b) {
+	static int SortInt (int a, int b) {
 		return a.CompareTo(b);
 	}
 
-	static Color HexToColor(int color) {
+	static Color HexToColor (int color) {
 		string hex = color.ToString("X").PadLeft(6, (char)'0');
 
 		int R = Convert.ToInt32(hex.Substring(0, 2), 16);
@@ -2671,7 +3147,7 @@ public class LipSyncClipSetup : ModalParent {
 		return new Color(R / 255f, G / 255f, B / 255f);
 	}
 
-	static int ColorToHex(Color color) {
+	static int ColorToHex (Color color) {
 		string R = ((int)(color.r * 255)).ToString("X").PadLeft(2, (char)'0');
 		string G = ((int)(color.g * 255)).ToString("X").PadLeft(2, (char)'0');
 		string B = ((int)(color.b * 255)).ToString("X").PadLeft(2, (char)'0');
@@ -2680,7 +3156,11 @@ public class LipSyncClipSetup : ModalParent {
 		return Convert.ToInt32(hex, 16);
 	}
 
-	static Color Darken(Color color, float amount) {
+	static Color Darken (Color color, float amount) {
 		return new Color(color.r * amount, color.g * amount, color.b * amount);
 	}
+
+	// Customisation Delegates
+	public delegate void LipSyncClipEditorMenuDelegate (LipSyncClipSetup instance);
+	public delegate void LipSyncClipEditorMenuItemDelegate (LipSyncClipSetup instance, GenericMenu menu);
 }

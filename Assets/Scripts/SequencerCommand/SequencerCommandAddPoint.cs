@@ -11,20 +11,14 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
     {
         public void Start()
         {
-            if (GetParameter(2) == null)
+            if (GetParameter(3) == null)
             {
                 int score1 = int.Parse(GetParameter(0));
                 int score2 = int.Parse(GetParameter(1));
+                int score3 = int.Parse(GetParameter(2));
 
-                Data.scoreObj1 += score1;
-                if (Data.scoreObj1 < 0) { Data.scoreObj1 = 0; }
-                GameObject.Find("HeaderPanel").GetComponent<Animation>().Play("AddScore");
-                GameObject.Find("count1").GetComponent<Text>().text = (Data.scoreObj1).ToString() + "/" + (Data.MaxScoreObj1).ToString();
-
-                Data.scoreObj2 += score2;
-                if (Data.scoreObj2 < 0) { Data.scoreObj2 = 0; }
-                GameObject.Find("HeaderPanel").GetComponent<Animation>().Play("AddScore");
-                GameObject.Find("count2").GetComponent<Text>().text = (Data.scoreObj2).ToString() + "/" + (Data.MaxScoreObj2).ToString();
+                OverMind overmind = GameObject.Find("GameManager").GetComponent<OverMind>();
+                overmind.AddPoint(score1, score2, score3);
             }
 
             Stop();

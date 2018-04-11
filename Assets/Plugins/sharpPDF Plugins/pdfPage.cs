@@ -523,7 +523,6 @@ namespace sharpPDF
             }
         }
 
-
         public void addSuccessTable(pdfDocument myDoc, List<pdfPage> pages, pdfTable newTable, int x, int y, int nextPageHeight, pdfTable copyTable)
         {
             int headerHeight = copyTable.tableHeaderStyle.fontSize + (copyTable.cellpadding * 2);
@@ -531,67 +530,22 @@ namespace sharpPDF
             int tableWidth = copyTable.borderSize;
             int i;
             int j;
-            int coordx;
             int coordy;
-            int textx;
-            string textWord;
             int indexPage = 0;
 
             pdfTableRowStyle myStyle;
-            bool alternate = false;
             for (i = 0; i < newTable.tableHeader.columnsCount; i++)
             {
                 tableWidth += (newTable.borderSize + newTable.tableHeader[i].columnSize);
             }
-            //Table's Header
-            coordx = x;
-            //pages[indexPage].drawRectangle(x, y, x + tableWidth, y - headerHeight, newTable.borderColor, newTable.tableHeaderStyle.bgColor, newTable.borderSize);
-            for (i = 0; i < newTable.tableHeader.columnsCount; i++)
-            {
-                textWord = textAdapter.cropWord(newTable.tableHeader[i].columnValue, newTable.tableHeaderStyle.fontSize, newTable.tableHeaderStyle.fontType, newTable.tableHeader[i].columnSize - (newTable.cellpadding * 2));
-                switch (newTable.tableHeader[i].columnAlign)
-                {
-                    case predefinedAlignment.csLeft:
-                    default:
-                        textx = coordx + newTable.cellpadding;
-                        break;
-                    case predefinedAlignment.csCenter:
-                        textx = coordx + ((newTable.tableHeader[i].columnSize - textAdapter.wordWeight(textWord, newTable.tableHeaderStyle.fontSize, newTable.tableHeaderStyle.fontType)) / 2);
-                        break;
-                    case predefinedAlignment.csRight:
-                        textx = coordx + (newTable.tableHeader[i].columnSize - newTable.cellpadding - textAdapter.wordWeight(textWord, newTable.tableHeaderStyle.fontSize, newTable.tableHeaderStyle.fontType));
-                        break;
 
-                }
-                pages[indexPage].addText(textWord, textx, y - (headerHeight - newTable.cellpadding), newTable.tableHeaderStyle.fontType, newTable.tableHeaderStyle.fontSize, newTable.tableHeaderStyle.fontColor);
-                coordx += newTable.tableHeader[i].columnSize + newTable.borderSize;
-                if (i < (newTable.tableHeader.columnsCount - 1))
-                {
-                    pages[indexPage].drawLine(coordx, y, coordx, y - headerHeight, newTable.borderColor, newTable.borderSize);
-                }
-            }
             //Table's Rows            
             coordy = y - headerHeight;
             for (i = 0; i < newTable.rowsCount; i++)
             {
-                if (newTable[i].RowStyleProp != null)
-                {
-                    myStyle = newTable[i].RowStyleProp;
-                }
-                else
-                {
-                    if (alternate && newTable.alternateRowStyle != null)
-                    {
-                        myStyle = newTable.alternateRowStyle;
-                    }
-                    else
-                    {
-                        myStyle = newTable.rowStyle;
-                    }
-                }
-                alternate = !(alternate);
+                myStyle = newTable[i].RowStyleProp;
                 int hSize = 1;
-                for (j = 0; j < copyTable.tableHeader.columnsCount; j++)
+                for (j = 0; j < copyTable[i].columnsCount; j++)
                 {
                     List<string> textList = new List<string>();
                     textList = textAdapter.getTextList(copyTable[i][j].columnValue, copyTable.tableHeader[j].columnSize, myStyle.fontSize, myStyle.fontType, newTable.cellpadding);
@@ -600,45 +554,12 @@ namespace sharpPDF
                 }
                 if (coordy - (rowHeight * hSize) <= 50)
                 {
-                    //pages.Add(pages[indexPage]);
                     indexPage++;
-                    //pdfPage page = new pdfPage();
-                    //page = myDoc.addPage();
-                    //pages[indexPage] = page;
                     y = nextPageHeight;
                     coordy = y - headerHeight;
                 }
-                pages[indexPage].drawRectangle(x, coordy, x + tableWidth, coordy - (myStyle.fontSize * hSize) - rowHeight, myStyle.borderColor, myStyle.bgColor, newTable.borderSize);
-                coordx = x;
-                //for (j = 0; j < copyTable.tableHeader.columnsCount; j++)
-                //{
-                //    List<string> textList = new List<string>();
-                //    textList = textAdapter.getTextList(copyTable[i][j].columnValue, copyTable.tableHeader[j].columnSize, myStyle.fontSize, myStyle.fontType, newTable.cellpadding);
-                //    switch (copyTable[i][j].columnAlign)
-                //    {
-                //        case predefinedAlignment.csLeft:
-                //        default:
-                //            textx = coordx + copyTable.cellpadding;
-                //            break;
-                            //case predefinedAlignment.csCenter:
-                            //    textx = coordx + ((newTable.tableHeader[j].columnSize - textAdapter.wordWeight(textWord, myStyle.fontSize, myStyle.fontType)) / 2);
-                            //    break;
-                            //case predefinedAlignment.csRight:
-                            //    textx = coordx + (newTable.tableHeader[j].columnSize - newTable.cellpadding - textAdapter.wordWeight(textWord, myStyle.fontSize, myStyle.fontType));
-                            //    break;
-                    //}
-                    //int yPlace = coordy - myStyle.fontSize - copyTable.cellpadding;
-                    //foreach (string text in textList)
-                    //{
-                    //    pages[indexPage].addText(text, textx, yPlace, myStyle.fontType, myStyle.fontSize, myStyle.fontColor);
-                    //    yPlace -= myStyle.fontSize;
-                    //}
-                    //coordx += newTable.tableHeader[j].columnSize + newTable.borderSize;
-                    //if (j < (copyTable.tableHeader.columnsCount - 1))
-                    //{
-                    //    pages[indexPage].drawLine(coordx, coordy, coordx, coordy - (myStyle.fontSize * hSize) - rowHeight + copyTable.borderSize, myStyle.borderColor, copyTable.borderSize);
-                    //}
-                //}
+                if (copyTable[i].columnsCount == copyTable.tableHeader.columnsCount)
+                    pages[indexPage].drawRectangle(x, coordy, x + tableWidth, coordy - (myStyle.fontSize * hSize) - rowHeight, myStyle.borderColor, myStyle.bgColor, newTable.borderSize);
                 coordy -= (myStyle.fontSize * hSize) + rowHeight;
 
             }
@@ -720,7 +641,8 @@ namespace sharpPDF
                 }
                 alternate = !(alternate);
                 int hSize = 1;
-                for (j = 0; j < newTable.tableHeader.columnsCount; j++)
+                
+                for (j = 0; j < newTable[i].columnsCount; j++)
                 {
                     List<string> textList = new List<string>();
                     textList = textAdapter.getTextList(newTable[i][j].columnValue, newTable.tableHeader[j].columnSize, myStyle.fontSize, myStyle.fontType, newTable.cellpadding);
@@ -739,7 +661,7 @@ namespace sharpPDF
                 }
                 pages[indexPage].drawRectangle(x, coordy, x + tableWidth, coordy - (myStyle.fontSize * hSize) - rowHeight, myStyle.borderColor, myStyle.bgColor, newTable.borderSize);
                 coordx = x;
-                for (j = 0; j < newTable.tableHeader.columnsCount; j++)
+                for (j = 0; j < newTable[i].columnsCount; j++)
                 {
                     List<string> textList = new List<string>();
                     textList = textAdapter.getTextList(newTable[i][j].columnValue, newTable.tableHeader[j].columnSize, myStyle.fontSize, myStyle.fontType, newTable.cellpadding);
@@ -749,12 +671,6 @@ namespace sharpPDF
                         default:
                             textx = coordx + newTable.cellpadding;
                             break;
-                        //case predefinedAlignment.csCenter:
-                        //    textx = coordx + ((newTable.tableHeader[j].columnSize - textAdapter.wordWeight(textWord, myStyle.fontSize, myStyle.fontType)) / 2);
-                        //    break;
-                        //case predefinedAlignment.csRight:
-                        //    textx = coordx + (newTable.tableHeader[j].columnSize - newTable.cellpadding - textAdapter.wordWeight(textWord, myStyle.fontSize, myStyle.fontType));
-                        //    break;
                     }
                     int yPlace = coordy - myStyle.fontSize - newTable.cellpadding;
                     foreach (string text in textList)
@@ -763,7 +679,7 @@ namespace sharpPDF
                         yPlace -= myStyle.fontSize ;
                     }
                     coordx += newTable.tableHeader[j].columnSize + newTable.borderSize;
-                    if (j < (newTable.tableHeader.columnsCount - 1))
+                    if (j < (newTable[i].columnsCount - 1))
                     {
                         pages[indexPage].drawLine(coordx, coordy, coordx, coordy - (myStyle.fontSize * hSize) - rowHeight + newTable.borderSize, myStyle.borderColor, newTable.borderSize);
                     }

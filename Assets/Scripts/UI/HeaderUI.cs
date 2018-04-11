@@ -2,8 +2,6 @@
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using PixelCrushers.DialogueSystem;
-using System.Collections.Generic;
-using System.Collections;
 
 public class HeaderUI : MonoBehaviour
 {
@@ -30,6 +28,7 @@ public class HeaderUI : MonoBehaviour
     private float cpt;
     private int min = 0;
     private int sec = 0;
+    private bool profileIn = false;
 
     void Awake()
     {
@@ -48,12 +47,7 @@ public class HeaderUI : MonoBehaviour
 
         GameObject.Find("count1").GetComponent<Text>().text = (Data.scoreObj1).ToString() + "/" + (Data.MaxScoreObj1).ToString();
         GameObject.Find("count2").GetComponent<Text>().text = (Data.scoreObj2).ToString() + "/" + (Data.MaxScoreObj2).ToString();
-    }
-
-    void OnDestroy()
-    {
-        Data.min = min;
-        Data.sec = sec;
+        GameObject.Find("count3").GetComponent<Text>().text = (Data.scoreObj3).ToString() + "/" + (Data.MaxScoreObj3).ToString();
     }
 
     void Update()
@@ -61,16 +55,20 @@ public class HeaderUI : MonoBehaviour
         CalculateTime();
     }
 
-    public void PointerEnterProfile()
+    public void MoveProfile()
     {
         if (profileButton.enabled)
-            anim.Play("MoveIn");
-    }
-
-    public void PointerExitProfile()
-    {
-        if (profileButton.enabled)
-            anim.Play("MoveOut");
+        {
+            if (profileIn)
+            {
+                profilePanel.GetComponent<Animation>().Play("MoveOut");
+                profileIn = false;
+            } else
+            {
+                profilePanel.GetComponent<Animation>().Play("MoveIn");
+                profileIn = true;
+            }
+        }
     }
 
     public void CalculateTime()
@@ -166,18 +164,18 @@ public class HeaderUI : MonoBehaviour
             Time.timeScale = 1;
             Data.min = 0;
             Data.sec = 0;
-            DialogueManager.Unpause();
+			DialogueManager.Unpause();
             Data.reinitScore();
             Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
         }
 
-        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXPlayer)
+        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXPlayer || Application.platform == RuntimePlatform.Android)
         {
             Time.timeScale = 1;
             Data.min = 0;
             Data.sec = 0;
-            DialogueManager.Unpause();
+			DialogueManager.Unpause();
             Data.reinitScore();
             Application.Quit();
         }
@@ -199,7 +197,7 @@ public class HeaderUI : MonoBehaviour
         Time.timeScale = 1;
         Data.min = 0;
         Data.sec = 0;
-        DialogueManager.Unpause();
+		DialogueManager.Unpause();
         DialogueManager.StopConversation();
         Data.ReinitLuaVar();
         Data.reinitScore();

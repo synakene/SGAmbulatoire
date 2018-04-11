@@ -43,6 +43,9 @@ namespace PixelCrushers.DialogueSystem {
 		/// </summary>
 		[Tooltip("Optional continue button; configure OnClick to invoke dialogue UI's OnContinue method")]
 		public UnityEngine.UI.Button continueButton;
+
+        [Tooltip("Ignore RPGMaker-style pause codes")]
+        public bool ignorePauseCodes = false;
 		
 		[Serializable]
 		public class AnimationTransitions {
@@ -110,17 +113,21 @@ namespace PixelCrushers.DialogueSystem {
 			Tools.SetGameObjectActive(continueButton, alwaysVisible);
 		}
 		
-		public override void HideContinueButton() {
-			Tools.SetGameObjectActive(continueButton, false);
+		public override void ShowContinueButton() {
+			Tools.SetGameObjectActive(continueButton, true);
 		}
-		
-		/// <summary>
-		/// Sets the subtitle.
-		/// </summary>
-		/// <param name='subtitle'>
-		/// Subtitle.
-		/// </param>
-		public override void SetSubtitle(Subtitle subtitle) {
+
+        public override void HideContinueButton() {
+            Tools.SetGameObjectActive(continueButton, false);
+        }
+
+        /// <summary>
+        /// Sets the subtitle.
+        /// </summary>
+        /// <param name='subtitle'>
+        /// Subtitle.
+        /// </param>
+        public override void SetSubtitle(Subtitle subtitle) {
 			if ((subtitle != null) && !string.IsNullOrEmpty(subtitle.formattedText.text)) {
 				if (portraitImage != null) portraitImage.sprite = UITools.CreateSprite(subtitle.GetSpeakerPortrait());
 				if (portraitName != null) portraitName.text = subtitle.speakerInfo.Name;
@@ -160,7 +167,9 @@ namespace PixelCrushers.DialogueSystem {
 		private void SetFormattedText(UnityEngine.UI.Text label, FormattedText formattedText) {
 			if (label != null) {
 				if (formattedText != null) {
-					label.text = UITools.GetUIFormattedText(formattedText);
+                    var text = UITools.GetUIFormattedText(formattedText);
+                    if (ignorePauseCodes) text = UnityUITypewriterEffect.StripRPGMakerCodes(text);
+                    label.text = text;
 					if (!haveSavedOriginalColor) {
 						originalColor = label.color;
 						haveSavedOriginalColor = true;

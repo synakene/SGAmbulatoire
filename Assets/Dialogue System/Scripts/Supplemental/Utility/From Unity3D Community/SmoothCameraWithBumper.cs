@@ -38,7 +38,7 @@ namespace PixelCrushers.DialogueSystem {
 		/// </Summary>
 		private void Awake()
 		{
-			Camera myCamera = GetComponent<Camera>(); // Use GetComponent() for Unity 5 compatibility.
+            UnityEngine.Camera myCamera = GetComponent<UnityEngine.Camera>(); // Use GetComponent() for Unity 5 compatibility.
 			if (myCamera != null) myCamera.transform.parent = target;
 			adjustQuaternion = Quaternion.identity;
 		}

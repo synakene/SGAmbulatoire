@@ -45,7 +45,7 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case "param2":
-                    helpText.text = "Fréquence cardiaque : 95 batt/min";
+                    helpText.text = "Température : 36,2°C";
                     titre.text = "Résultat";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
@@ -62,6 +62,11 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                 case "diag":
                     helpText.text = "Revoyez les normes des paramètres vitaux !";
                     titre.text = "Aide";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "reponseDiag":
+                    helpText.text = "Le patient souffre d'une hypertension et d'une tachycardie";
+                    titre.text = "Echec";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case "diagConsigne":
@@ -99,16 +104,56 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands {
                     titre.text = "Information";
                     helpText.alignment = TextAnchor.MiddleCenter;
                     break;
-                case "echecDiag":
+                case "echecDiag1":
+                    helpText.text = "Attention, vous n'avez pas réaliser l'ensemble des examens necessaires";
+                    titre.text = "Aide";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "echecDiag2":
                     helpText.text = "Dans ce cas il est necessaire d'effectuer les examens suivant :\n - Prise de la tension artérielle \n - Prise de la température \n - Prise de la saturation \n - Prise de la fréquence cardiaque";
                     titre.text = "Examen incomplet";
                     helpText.alignment = TextAnchor.MiddleLeft;
                     break;
-                case "comingSoon":
-                    helpText.text = "Vous avez fini l'étape de présentation.\nL'étape d'identito-vigilance et d'examen somatique sont réalisés par l'infirmière. Nous allons maintenant commencer l'étape de prise de paramètres vitaux";
+                case "identite":
+                    helpText.text = "Vous ne pouvez pas continuer votre entretien avec votre patient si vous n’avez pas toutes les informations le concernant dans un premier temps.";
+                    titre.text = "Echec";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "echecDouleur":
+                    helpText.text = "Ce n’est pas le moment d’appeler le médecin, vous devez pouvoir résoudre ce genre de situation par vous-même";
+                    titre.text = "Echec";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "infectionBijou":
+                    helpText.text = "Pour prévenir le risque infectieux, les bijoux ne sont pas autorisés au bloc.";
+                    titre.text = "Echec";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "infectionDouche":
+                    helpText.text = "Risque infectieux";
+                    titre.text = "Echec";
+                    helpText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case "priseNote":
+                    helpText.text = "Afin de poser un diagnostic dans les meilleures conditions, une prise de note a été effectuée, visible en cliquant sur le bouton du carnet situé en haut à gauche.";
                     titre.text = "Information";
                     helpText.alignment = TextAnchor.MiddleLeft;
                     break;
+				case "ord1":
+					helpText.text = "Vous avez effectué les vérifications d'hygiène dans le bon ordre.";
+					titre.text = "Bonne réponse";
+					helpText.alignment = TextAnchor.MiddleCenter;
+					break;
+				case "ord2":
+					helpText.text = "La dépilation chimique doit être faite avant la douche. De plus, il est important qu’aucun bijou ne soit présent au moment de la douche.";
+					titre.text = "Mauvaise réponse";
+					helpText.alignment = TextAnchor.MiddleCenter;
+					break;
+				case "ord3":
+					helpText.text = "La dépilation chimique doit être faite avant la douche.";
+					titre.text = "Mauvaise réponse";
+					helpText.alignment = TextAnchor.MiddleCenter;
+					break;
             }
             Stop();
         }

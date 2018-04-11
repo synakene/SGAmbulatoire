@@ -53,7 +53,7 @@
       "idConv": 1,
       "idNode": 12,
       "idGoodAnswer": 11,
-      "text": "A remplir."
+      "text": ""
     },
 
     {
@@ -67,98 +67,405 @@
       "idConv": 1,
       "idNode": 29,
       "idGoodAnswer": 11,
-      "text": "- Respect des effets personnels. \n \n- Installation propice à une bonne communication (hauteur, distance des interlocuteurs)."
+      "text": "Bonne réponse, mais vous n'avez pas bien répondu du premier coup \n- Respect des effets personnels. \n \n- Installation propice à une bonne communication (hauteur, distance des interlocuteurs)."
     },
 
     {
       "idConv": 1,
       "idNode": 13,
       "idGoodAnswer": 11,
-      "text": "A remplir."
+      "text": ""
     },
 
     {
       "idConv": 1,
       "idNode": 14,
       "idGoodAnswer": 11,
-      "text": "A remplir."
+      "text": ""
     },
 
+
+
+
+
+
+
+
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 9,
       "idGoodAnswer": 8,
       "text": "Revoyez les normes des paramètres vitaux !"
     },
 
+  {
+      "idConv": 5,
+      "idNode": 53,
+      "idGoodAnswer": 8,
+      "text": "Revoyez les normes des paramètres vitaux !"
+   },
+
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 7,
       "idGoodAnswer": 8,
       "text": "Revoyez les normes des paramètres vitaux !"
     },
 
+    {
+      "idConv": 5,
+      "idNode": 54,
+      "idGoodAnswer": 8,
+      "text": "Revoyez les normes des paramètres vitaux !"
+    },
+
+    {
+      "idConv": 5,
+      "idNode": 55,
+      "idGoodAnswer": 8,
+      "text": "Revoyez les normes des paramètres vitaux !"
+    },
+
+    {
+      "idConv": 5,
+      "idNode": 56,
+      "idGoodAnswer": 8,
+      "text": "Revoyez les normes des paramètres vitaux !"
+    },
+
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 50,
       "idGoodAnswer": 8,
-      "text": "Vous avez posé le bon diagnostic, mais pas du premier coup."
+      "text": "Effectivement, ce diagnostic est en adéquation avec la prise des paramètres vitaux, mais vous n'avez pas donné cette réponse du premier coup."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 8,
       "idGoodAnswer": 8,
-      "text": "Vous avez posé le bon diagnostic."
+      "text": "Effectivement, ce diagnostic est en adéquation avec la prise des paramètres vitaux."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 30,
       "idGoodAnswer": 30,
       "text": "Vous avez bien repéré les signes de l’anxiété chez Mr Sainte-Marie, tremblements, se ronge les ongles, sueurs, douleurs abdominales, troubles du sommeil, tachycardie et hypertension."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 49,
       "idGoodAnswer": 30,
-      "text": "Vous avez bien repéré les signes de l’anxiété chez Mr Sainte-Marie, tremblements, se ronge les ongles, sueurs, douleurs abdominales, troubles du sommeil, tachycardie et hypertension. Mais pas du premier coup."
+      "text": "Vous avez bien repéré les signes de l’anxiété chez Mr Sainte-Marie, tremblements, se ronge les ongles, sueurs, douleurs abdominales, troubles du sommeil, tachycardie et hypertension. Mais vous n'avez pas donné cette réponse du premier coup."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 28,
       "idGoodAnswer": 30,
       "text": "Constipation avérée = 72h sans selles."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 26,
       "idGoodAnswer": 30,
       "text": "Bonne idée car le patient a des sueurs, est à jeun mais glycémie correcte et absence de vertiges."
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 29,
       "idGoodAnswer": 30,
       "text": "36°C < température normale < 38°C"
     },
 
 	{
-      "idConv": 2,
+      "idConv": 5,
       "idNode": 35,
       "idGoodAnswer": 35,
-      "text": "A remplir."
+      "text": ""
     },
 
-	{
-      "idConv": 2,
+    {
+      "idConv": 5,
       "idNode": 34,
       "idGoodAnswer": 35,
-      "text": "A remplir."
+      "text": "Vous ne cherchez pas la cause de l’anxiété du patient et avez un discours banalisant, le patient est non rassuré."
+    },
+
+
+
+
+
+
+
+    {
+      "idConv": 2,
+      "idNode": 4,
+      "idGoodAnswer": 4,
+      "text": "Une attitude parfois dirigiste est nécessaire afin positionner votre interlocuteur comme patient."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 3,
+      "idGoodAnswer": 4,
+      "text": ""
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 6,
+      "idGoodAnswer": 6,
+      "text": "Une attitude parfois dirigiste est nécessaire afin positionner votre interlocuteur comme patient."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 8,
+      "idGoodAnswer": 6,
+      "text": "Une attitude parfois dirigiste est nécessaire afin positionner votre interlocuteur comme patient."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 9,
+      "idGoodAnswer": 9,
+      "text": ""
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 8,
+      "idGoodAnswer": 9,
+      "text": ""
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 18,
+      "idGoodAnswer": 18,
+      "text": ""
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 19,
+      "idGoodAnswer": 18,
+      "text": ""
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 40,
+      "idGoodAnswer": 18,
+      "text": "Attention, vous n’avez pas vérifié l’identité du patient, cela doit être fait au début de l’entretien."
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 34,
+      "idGoodAnswer": 34,
+      "text": ""
+    },
+
+    {
+      "idConv": 2,
+      "idNode": 33,
+      "idGoodAnswer": 34,
+      "text": "En ne demandant pas au patient de donner lui-même son identité, vous risquez de générer une erreur d’identito-vigilance. "
+    },
+
+
+
+
+
+
+
+    {
+      "idConv": 3,
+      "idNode": 2,
+      "idGoodAnswer": 2,
+      "text": ""
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 3,
+      "idGoodAnswer": 2,
+      "text": "Vous n’avez pas porté suffisamment d’attention au patient et n’avez pas traité sa douleur."
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 6,
+      "idGoodAnswer": 6,
+      "text": ""
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 19,
+      "idGoodAnswer": 6,
+      "text": ""
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 15,
+      "idGoodAnswer": 15,
+      "text": ""
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 19,
+      "idGoodAnswer": 15,
+      "text": ""
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 18,
+      "idGoodAnswer": 18,
+      "text": ""
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 19,
+      "idGoodAnswer": 18,
+      "text": ""
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 21,
+      "idGoodAnswer": 21,
+      "text": ""
+    },
+
+    {
+      "idConv": 3,
+      "idNode": 20,
+      "idGoodAnswer": 21,
+      "text": "Ce n’est pas le moment d’appeler le médecin, vous devez pouvoir résoudre ce genre de situation par vous-même."
+    },
+
+
+
+
+
+
+
+
+    {
+      "idConv": 6,
+      "idNode": 1,
+      "idGoodAnswer": 1,
+      "text": ""
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 44,
+      "idGoodAnswer": 1,
+      "text": "La dépilation chimique doit être faite avant la douche. De plus, il est important qu’aucun bijou ne soit présent au moment de la douche."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 45,
+      "idGoodAnswer": 1,
+      "text": "La dépilation chimique doit être faite avant la douche."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 10,
+      "idGoodAnswer": 10,
+      "text": ""
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 9,
+      "idGoodAnswer": 10,
+      "text": "Pour prévenir le risque infectieux, les bijoux ne sont pas autorisés au bloc."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 19,
+      "idGoodAnswer": 19,
+      "text": "Pour prévenir le risque infectieux, les deux douches sont obligatoires."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 18,
+      "idGoodAnswer": 19,
+      "text": "Pour prévenir le risque infectieux, les deux douches sont obligatoires."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 20,
+      "idGoodAnswer": 19,
+      "text": "Risque infectieux."
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 40,
+      "idGoodAnswer": 40,
+      "text": ""
+    },
+
+    {
+      "idConv": 6,
+      "idNode": 20,
+      "idGoodAnswer": 40,
+      "text": "Vous ne pouvez pas le laisser faire : pour prévenir le risque infectieux, les deux douches sont obligatoires."
+    },
+
+
+
+
+
+
+
+
+
+    {
+      "idConv": 7,
+      "idNode": 2,
+      "idGoodAnswer": 2,
+      "text": ""
+    },
+
+    {
+      "idConv": 7,
+      "idNode": 3,
+      "idGoodAnswer": 2,
+      "text": "Ce n’est pas possible parce que l’eczéma se localise surtout au niveau des plis, les rougeurs : ne sont pas de fines vésicules, il n’y a pas de squames, l’eczéma se manifeste par des poussées d’une durée variable entrecoupée par des périodes des rémissions."
+    },
+
+    {
+      "idConv": 7,
+      "idNode": 12,
+      "idGoodAnswer": 2,
+      "text": "Bonne réponse, mais vous ne l'avez pas donné du premier coup."
+    },
+
+    {
+      "idConv": 7,
+      "idNode": 4,
+      "idGoodAnswer": 2,
+      "text": "Véronique : \" Ce n’est pas possible, car la digestion se fait après six heures du dernier repas. Mr Sainte Marie est à jeun depuis 21 heures \"."
     }
 
   ]

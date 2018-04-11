@@ -10,29 +10,34 @@ namespace PixelCrushers.DialogueSystem {
 	/// </summary>
 	[AddComponentMenu("Dialogue System/UI/Unity UI/Bark/Bark UI")]
 	public class UnityUIBarkUI : MonoBehaviour, IBarkUI {
-		
-		/// <summary>
-		/// The (optional) UI canvas group. If assigned, the fade will occur on this
-		/// control. The other controls should be children of this canvas group.
-		/// </summary>
-		public CanvasGroup canvasGroup = null;
-		
-		/// <summary>
-		/// The UI text control for the bark text.
-		/// </summary>
-		public UnityEngine.UI.Text barkText = null;
-		
-		/// <summary>
-		/// The (optional) UI text control for the actor's name, if includeName is <c>true</c>.
-		/// If <c>null</c>, the name is added to the front of the subtitle text instead.
-		/// </summary>
-		public UnityEngine.UI.Text nameText = null;
+
+        /// <summary>
+        /// The (optional) UI canvas group. If assigned, the fade will occur on this
+        /// control. The other controls should be children of this canvas group.
+        /// </summary>
+        [Tooltip("Optional canvas group, for example to play fade animations.")]
+        public CanvasGroup canvasGroup = null;
+
+        /// <summary>
+        /// The UI text control for the bark text.
+        /// </summary>
+        [Tooltip("UI text control for the bark text.")]
+        public UnityEngine.UI.Text barkText = null;
+
+        /// <summary>
+        /// The (optional) UI text control for the actor's name, if includeName is <c>true</c>.
+        /// If <c>null</c>, the name is added to the front of the subtitle text instead.
+        /// </summary>
+        [Tooltip("Optional UI text control for the actor's name if Include Name is ticked. If unassigned and Include Name is ticked, the name is prepended to the Bark Text.")]
+        public UnityEngine.UI.Text nameText = null;
 		
 		/// <summary>
 		/// Set <c>true</c> to include the barker's name in the text.
 		/// </summary>
+        [Tooltip("Show the barker's name.")]
 		public bool includeName = false;
 		
+        [HideInInspector]
 		public float doneTime = 0;
 		
 		[Serializable]
@@ -88,7 +93,7 @@ namespace PixelCrushers.DialogueSystem {
 		
 		public void Start() {
 			if (canvas != null) {
-				if (waitForContinueButton && (canvas.worldCamera == null)) canvas.worldCamera = Camera.main;
+				if (waitForContinueButton && (canvas.worldCamera == null)) canvas.worldCamera = UnityEngine.Camera.main;
 				canvas.enabled = false;
 			}
 			if (nameText != null) nameText.gameObject.SetActive(includeName);

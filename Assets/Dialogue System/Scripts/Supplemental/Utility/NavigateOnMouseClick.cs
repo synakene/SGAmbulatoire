@@ -1,6 +1,7 @@
 ﻿// Based on: http://wiki.unity3d.com/index.php/Click_To_Move_C
 // By: Vinicius Rezendrix
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace PixelCrushers.DialogueSystem {
 	

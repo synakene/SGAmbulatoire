@@ -16,36 +16,48 @@ namespace PixelCrushers.DialogueSystem {
 	[AddComponentMenu("Dialogue System/UI/Unity UI/Quest/Unity UI Quest Tracker HUD (on Dialogue Manager or child)")]
 	public class UnityUIQuestTracker : MonoBehaviour {
 
-		/// <summary>
-		/// The UI control that will hold quest track info (instantiated copies of the 
-		/// quest track template). This is typically a Vertical Layout Group.
-		/// </summary>
-		public Transform container;
+        /// <summary>
+        /// The UI control that will hold quest track info (instantiated copies of the 
+        /// quest track template). This is typically a Vertical Layout Group.
+        /// </summary>
+        [Tooltip("UI container that will hold instances of quest track template.")]
+        public Transform container;
 
-		/// <summary>
-		/// The quest track template.
-		/// </summary>
-		public UnityUIQuestTrackTemplate questTrackTemplate;
+        /// <summary>
+        /// Tick to show the container even if there's nothing to track.
+        /// </summary>
+        [Tooltip("Show Container even if there's nothing to track.")]
+        public bool showContainerIfEmpty = true;
 
-		/// <summary>
-		/// Tick to show active quests in the tracker.
-		/// </summary>
-		public bool showActiveQuests = true;
-		
-		/// <summary>
-		/// Tick to show successful and failed quests in the tracker.
-		/// </summary>
-		public bool showCompletedQuests = false;
-		
-		/// <summary>
-		/// Tick to look up "Entry n Success" or "Entry n Failure" if the
-		/// quest entry is in the success or failure state.
-		/// </summary>
-		public bool showCompletedEntryText = false;
+        /// <summary>
+        /// The quest track template.
+        /// </summary>
+        [Tooltip("Template to instantiate for each tracked quest.")]
+        public UnityUIQuestTrackTemplate questTrackTemplate;
+
+        /// <summary>
+        /// Tick to show active quests in the tracker.
+        /// </summary>
+        [Tooltip("Show active quests.")]
+        public bool showActiveQuests = true;
+
+        /// <summary>
+        /// Tick to show successful and failed quests in the tracker.
+        /// </summary>
+        [Tooltip("Show successful and failed quests.")]
+        public bool showCompletedQuests = false;
+
+        /// <summary>
+        /// Tick to look up "Entry n Success" or "Entry n Failure" if the
+        /// quest entry is in the success or failure state.
+        /// </summary>
+        [Tooltip("Show Entry n Success or Entry n Failure text if quest entry is in success/failure state.")]
+        public bool showCompletedEntryText = false;
 		
 		public enum QuestDescriptionSource { Title, Description }
-		
-		public QuestDescriptionSource questDescriptionSource = QuestDescriptionSource.Title;
+
+        [Tooltip("Source for the quest tracker text.")]
+        public QuestDescriptionSource questDescriptionSource = QuestDescriptionSource.Title;
 		
 		private List<GameObject> instantiatedItems = new List<GameObject>();
 
@@ -90,14 +102,18 @@ namespace PixelCrushers.DialogueSystem {
 		
 		public void UpdateTracker() {
 			DestroyInstantiatedItems();
-
+            int numTracked = 0;
 			QuestState flags = (showActiveQuests ? QuestState.Active : 0) | 
 				(showCompletedQuests ? QuestState.Success | QuestState.Failure : 0);
 			foreach (string quest in QuestLog.GetAllQuests(flags)) {
 				if (QuestLog.IsQuestTrackingEnabled(quest)) {
 					InstantiateQuestTrack(quest);
+                    numTracked++;
 				}
 			}
+            if (container != null) {
+                container.gameObject.SetActive(showContainerIfEmpty || numTracked > 0);
+            }                
 		}
 
 		public void DestroyInstantiatedItems() {
@@ -133,7 +149,9 @@ namespace PixelCrushers.DialogueSystem {
 				for (int i = 1; i <= entryCount; i++) {
 					var entryState = QuestLog.GetQuestEntryState(quest, i);
 					var entryText = FormattedText.Parse(GetQuestEntryText(quest, i, entryState), DialogueManager.MasterDatabase.emphasisSettings).text;
-					questTrack.AddEntryDescription(entryText, entryState);
+                    if (!string.IsNullOrEmpty(entryText)) {
+                        questTrack.AddEntryDescription(entryText, entryState);
+                    }
 				}
 			}
 		}
@@ -141,10 +159,12 @@ namespace PixelCrushers.DialogueSystem {
 		private string GetQuestEntryText(string quest, int entryNum, QuestState entryState) {
 			if (entryState == QuestState.Unassigned || entryState == QuestState.Abandoned) {
 				return string.Empty;
-			} else if (entryState == QuestState.Success && showCompletedEntryText) {
+			} else if ((entryState == QuestState.Success || entryState == QuestState.Failure) && !showCompletedEntryText) {
+                return string.Empty;
+            } else if (entryState == QuestState.Success) {
 				var text = DialogueLua.GetQuestField(quest, "Entry " + entryNum + " Success").AsString;
 				if (!string.IsNullOrEmpty(text)) return text;
-			} else if (entryState == QuestState.Failure && showCompletedEntryText) {
+			} else if (entryState == QuestState.Failure) {
 				var text = DialogueLua.GetQuestField(quest, "Entry " + entryNum + " Failure").AsString;
 				if (!string.IsNullOrEmpty(text)) return text;
 			}

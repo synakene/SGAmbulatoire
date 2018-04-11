@@ -167,6 +167,11 @@ namespace sharpPDF
 			return new pdfTableRow(_tableHeader);
 		}
 
+        public pdfTableRow createRow(int number)
+        {
+            return new pdfTableRow(_tableHeader, number);
+        }
+
 		/// <summary>
 		/// Method to add a new row into the table
 		/// </summary>
