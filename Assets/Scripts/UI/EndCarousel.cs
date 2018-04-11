@@ -79,7 +79,7 @@ public class EndCarousel : MonoBehaviour {
         Data.reinitScore();
         Data.min = 0;
         Data.sec = 0;
-        SceneManager.LoadScene(0);
+		SceneManager.LoadScene(0);
     }
 
     public void ConfirmExit()
@@ -90,7 +90,7 @@ public class EndCarousel : MonoBehaviour {
             Time.timeScale = 1;
             Data.min = 0;
             Data.sec = 0;
-            DialogueManager.Unpause();
+			DialogueManager.Unpause();
             Data.reinitScore();
             Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
@@ -101,7 +101,7 @@ public class EndCarousel : MonoBehaviour {
             Time.timeScale = 1;
             Data.min = 0;
             Data.sec = 0;
-            DialogueManager.Unpause();
+			DialogueManager.Unpause();
             Data.reinitScore();
             Application.Quit();
         }
@@ -111,7 +111,7 @@ public class EndCarousel : MonoBehaviour {
             Time.timeScale = 1;
             Data.min = 0;
             Data.sec = 0;
-            DialogueManager.Unpause();
+			DialogueManager.Unpause();
             Data.reinitScore();
             Data.ReinitLuaVar();
             SceneManager.LoadScene(0);

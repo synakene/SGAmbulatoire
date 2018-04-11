@@ -39,9 +39,8 @@ public class OverMind : MonoBehaviour {
 	private void OnDestroy()
 	{
 		float time = Time.time - startTime;
-		Data.min = (int) time / 60;
-		Data.sec = (int) time % 60;
-		print(Data.min + " min " + Data.sec);
+		Data.min = (int) (time / 60);
+		Data.sec = (int) (time % 60);
 	}
 
 	public void QCM (string num)

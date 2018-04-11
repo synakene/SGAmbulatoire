@@ -50,12 +50,6 @@ public class HeaderUI : MonoBehaviour
         GameObject.Find("count3").GetComponent<Text>().text = (Data.scoreObj3).ToString() + "/" + (Data.MaxScoreObj3).ToString();
     }
 
-    void OnDestroy()
-    {
-        Data.min = 0;
-        Data.sec = 0;
-    }
-
     void Update()
     {
         CalculateTime();
@@ -170,7 +164,7 @@ public class HeaderUI : MonoBehaviour
             Time.timeScale = 1;
             Data.min = 0;
             Data.sec = 0;
-            DialogueManager.Unpause();
+			DialogueManager.Unpause();
             Data.reinitScore();
             Data.ReinitLuaVar();
             SceneManager.LoadScene(0);
@@ -181,7 +175,7 @@ public class HeaderUI : MonoBehaviour
             Time.timeScale = 1;
             Data.min = 0;
             Data.sec = 0;
-            DialogueManager.Unpause();
+			DialogueManager.Unpause();
             Data.reinitScore();
             Application.Quit();
         }
@@ -203,7 +197,7 @@ public class HeaderUI : MonoBehaviour
         Time.timeScale = 1;
         Data.min = 0;
         Data.sec = 0;
-        DialogueManager.Unpause();
+		DialogueManager.Unpause();
         DialogueManager.StopConversation();
         Data.ReinitLuaVar();
         Data.reinitScore();

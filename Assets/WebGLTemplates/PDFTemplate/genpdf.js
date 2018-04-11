@@ -52,3 +52,7 @@ function PDFFinal(arg) {
 		document.getElementById('PDFButton').appendChild(href);
 	}
 }
+
+function Log(str) {
+	console.log(str.toString());
+}

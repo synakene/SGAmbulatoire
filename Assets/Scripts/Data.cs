@@ -72,7 +72,7 @@ public static class Data {
 
     public static int MaxScoreObj1 = 9;
     public static int MaxScoreObj2 = 17;
-    public static int MaxScoreObj3 = 15;
+    public static int MaxScoreObj3 = 11;
 
     public static float MaxTotal = (float)(MaxScoreObj1 + MaxScoreObj2 + MaxScoreObj3);
 

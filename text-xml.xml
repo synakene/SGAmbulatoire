@@ -8,18 +8,18 @@
   <scores>
     <score>
       <name>obj1</name>
-      <value>6</value>
+      <value>9</value>
       <maxValue>9</maxValue>
     </score>
     <score>
       <name>obj2</name>
-      <value>8</value>
+      <value>17</value>
       <maxValue>17</maxValue>
     </score>
     <score>
       <name>obj3</name>
-      <value>7</value>
-      <maxValue>15</maxValue>
+      <value>11</value>
+      <maxValue>11</maxValue>
     </score>
     <score>
       <name>obj4</name>
@@ -27,30 +27,24 @@
       <maxValue>0</maxValue>
     </score>
   </scores>
-  <time>0</time>
-  <totalScore>51</totalScore>
+  <time>566</time>
+  <totalScore>100</totalScore>
   <data>
-    <question valid="false">
-      <asked>Comment entamez-vous la conversation ? [pic=2]</asked>
-      <answer>Bonjour, je viens procéder au recueil des données.</answer>
-      <goodAnswer>Bonjour, je suis Margaux, étudiante infirmière.</goodAnswer>
-      <feedback>- Vocabulaire inadapté. 
- 
-- Ne pas se présenter engendre une situation anxiogène pour le patient.</feedback>
-    </question>
     <question valid="true">
-      <asked>Bonjour, je viens procéder au recueil des données.</asked>
-      <answer>Je me présente.</answer>
-      <goodAnswer>Je me présente.</goodAnswer>
+      <asked>Comment entamez-vous la conversation ? [pic=2]</asked>
+      <answer>Bonjour, je suis Margaux, étudiante infirmière.</answer>
+      <goodAnswer>Bonjour, je suis Margaux, étudiante infirmière.</goodAnswer>
       <feedback>- Instaure la relation de confiance. 
  
-- Rassure le patient.</feedback>
+- Rassure le patient car il identifie le soignant.</feedback>
     </question>
-    <question valid="false">
-      <asked>Excusez-moi. Je me présente, je suis Margaux, étudiante infirmière.</asked>
-      <answer>Je cherche à m’installer afin de réaliser le recueil de données.</answer>
+    <question valid="true">
+      <asked>Bonjour, je suis Margaux, étudiante infirmière.</asked>
+      <answer>J’explique au patient pourquoi je suis dans sa chambre.</answer>
       <goodAnswer>J’explique au patient pourquoi je suis dans sa chambre.</goodAnswer>
-      <feedback>- N’explique pas le but de l’entretien, le patient sera moins attentif.</feedback>
+      <feedback>- Vocabulaire adapté. 
+ 
+- Expliquer le but de l’entretien (patient plus attentif, il comprend mieux l’entretien).</feedback>
     </question>
     <question valid="true">
       <asked>Je viens vous poser quelques questions afin d'avoir les informations nécessaires avant votre opération.</asked>
@@ -80,11 +74,33 @@
       <feedback>
       </feedback>
     </question>
-    <question valid="false">
+    <question valid="true">
       <asked>Très bien M. Sainte-Marie, je vais maintenant vous examiner. [pic=3]</asked>
-      <answer>Prendre les paramètres vitaux.</answer>
+      <answer>Demander au patient s’il va bien.</answer>
       <goodAnswer>Demander au patient s’il va bien.</goodAnswer>
-      <feedback>Vous n’avez pas porté suffisamment d’attention au patient et n’avez pas traité sa douleur.</feedback>
+      <feedback>
+      </feedback>
+    </question>
+    <question valid="true">
+      <asked>Oui, ça m’a fait mal quand je me suis redressé pour l’examen.</asked>
+      <answer>Mesurer la douleur du patient.</answer>
+      <goodAnswer>Mesurer la douleur du patient.</goodAnswer>
+      <feedback>
+      </feedback>
+    </question>
+    <question valid="true">
+      <asked>Un petit moment oui, ça me lance régulièrement, c’est pour ça que je suis là aujourd’hui.</asked>
+      <answer>Vérifier et observer.</answer>
+      <goodAnswer>Vérifier et observer.</goodAnswer>
+      <feedback>
+      </feedback>
+    </question>
+    <question valid="true">
+      <asked>Vérifier et observer.</asked>
+      <answer>Vérifier les paramètres vitaux.</answer>
+      <goodAnswer>Vérifier les paramètres vitaux.</goodAnswer>
+      <feedback>
+      </feedback>
     </question>
     <question valid="true">
       <asked>Suite à la prise des paramètres vitaux, vous constatez :

@@ -4,12 +4,9 @@ using Scorm;
 
 public class ScormControler : MonoBehaviour {
 
-	private float startTime;
-
 	// Use this for initialization
 	void Start () {
         InitScorm();
-		startTime = Time.time;
 	}
 
     public void ScormCommit()

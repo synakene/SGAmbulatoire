@@ -52,7 +52,7 @@ namespace Scorm {
         /// Identifies the learner on behalf of whom the SCO was launched.
         /// </summary>
         public void GetLearnerId() {
-            StartCoroutine("CallLearnerId", "getLearnerId");
+            StartCoroutine(CallUnityMethod("CallLearnerId", "getLearnerId"));
             //CallUnityMethod("CallLearnerId", "getLearnerId");
         }
 

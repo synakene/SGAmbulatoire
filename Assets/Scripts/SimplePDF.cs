@@ -221,7 +221,13 @@ public class SimplePDF : MonoBehaviour {
 
 				WWWForm form = new WWWForm();
 				form.AddField("xml", xmlWriter.InnerXml);
-				new WWW(url, form);
+				WWW ws = new WWW(url, form);
+
+				while (ws.isDone == false)
+				{
+					Debug.Log("Sending..." + ws.progress);
+					yield return null;
+				}
 				#endregion
 			}
 		}
